@@ -1,0 +1,16 @@
+# secrets : jamais versionnés (clé Gemini, clé maître)
+.env
+**/.env
+.env.*
+# Python / Node / outils
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+node_modules/
+dist/
+.vite/
+playwright-report/
+test-results/
+.DS_Store
+*.log
