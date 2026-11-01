@@ -1,0 +1,10 @@
+neo4j==6.4.1
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+cryptography==44.0.0
+google-genai
+pytest==8.3.4
+croniter==6.0.0
+tzdata
+websockets==14.1
