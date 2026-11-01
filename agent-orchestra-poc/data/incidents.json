@@ -1,0 +1,82 @@
+[
+  {
+    "id": "INC-001",
+    "kind": "incident",
+    "componentId": "PRT-0045",
+    "severity": "critique",
+    "description": "Défaillance prématurée de Relais électrique réf. 674 chez le client",
+    "observedAt": "2026-03-02"
+  },
+  {
+    "id": "INC-002",
+    "kind": "incident",
+    "componentId": "PRT-0049",
+    "severity": "majeure",
+    "description": "Vibration anormale mesurée sur Platine structure réf. 641 à 69 h de service",
+    "observedAt": "2026-03-05"
+  },
+  {
+    "id": "INC-003",
+    "kind": "incident",
+    "componentId": "PRT-0052",
+    "severity": "critique",
+    "description": "Défaillance prématurée de Panneau structure réf. 619 chez le client",
+    "observedAt": "2026-03-08"
+  },
+  {
+    "id": "INC-004",
+    "kind": "incident",
+    "componentId": "PRT-0158",
+    "severity": "mineure",
+    "description": "Échauffement excessif de Clapet hydraulique réf. 380 pendant la recette",
+    "observedAt": "2026-03-11"
+  },
+  {
+    "id": "INC-005",
+    "kind": "incident",
+    "componentId": "PRT-0190",
+    "severity": "mineure",
+    "description": "Corrosion visible sur Tuyauterie hydraulique réf. 843 après 622 h",
+    "observedAt": "2026-03-14"
+  },
+  {
+    "id": "INC-006",
+    "kind": "incident",
+    "componentId": "PRT-0195",
+    "severity": "majeure",
+    "description": "Fuite constatée sur Cadre structure réf. 439 après 49 h de fonctionnement",
+    "observedAt": "2026-03-17"
+  },
+  {
+    "id": "INC-007",
+    "kind": "incident",
+    "componentId": "PRT-0070",
+    "severity": "majeure",
+    "description": "Vibration anormale mesurée sur Pompe hydraulique réf. 195 à 142 h de service",
+    "observedAt": "2026-03-20"
+  },
+  {
+    "id": "INC-008",
+    "kind": "incident",
+    "componentId": "PRT-0088",
+    "severity": "critique",
+    "description": "Défaillance prématurée de Vis mécanique réf. 152 chez le client",
+    "observedAt": "2026-03-23"
+  },
+  {
+    "id": "INC-009",
+    "kind": "incident",
+    "componentId": "PRT-0148",
+    "severity": "mineure",
+    "description": "Échauffement excessif de Arbre mécanique réf. 599 pendant la recette",
+    "observedAt": "2026-03-26"
+  },
+  {
+    "id": "INC-010",
+    "kind": "incident",
+    "componentId": "PRT-0101",
+    "severity": "mineure",
+    "description": "Corrosion visible sur Soupape fluidique réf. 439 après 566 h",
+    "observedAt": "2026-03-29"
+  }
+]
