@@ -1,36 +1,36 @@
-# Orchestre d'agents sur Neo4j — PoC
+# Agent orchestration on Neo4j — PoC
 
-Plateforme d'orchestration multi-agents où **Neo4j sert de bus (CDC) et de mémoire** : inbox, messages, routines, droits par chemins (ReBAC), fédération de graphes de connaissance, gouvernance (budget, auditeur, validations humaines) et traçabilité. Scénario : un incident terrain déclenche une modification produit. L'interface, le contenu de démo et les messages des agents sont en anglais (vidéo de démonstration) ; la documentation reste en français.
+A multi-agent orchestration platform where **Neo4j is both the bus (CDC) and the memory**: inboxes, messages, routines, rights as paths (ReBAC), federation of knowledge graphs, governance (budget, auditor, human approvals) and traceability. Scenario: a field incident triggers a product modification. The UI, the demo content and the agents' messages are in English (demo video); the documentation is in English too, while code comments are still mostly in French.
 
-- Spécification : [`docs/spec.md`](docs/spec.md) — Règles du projet : [`CLAUDE.md`](CLAUDE.md) — Spikes et écarts : [`docs/spikes.md`](docs/spikes.md)
-- Code : [`agent-orchestra-poc/`](agent-orchestra-poc/) (passerelle, consommateur CDC, runtimes d'agents, interface React)
+- Specification: [`docs/spec.md`](docs/spec.md) — Project rules: [`CLAUDE.md`](CLAUDE.md) — Spikes and deviations: [`docs/spikes.md`](docs/spikes.md)
+- Code: [`agent-orchestra-poc/`](agent-orchestra-poc/) (gateway, CDC consumer, agent runtimes, React UI)
 
-## Démarrer
+## Getting started
 
-Prérequis : Docker, `make`, Node 22 (tests de navigateur). Créer `agent-orchestra-poc/.env` avec `GEMINI_API_KEY=…` et `LLM_PROVIDER=gemini` (jamais versionné), puis :
+Requirements: Docker, `make`, Node 22 (browser tests). Create `agent-orchestra-poc/.env` with `GEMINI_API_KEY=…` and `LLM_PROVIDER=gemini` (never versioned), then:
 
 ```bash
 cd agent-orchestra-poc
-make keygen      # génère ORCHESTRA_MASTER_KEY dans .env (sans l'afficher)
-make seed        # Neo4j Enterprise (APOC, GDS), bases, utilisateurs, CDC, schéma, données synthétiques
-make app         # passerelle, consommateur CDC, runtimes d'agents, interface → http://localhost:15173
+make keygen      # generates ORCHESTRA_MASTER_KEY in .env (without displaying it)
+make seed        # Neo4j Enterprise (APOC, GDS), databases, users, CDC, schema, synthetic data
+make app         # gateway, CDC consumer, agent runtimes, UI → http://localhost:15173
 ```
 
-Neo4j : HTTP 17474, Bolt 17687. Passerelle : 18000. Consommateur CDC : 18001. `make ui` lance l'interface sans les runtimes (donc sans appel LLM) ; `make reset` remet tout à zéro.
+Neo4j: HTTP 17474, Bolt 17687. Gateway: 18000. CDC consumer: 18001. `make ui` starts the UI without the runtimes (so no LLM calls); `make reset` wipes everything.
 
-## Relecture et scénario
+## Replay and scenario
 
-L'onglet **Relecture** rejoue le flux d'événements reconstruit depuis le graphe, ou un enregistrement fichier, sur la scène, le graphe et le journal : lecture/pause, vitesse ×1 à ×20, barre de temps, compression des temps morts, chapitres (incident, analyse, vote, lancement, gouvernance), suivi d'un agent. Un scénario réel est fourni : [`agent-orchestra-poc/data/scenarios/full-scenario.json`](agent-orchestra-poc/data/scenarios/full-scenario.json) (de l'incident à la gouvernance, avec la boucle légitime, le vote, le lancement, la relance et l'auditeur qui suspend une boucle sans fin).
+The **Replay** tab replays the event stream rebuilt from the graph, or a recording file, on the scene, the graph and the log: play/pause, speed ×1 to ×20, time bar, idle-time compression, chapters (incident, impact analysis, committee vote, launch, governance), follow an agent. A real scenario is provided: [`agent-orchestra-poc/data/scenarios/full-scenario.json`](agent-orchestra-poc/data/scenarios/full-scenario.json) (from the incident to governance, with the legitimate loop, the vote, the launch, the reminder and the auditor suspending an endless loop).
 
 ```bash
-make scenario   # remet la base à zéro, lance la pile et rejoue le scénario complet avec les vrais agents (≈ 5 min, ≈ 200 000 tokens Gemini)
+make scenario   # resets the database, starts the stack and replays the full scenario with the real agents (≈ 5 min, ≈ 200,000 Gemini tokens)
 ```
 
 ## Tests
 
 ```bash
-make test   # pytest : schéma, passerelle, tests de non-fuite des droits, CDC, runtimes (Neo4j de test)
-make e2e    # Playwright sur une base propre, sans LLM ; unitaires de l'interface : cd ui && npm test
+make test   # pytest: schema, gateway, rights non-leak tests, CDC, runtimes (test Neo4j)
+make e2e    # Playwright on a clean database, no LLM; UI unit tests: cd ui && npm test
 ```
 
-Licence Neo4j Enterprise : l'image est utilisée avec `NEO4J_ACCEPT_LICENSE_AGREEMENT=yes` (à vérifier pour votre usage). Les mots de passe par défaut du compose sont des valeurs de développement local.
+Neo4j Enterprise license: the image is used with `NEO4J_ACCEPT_LICENSE_AGREEMENT=yes` (check this for your use). The compose default passwords are local development values.

@@ -1,56 +1,56 @@
-# Spécification PoC — Orchestration d'agents sur Neo4j
+# PoC specification — Agent orchestration on Neo4j
 
-Version du 2026-11-01 · Pierre Halftermeyer
-Source de vérité : https://claude.ai/artifact/AKWugT8PXQQV2NvAAqLdPi (ce fichier en est un export ; en cas d'écart, le doc fait foi).
+Version of 2026-11-01 · Pierre Halftermeyer
+Source of truth: https://claude.ai/artifact/AKWugT8PXQQV2NvAAqLdPi (this file is an export of it, translated to English on 2026-11-02; in case of discrepancy, the original document prevails).
 
-## Objet et périmètre
+## Purpose and scope
 
-Le PoC démontre une plateforme d'orchestration multi-agents où Neo4j sert à la fois de bus (via le CDC) et de mémoire, sur un scénario d'ingénierie : un incident qui déclenche une modification produit.
+The PoC demonstrates a multi-agent orchestration platform where Neo4j serves both as the bus (via CDC) and as the memory, on an engineering scenario: an incident that triggers a product change.
 
-- **Cible** : Neo4j Enterprise self-managed (Docker en local), là où l'on maîtrise le CDC et la rétention des logs de transaction.
-- **Taille** : 5 agents logiciels, 3 à 4 humains, 1 base d'orchestration, 2 graphes de connaissance.
-- **Ce que le PoC doit prouver** : le modèle (inbox, mémoire, droits par chemins, routines, fédération), la gouvernance (budget, auditeur, validations humaines) et la traçabilité (relecture animée à partir du graphe).
-- **Hors périmètre** : exigences, fournisseurs, coûts, conformité ; Aura ; contrôle d'accès natif.
+- **Target**: self-managed Neo4j Enterprise (Docker, local), where CDC and transaction log retention can be controlled.
+- **Size**: 5 software agents, 3 to 4 people, 1 orchestration database, 2 knowledge graphs.
+- **What the PoC must prove**: the model (inbox, memory, path-based rights, routines, federation), governance (budget, auditor, human approvals) and traceability (animated replay built from the graph).
+- **Out of scope**: requirements, vendors, costs, compliance; Aura; native access control.
 
-À mesurer : la latence entre l'écriture et le réveil, la charge du consommateur CDC, le volume de messages et la consommation de tokens par chaîne.
+To be measured: the latency between write and wake-up, the load on the CDC consumer, the message volume and the token consumption per chain.
 
-## Principes du modèle
+## Model principles
 
-Le cœur se réduit à quatre notions : des inbox, des messages, des routines et des chemins de droits. Tout le reste en découle.
+The core boils down to four notions: inboxes, messages, routines and rights paths. Everything else follows from them.
 
-1. **Tout passe par une inbox.** Messages entre agents, créneaux cron, minuteries, événements, connecteurs et validations humaines déposent tous un message dans une inbox.
-2. **Humains et agents logiciels ont le même modèle** (`:Agent:Person` / `:Agent:SoftwareAgent`, alignés sur PROV-O). La politique d'accès, elle, les distingue.
-3. **Un agent est défini par son identité et son mandat.** Prompt, modèle et outils forment une `AgentVersion`, versionnée ; une session est un processus éphémère.
-4. **On écrit en ajout seul.** Pas de liste chaînée, pas de pointeur à déplacer : des buckets par jour et des `CREATE`.
-5. **On révise, on n'écrase pas.** Un fait contredit est fermé (`validTo`) et remplacé (`SUPERSEDES`). Chaque changement d'état garde sa date, ce qui rend la relecture possible.
-6. **Un droit d'accès est un chemin dans le graphe** (modèle ReBAC), vérifié par l'application pour l'instant.
-7. **Les secrets restent hors du graphe.**
-8. **On reprend les standards** quand ils existent : A2A (identité externe, états de tâche), PROV-O (provenance), performatifs FIPA-ACL (intention des messages), OpenTelemetry GenAI (traces).
+1. **Everything goes through an inbox.** Messages between agents, cron slots, timers, events, connectors and human approvals all drop a message into an inbox.
+2. **People and software agents share the same model** (`:Agent:Person` / `:Agent:SoftwareAgent`, aligned with PROV-O). The access policy, however, tells them apart.
+3. **An agent is defined by its identity and its mandate.** Prompt, model and tools form a versioned `AgentVersion`; a session is an ephemeral process.
+4. **We write append-only.** No linked list, no pointer to move: daily buckets and `CREATE`.
+5. **We revise, we never overwrite.** A contradicted fact is closed (`validTo`) and replaced (`SUPERSEDES`). Every state change keeps its date, which makes replay possible.
+6. **An access right is a path in the graph** (ReBAC model), enforced by the application for now.
+7. **Secrets stay out of the graph.**
+8. **We reuse standards** when they exist: A2A (external identity, task states), PROV-O (provenance), FIPA-ACL performatives (message intent), OpenTelemetry GenAI (traces).
 
-## Schéma de la base d'orchestration
+## Orchestration database schema
 
-Chaque agent a trois racines distinctes : son inbox (ce qu'il reçoit), son workspace (ce qu'il a fait) et sa mémoire (ce qu'il sait).
+Each agent has three distinct roots: its inbox (what it receives), its workspace (what it has done) and its memory (what it knows).
 
 ```cypher
-// Identité, mandat, définition
+// Identity, mandate, definition
 (:Agent:Person {id, oidcSub})
 (:Agent:SoftwareAgent {id, workloadId})-[:CURRENT]->(:AgentVersion {kind: 'llm'|'rule', prompt, model, toolset})
 (:AgentVersion)-[:SUPERSEDES]->(:AgentVersion)
 (:Agent)-[:HAS_MANDATE]->(:Mandate {purpose, scope, successCriteria, authoredBy})
 
-// Réception : inbox rangée par jour
+// Reception: inbox organised by day
 (:Agent)-[:HAS_INBOX]->(:Inbox)-[:HAS_DAY]->(:Day:InboxDay {inboxId, date})
 (:InboxDay)-[:RECEIVED {status, submittedAt, workingAt, completedAt}]->(:Message)
-(:Inbox:Topic {id, retention})                       // inbox d'événements
+(:Inbox:Topic {id, retention})                       // event inbox
 
-// Émission : sessions privées dans le workspace
+// Sending: private sessions in the workspace
 (:Agent)-[:HAS_WORKSPACE]->(:Workspace)-[:HAS_DAY]->(:Day:WorkDay {workspaceId, date, summary})
 (:WorkDay)-[:OPENED]->(:Session {openedAt, closedAt})-[:SENT]->(:Message)
 (:Session)-[:TRIGGERED_BY]->(:Message)
 (:Session)-[:RAN_AS]->(:AgentVersion)
 (:Session)-[:STATUS]->(:StatusUpdate {text, at})
 
-// Mémoire acquise
+// Acquired memory
 (:Agent)-[:HAS_MEMORY]->(:Memory)-[:ASSERTS]->(:Fact {statement, embedding, confidence, validFrom, validTo, memoryId})
 (:Fact)-[:ABOUT]->(:EntityRef)
 (:Fact)-[:LEARNED_IN]->(:Session)
@@ -62,48 +62,48 @@ Chaque agent a trois racines distinctes : son inbox (ce qu'il reçoit), son work
 (:Message {id, from, performative, conversationId, chainId, createdAt, body})
 ```
 
-**Les cases de la mémoire** (modèle BDI) :
+**The memory "cases"** (BDI model):
 
-| Case | Contenu | Écrite par |
+| Case | Content | Written by |
 | --- | --- | --- |
-| Mandat | À quoi sert l'agent, son périmètre | Son responsable ; l'agent la lit seulement |
-| Interprétation du mandat | Sous-objectifs, compréhension du mandat | L'agent |
-| Relations | Superviseurs, destinataires autorisés | Calculé à partir du graphe |
-| Engagements | Ce que l'agent a promis, à qui, pour quand | L'agent |
-| Connaissances | Les `Fact`, avec leur provenance | L'agent et la consolidation |
-| Capacités | Outils et limites | Calculé à partir de `CAN_USE` |
+| Mandate | What the agent is for, its scope | Its manager; the agent only reads it |
+| Mandate interpretation | Sub-goals, understanding of the mandate | The agent |
+| Relations | Supervisors, authorised recipients | Computed from the graph |
+| Commitments | What the agent promised, to whom, by when | The agent |
+| Knowledge | The `Fact` nodes, with their provenance | The agent and consolidation |
+| Capabilities | Tools and limits | Computed from `CAN_USE` |
 
-**Contraintes** : clé de nœud sur `InboxDay (inboxId, date)` et `WorkDay (workspaceId, date)` ; unicité sur `Message.id`, `Session.triggerMsgId`, `Agent.id`. Un agent sans mandat ne peut qu'envoyer une question (`query`) à son responsable.
+**Constraints**: node key on `InboxDay (inboxId, date)` and `WorkDay (workspaceId, date)`; uniqueness on `Message.id`, `Session.triggerMsgId`, `Agent.id`. An agent without a mandate can only send a question (`query`) to its manager.
 
-## Droits d'accès
+## Access rights
 
-Un agent peut lire une mémoire s'il l'atteint par `SUPERVISES*`, puis par une seule relation terminale. Ce contrôle est fait par l'application pour le PoC.
+An agent can read a memory if it reaches it through `SUPERVISES*`, then through a single terminal relationship. For the PoC, this check is performed by the application.
 
 ```cypher
-(:Agent)-[:SUPERVISES {since}]->(:Agent)                 // transitif, sans cycle
+(:Agent)-[:SUPERVISES {since}]->(:Agent)                 // transitive, acyclic
 (:Agent)-[:CAN_SEND_TO]->(:Inbox)
 (:Agent)-[:CAN_USE {approval}]->(:Tool)
-(:Agent)-[:AUDITS]->(:Agent)                             // lecture de l'épisodique seulement
-(:Agent)-[:ACTS_FOR {scope, until}]->(:Agent)            // délégation
+(:Agent)-[:AUDITS]->(:Agent)                             // episodic read only
+(:Agent)-[:ACTS_FOR {scope, until}]->(:Agent)            // delegation
 (*)-[:CAN_READ {mode: 'snapshot'|'live', asOf, until, private}]->(:Memory)
 ```
 
-**La grammaire des chemins** (liste blanche, rien d'autre ne transmet un droit) :
+**The path grammar** (allow list; nothing else conveys a right):
 
 ```
-SUPERVISES*  →  (rien | HAS_INBOX·HAS_DAY·RECEIVED | HAS_WORKSPACE·HAS_DAY·OPENED)  →  HAS_MEMORY | CAN_READ
+SUPERVISES*  →  (nothing | HAS_INBOX·HAS_DAY·RECEIVED | HAS_WORKSPACE·HAS_DAY·OPENED)  →  HAS_MEMORY | CAN_READ
 ```
 
-- **Un lien de partage `CAN_READ` peut partir de n'importe quel nœud.** Une mémoire jointe à un message est un `(:Message)-[:CAN_READ]->(:Memory)` : toute personne qui atteint le message lit la mémoire. La purge du message retire le partage.
-- **`snapshot` par défaut** : le destinataire voit les faits valides à `asOf`, sans copie. `live` s'accorde explicitement et expire.
-- **Un partage remonte la hiérarchie** du destinataire, sauf si `private` est vrai.
-- **Pas de partage en cascade** sans droit `CAN_SHARE`. Un fait intégré depuis une mémoire reçue devient un nouveau fait `DERIVED_FROM`.
-- **Une seule relation `CAN_READ` par chemin**, toujours en dernier.
-- **Créer une relation `SUPERVISES` est une opération privilégiée** (orchestrateur ou administrateur). Le contrôle de cycle se fait à l'écriture, après verrouillage des deux nœuds. La lecture utilise `MATCH ACYCLIC`.
-- **Pour un `:Person`** : la supervision ne donne pas d'accès en lecture par défaut, et un agent logiciel ne supervise pas un humain.
-- **Le droit d'utiliser un outil ne s'hérite pas** par la supervision.
+- **A `CAN_READ` sharing link can start from any node.** A memory attached to a message is a `(:Message)-[:CAN_READ]->(:Memory)`: anyone who reaches the message reads the memory. Purging the message removes the share.
+- **`snapshot` by default**: the recipient sees the facts valid at `asOf`, without a copy. `live` is granted explicitly and expires.
+- **A share goes up the hierarchy** of the recipient, unless `private` is true.
+- **No cascading shares** without a `CAN_SHARE` right. A fact integrated from a received memory becomes a new `DERIVED_FROM` fact.
+- **A single `CAN_READ` relationship per path**, always last.
+- **Creating a `SUPERVISES` relationship is a privileged operation** (orchestrator or administrator). The cycle check is done at write time, after locking both nodes. Reads use `MATCH ACYCLIC`.
+- **For a `:Person`**: supervision gives no read access by default, and a software agent does not supervise a human.
+- **The right to use a tool is not inherited** through supervision.
 
-Requête de périmètre de référence :
+Reference scope query:
 
 ```cypher
 CYPHER 25
@@ -124,50 +124,50 @@ WITH m, max(asOf) AS asOf
 RETURN collect({id: m.id, asOf: asOf}) AS scopes
 ```
 
-**Garanties applicatives** :
+**Application guarantees**:
 
-- [ ] Les agents n'accèdent jamais directement à la base : passerelle avec des requêtes figées et paramétrées.
-- [ ] L'`agentId` vient du contexte d'authentification, jamais du LLM.
-- [ ] Un seul chemin de code par type de lecture, avec calcul du périmètre.
-- [ ] Tests de non-fuite : mémoire d'un pair, partage `private`, `snapshot` postérieur, partage expiré.
-- [ ] Journal des accès dans le graphe.
-- [ ] `memoryId` sur chaque `Fact`, et des utilisateurs de base distincts (passerelle, CDC, administration), pour pouvoir passer au contrôle natif plus tard (PBAC et `IMPERSONATE`).
+- [ ] Agents never access the database directly: gateway with frozen, parameterised queries.
+- [ ] The `agentId` comes from the authentication context, never from the LLM.
+- [ ] A single code path per type of read, with scope computation.
+- [ ] No-leak tests: a peer's memory, a `private` share, a later `snapshot`, an expired share.
+- [ ] Access log in the graph.
+- [ ] `memoryId` on every `Fact`, and distinct database users (gateway, CDC, administration), so that we can move to native access control later (PBAC and `IMPERSONATE`).
 
-## Graphes de connaissance et fédération
+## Knowledge graphs and federation
 
-Chaque graphe de connaissance (KG) vit dans sa propre base. Il est relié à la base d'orchestration par des nœuds proxy, jamais par des relations entre bases.
+Each knowledge graph (KG) lives in its own database. It is linked to the orchestration database through proxy nodes, never through relationships between databases.
 
-| Niveau | Contenu | Portée | Écriture |
+| Level | Content | Reach | Write |
 | --- | --- | --- | --- |
-| Memory | Croyances d'un agent | Privée, partageable par lien | Libre |
-| KG | Savoir partagé et validé | Équipe ou domaine | Extraction, puis validation par un curateur |
-| Sources | Documents, systèmes externes | Selon le connecteur | Hors plateforme |
+| Memory | An agent's beliefs | Private, shareable by link | Free |
+| KG | Shared, validated knowledge | Team or domain | Extraction, then approval by a curator |
+| Sources | Documents, external systems | Depends on the connector | Outside the platform |
 
 ```cypher
-// base d'orchestration
+// orchestration database
 (:Fact)-[:ABOUT]->(:Ref:EntityRef {db, key, label})-[:IN_KG]->(:KnowledgeGraph {id, dbName})
-// base du KG
-(:Entity {id})                                   // id stable, unique, applicatif
+// KG database
+(:Entity {id})                                   // stable, unique, application-level id
 (:Assertion {status: 'proposed'|'published'})-[:FROM]->(:Ref:SessionRef {db, key})
 ```
 
-- **Un seul type de proxy**, `(:Ref {db, key})`, avec un label de rôle, dans les deux sens. Jamais d'`elementId` comme clé.
-- **Le proxy copie le moins possible** : la clé et un libellé d'affichage daté.
-- **Cycle de vie** : une tâche consomme le CDC du KG pour mettre à jour ou rediriger les proxys (`SAME_AS`) après une fusion ou une suppression d'entité.
-- **Pas de fuite par le proxy** : la passerelle vérifie le droit sur le `KnowledgeGraph` avant toute lecture d'un `EntityRef`.
-- **Contrôle d'accès natif dans les KG** : un agent peut interroger un KG en lecture seule (requêtes modèles, GraphRAG, éventuellement text2cypher) avec un utilisateur limité à cette base.
-- **Requêtes fédérées** par une base composite (`USE graph.byName(...)`).
-- **Création** : un extracteur écrit des assertions `proposed` avec leur provenance ; un curateur (agent ou humain) les publie.
+- **A single proxy type**, `(:Ref {db, key})`, with a role label, in both directions. Never an `elementId` as a key.
+- **The proxy copies as little as possible**: the key and a dated display label.
+- **Lifecycle**: a task consumes the KG's CDC to update or redirect the proxies (`SAME_AS`) after an entity merge or deletion.
+- **No leak through the proxy**: the gateway checks the right on the `KnowledgeGraph` before any read of an `EntityRef`.
+- **Native access control in the KGs**: an agent can query a KG read-only (template queries, GraphRAG, possibly text2cypher) with a user restricted to that database.
+- **Federated queries** through a composite database (`USE graph.byName(...)`).
+- **Creation**: an extractor writes `proposed` assertions with their provenance; a curator (agent or human) publishes them.
 
-**Pour le PoC** : un KG Produit (BOM, composants, versions, essais, couverture), qui appartient au bureau d'études, et un KG Projet (planning, tâches, ressources), qui appartient au PMO.
+**For the PoC**: a Product KG (BOM, components, versions, tests, coverage), owned by the engineering department, and a Project KG (planning, tasks, resources), owned by the PMO.
 
-## Bus : CDC, topics et routines
+## Bus: CDC, topics and routines
 
-Un événement est un message dans une inbox de type topic, et une routine est une source de réveil qui dépose un message dans une inbox.
+An event is a message in a topic-type inbox, and a routine is a wake-up source that drops a message into an inbox.
 
-**Le réveil.** Le consommateur CDC interroge `db.cdc.query` en boucle (c'est du polling, pas du push). Il sélectionne les créations de `RECEIVED`, applique les droits, puis réveille l'agent. Il garde un curseur par base et il est idempotent : il déduplique sur `Message.id`, et une session ouverte au réveil est fusionnée (`MERGE`) sur le message qui la déclenche.
+**The wake-up.** The CDC consumer polls `db.cdc.query` in a loop (this is polling, not push). It selects the creations of `RECEIVED`, applies the rights, then wakes the agent. It keeps one cursor per database and is idempotent: it deduplicates on `Message.id`, and a session opened at wake-up is merged (`MERGE`) on the message that triggers it.
 
-**Les routines.**
+**Routines.**
 
 ```cypher
 (:Agent)-[:OWNS]->(:Routine {trigger: 'cron'|'once'|'event', cron, tz, runAt, payload, enabled, nextRunAt, misfire})
@@ -175,29 +175,29 @@ Un événement est un message dans une inbox de type topic, et une routine est u
 (:Routine)-[:LISTENS_TO]->(:Inbox:Topic)          // trigger = 'event'
 ```
 
-- **cron** : le planificateur calcule `nextRunAt` dans l'application. Un créneau ne se déclenche qu'une fois grâce à la contrainte d'unicité sur `Message.id = routineId@échéance`. Les créneaux manqués sont ignorés par défaut (`misfire = skip`).
-- **once** : une minuterie ponctuelle (relance, échéance d'un engagement, escalade).
-- **event** : un abonnement à un topic. Le routeur évalue le filtre, un prédicat structuré et jamais du Cypher libre, puis dépose dans l'inbox de l'abonné un message relié à l'événement (`ABOUT_EVENT`).
-- `CAN_SEND_TO` est vérifié à la création de la routine **et** à chaque déclenchement.
+- **cron**: the scheduler computes `nextRunAt` in the application. A slot fires only once thanks to the uniqueness constraint on `Message.id = routineId@deadline`. Missed slots are ignored by default (`misfire = skip`).
+- **once**: a one-off timer (reminder, commitment deadline, escalation).
+- **event**: a subscription to a topic. The router evaluates the filter, a structured predicate and never free-form Cypher, then drops into the subscriber's inbox a message linked to the event (`ABOUT_EVENT`).
+- `CAN_SEND_TO` is checked when the routine is created **and** at every trigger.
 
-**Le pipeline d'interprétation du CDC des KG.**
+**The KG CDC interpretation pipeline.**
 
-1. **Le pont** est un agent à règles (`AgentVersion.kind = 'rule'`), sans LLM. Il publie un message par transaction dans `kg.<id>.raw`, à rétention courte, avec `kgDb`, `txId` et les identifiants de changement.
-2. **Les interpréteurs** sont des agents LLM. Ils transforment ces lots en information métier, publiée dans un topic sémantique (`produit.bom-changes`) avec un lien `DERIVED_FROM` vers le message brut. Le travail est réparti par `entityId` pour garder l'ordre.
-3. **Les routeurs** choisissent le destinataire à partir du KG, toujours sous réserve de `CAN_SEND_TO`.
+1. **The bridge** is a rule-based agent (`AgentVersion.kind = 'rule'`), with no LLM. It publishes one message per transaction in `kg.<id>.raw`, with short retention, carrying `kgDb`, `txId` and the change identifiers.
+2. **The interpreters** are LLM agents. They turn these batches into business information, published in a semantic topic (`produit.bom-changes`) with a `DERIVED_FROM` link to the raw message. Work is partitioned by `entityId` to preserve ordering.
+3. **The routers** choose the recipient from the KG, always subject to `CAN_SEND_TO`.
 
-Chaque écriture d'agent renseigne `txMetadata` (auteur, `chainId`), ce qui permet de retrouver la chaîne causale.
+Every agent write fills in `txMetadata` (author, `chainId`), which makes it possible to retrieve the causal chain.
 
-**Les connecteurs** sont des agents avec leur propre inbox (e-mail, Slack, notifications aux humains). Un **outil** est un appel synchrone fait dans une session et tracé par un `ToolCall` :
+**Connectors** are agents with their own inbox (e-mail, Slack, notifications to people). A **tool** is a synchronous call made within a session and traced by a `ToolCall`:
 
 ```cypher
 (:Session)-[:CALLED]->(:ToolCall {idempotencyKey, status, startedAt, endedAt, tokens})-[:OF]->(:Tool {name, schema, effect: 'read'|'write'|'irreversible', secretRef})
 (:ToolCall)-[:PRODUCED]->(:Fact|:Message)
 ```
 
-## Gouvernance
+## Governance
 
-Les boucles sont autorisées tant qu'elles ont du budget. Trois niveaux les surveillent, du plus rapide au plus intelligent : la passerelle, l'agent auditeur, puis un humain.
+Loops are allowed as long as they have budget. Three levels watch over them, from the fastest to the smartest: the gateway, the auditor agent, then a human.
 
 ```cypher
 (:Chain {id, budget, spent, status})<-[:IN_CHAIN]-(:Message)
@@ -207,127 +207,127 @@ Les boucles sont autorisées tant qu'elles ont du budget. Trois niveaux les surv
 (:Agent:Person)-[:VOTED {decision, at, comment}]->(:Approval)
 ```
 
-**1. Le budget par chaîne causale.** La passerelle le vérifie à chaque envoi, de façon synchrone. Il se compte en messages, tokens ou euros, et la consommation réelle vient de la réponse du LLM. Une boucle voulue est déclarée (critère d'arrêt, nombre maximal de tours) et reçoit son budget. Un budget épuisé suspend la chaîne et l'envoie à l'auditeur.
+**1. The budget per causal chain.** The gateway checks it on every send, synchronously. It is counted in messages, tokens or euros, and actual consumption comes from the LLM response. An intentional loop is declared (stop criterion, maximum number of turns) and receives its own budget. An exhausted budget suspends the chain and sends it to the auditor.
 
-**2. L'agent auditeur.** Il part de signaux calculés dans le graphe : cycles récents entre agents (projection GDS sur une fenêtre glissante, composantes fortement connexes), messages répétés (similarité d'embedding), chaîne qui s'élargit ou dépense trop rapide. Il n'utilise le LLM que sur ces candidats. `AUDITS` lui donne accès à l'épisodique, pas aux mémoires. Son seul pouvoir est de suspendre une chaîne ou de mettre un agent en quarantaine. Il ne consomme pas ses propres événements, et ses décisions sont relues par des humains.
+**2. The auditor agent.** It starts from signals computed in the graph: recent cycles between agents (GDS projection over a sliding window, strongly connected components), repeated messages (embedding similarity), a chain that widens or spends too fast. It uses the LLM only on these candidates. `AUDITS` gives it access to the episodic memory, not to the memories. Its only power is to suspend a chain or put an agent in quarantine. It does not consume its own events, and its decisions are reviewed by humans.
 
-**3. Les validations humaines.**
+**3. Human approvals.**
 
-- Une action `irreversible` est validée in fine par des `:Person` uniquement. Un agent logiciel recommande, il ne vote pas.
-- Validation à plusieurs signatures : un `Approval` compte les votes, avec une contrainte d'unicité sur le couple (validation, personne).
-- Escalade : une routine ponctuelle à 4 h transmet la demande au niveau au-dessus si le quorum n'est pas atteint.
-- Absence : une délégation `ACTS_FOR` entre personnes, avec une date de fin.
-- Instructions contradictoires : l'agent ne tranche pas. Il envoie une question aux deux personnes, ou à leur responsable commun.
-- Statuts alignés sur A2A : `submitted`, `working`, `input-required`, `completed`, `failed`, `canceled`.
+- An `irreversible` action is ultimately approved by `:Person` nodes only. A software agent recommends; it does not vote.
+- Multi-signature approval: an `Approval` counts the votes, with a uniqueness constraint on the (approval, person) pair.
+- Escalation: a one-off routine at 4 h forwards the request to the level above if the quorum is not reached.
+- Absence: an `ACTS_FOR` delegation between people, with an end date.
+- Contradictory instructions: the agent does not decide. It sends a question to both people, or to their common manager.
+- Statuses aligned with A2A: `submitted`, `working`, `input-required`, `completed`, `failed`, `canceled`.
 
-## Scénario d'ingénierie
+## Engineering scenario
 
-Un incident terrain sur un composant déclenche une modification produit. Le scénario passe par chaque mécanisme du modèle.
+A field incident on a component triggers a product change. The scenario goes through every mechanism of the model.
 
-| Acteur | Type | Rôle |
+| Actor | Type | Role |
 | --- | --- | --- |
-| Coordinateur | Agent LLM | Supervise les trois spécialistes, fait la synthèse |
-| Qualité | Agent LLM | Qualifie l'incident, le rattache à la BOM |
-| Ingénierie | Agent LLM | Analyse où le composant est utilisé, propose des pièces de remplacement |
-| Essais | Agent LLM | Liste les essais à refaire |
-| Planification | Agent LLM | Simule l'impact planning (outil Gantt et chemin critique) |
-| Pont KG et interpréteur BOM | Agent à règles, puis agent LLM | Transforment le CDC du KG Produit en information |
-| Auditeur | Agent | Surveille les chaînes |
-| Ingénieur qualité | Humain | Déclare l'incident |
-| Comité de modification (2 ou 3 personnes) | Humains | Inbox partagée, validation 2 sur 3 |
-| Chef de projet | Humain | Reçoit l'impact planning, peut refuser la date |
+| Coordinator | LLM agent | Supervises the three specialists, does the synthesis |
+| Quality | LLM agent | Qualifies the incident, links it to the BOM |
+| Engineering | LLM agent | Analyses where the component is used, proposes replacement parts |
+| Tests | LLM agent | Lists the tests to redo |
+| Planning | LLM agent | Simulates the planning impact (Gantt tool and critical path) |
+| KG bridge and BOM interpreter | Rule-based agent, then LLM agent | Turn the Product KG's CDC into information |
+| Auditor | Agent | Watches the chains |
+| Quality engineer | Human | Reports the incident |
+| Change committee (2 or 3 people) | Humans | Shared inbox, 2-of-3 approval |
+| Project manager | Human | Receives the planning impact, can reject the date |
 
-1. L'ingénieur qualité publie un incident dans le topic `incidents`.
-2. L'agent Qualité, abonné par une routine, rattache l'incident à un composant et enregistre des `Fact`.
-3. Il envoie une demande (`request`) au Coordinateur, avec sa mémoire jointe en `snapshot`.
-4. Le Coordinateur lance l'analyse d'impact chez Ingénierie, Essais et Planification, avec une requête fédérée KG Produit et KG Projet.
-5. **Boucle légitime** : Ingénierie propose une pièce, Essais la rejette, Ingénierie en propose une autre, dans la limite du budget.
-6. Les `agree` créent des engagements, suivis par des minuteries.
-7. Le Coordinateur demande au comité de valider le lancement de la modification (action irréversible, `input-required`). Les votes arrivent jusqu'au quorum.
-8. La version du produit change dans le KG. Le pont et l'interpréteur BOM préviennent les agents Essais et Planification par le topic `produit.bom-changes`.
-9. Une routine relance un agent qui n'a pas tenu son engagement à temps.
-10. **Chapitre gouvernance** : un aller-retour sans fin entre deux agents, que l'auditeur suspend avant que l'humain décide.
+1. The quality engineer publishes an incident in the `incidents` topic.
+2. The Quality agent, subscribed through a routine, links the incident to a component and records `Fact` nodes.
+3. It sends a request (`request`) to the Coordinator, with its memory attached as a `snapshot`.
+4. The Coordinator launches the impact analysis with Engineering, Tests and Planning, using a federated query across the Product KG and the Project KG.
+5. **Legitimate loop**: Engineering proposes a part, Tests rejects it, Engineering proposes another, within the budget limit.
+6. The `agree` messages create commitments, tracked by timers.
+7. The Coordinator asks the committee to approve the launch of the change (irreversible action, `input-required`). Votes come in until the quorum is reached.
+8. The product version changes in the KG. The bridge and the BOM interpreter notify the Tests and Planning agents through the `produit.bom-changes` topic.
+9. A routine nudges an agent that did not honour its commitment in time.
+10. **Governance chapter**: an endless back-and-forth between two agents, which the auditor suspends before the human decides.
 
-**Données synthétiques** : un produit fictif d'environ 200 pièces sur 3 ou 4 niveaux, une cinquantaine d'essais, une trentaine de tâches de planning, une dizaine d'incidents prévus à l'avance.
+**Synthetic data**: a fictional product of about 200 parts over 3 or 4 levels, about fifty tests, about thirty planning tasks, about ten incidents prepared in advance.
 
-## Interface, avatars et relecture
+## Interface, avatars and replay
 
-L'interface ne consomme qu'un flux d'événements normalisé. Ce flux est produit en direct, ou reconstruit à partir du graphe pour la relecture : l'interface ne voit pas la différence.
+The interface consumes only a normalised event stream. This stream is produced live, or rebuilt from the graph for replay: the interface cannot tell the difference.
 
 ```
 { t, type, actor, target, payload }
 type ∈ woken | status | tool.start | tool.end | sent | learned | vote | waiting | idle | error
 ```
 
-**Les vues.**
+**The views.**
 
-- **Chat** : l'inbox de l'humain connecté, qui ne voit que la sienne.
-- **Scène** : un plateau 2D avec un poste par agent et par humain, chacun avec sa boîte aux lettres et son étagère « mémoire ».
-- **Graphe** (NVL) : topologie, flux de messages, fiche d'un agent, droits (ce qu'un agent peut lire et par quel chemin), KG.
-- **Frise** : routines, appels d'outils, votes.
-- **Paramètres → Modèles** : la clé du fournisseur LLM.
+- **Chat**: the inbox of the logged-in human, who sees only their own.
+- **Scene**: a 2D board with one desk per agent and per human, each with its mailbox and its "memory" shelf.
+- **Graph** (NVL): topology, message flow, an agent's card, rights (what an agent can read and through which path), KG.
+- **Timeline**: routines, tool calls, votes.
+- **Settings → Models**: the LLM provider key.
 
-**Les états des avatars.**
+**Avatar states.**
 
-| État | Animation | Source |
+| State | Animation | Source |
 | --- | --- | --- |
-| Au repos | Respiration lente | Aucune session ouverte |
-| Réveillé | Sursaut, l'inbox clignote | Création d'un `RECEIVED` |
-| Réfléchit | Bulle avec une phrase courte | `StatusUpdate` (outil `set_status`) |
-| Utilise un outil | Icône de l'outil, progression | `ToolCall` en `working` |
-| Envoie | Une enveloppe vole vers le destinataire | Création d'un `SENT` |
-| Apprend | Une étincelle vers la mémoire | Création d'un `Fact` |
-| Attend | Sablier, avatar grisé | Engagement ou `input-required` |
-| Erreur | Rouge, secousse | `ToolCall` en `failed` |
+| Idle | Slow breathing | No open session |
+| Woken | Startle, the inbox blinks | Creation of a `RECEIVED` |
+| Thinking | Bubble with a short sentence | `StatusUpdate` (`set_status` tool) |
+| Using a tool | Tool icon, progress | `ToolCall` in `working` |
+| Sending | An envelope flies to the recipient | Creation of a `SENT` |
+| Learning | A spark towards the memory | Creation of a `Fact` |
+| Waiting | Hourglass, greyed-out avatar | Commitment or `input-required` |
+| Error | Red, shaking | `ToolCall` in `failed` |
 
-**La relecture.** Chaque changement d'état garde sa date. La reconstruction est un `UNION ALL` par type d'événement, trié par `t`. Contrôles : lecture et pause, vitesse de ×1 à ×20, barre de temps, compression des temps morts, chapitres (incident, analyse, vote, lancement, gouvernance), suivi d'un agent.
+**Replay.** Every state change keeps its date. The reconstruction is a `UNION ALL` per event type, sorted by `t`. Controls: play and pause, speed from ×1 to ×20, time bar, compression of dead time, chapters (incident, analysis, vote, launch, governance), following an agent.
 
-**Technique** : React, avec SVG et Framer Motion pour commencer ; Rive (state machines) plus tard. Les avatars sont des créations originales.
+**Technology**: React, with SVG and Framer Motion to start with; Rive (state machines) later. The avatars are original creations.
 
-## Architecture technique
+## Technical architecture
 
-Une seule passerelle sert l'interface, les agents et les connecteurs. Le même flux CDC réveille les agents et anime l'interface.
+A single gateway serves the interface, the agents and the connectors. The same CDC stream wakes the agents and animates the interface.
 
 ```
- Interface      Connecteurs     Fournisseur LLM     Runtimes d'agents
- (React, NVL)   (e-mail, Slack) (Gemini, abstrait)  (LLM et règles)
+ Interface      Connectors      LLM provider        Agent runtimes
+ (React, NVL)   (e-mail, Slack) (Gemini, abstract)  (LLM and rules)
       │              │                ▲                    │      ▲
-      ▼              ▼                │                    ▼      │ réveil
- ┌───────────────────────── Passerelle ──────────────────────────┐ │
- │ requêtes figées, droits ReBAC, budget, abstraction LLM, clé   │ │
+      ▼              ▼                │                    ▼      │ wake-up
+ ┌───────────────────────── Gateway ─────────────────────────────┐ │
+ │ frozen queries, ReBAC rights, budget, LLM abstraction, key    │ │
  └───────────────────────────────┬───────────────────────────────┘ │
                                  │ Cypher                          │
  ┌──── Neo4j Enterprise (Docker) ┴─────────────┐   CDC   ┌─────────┴────────┐
- │ orchestration │ KG Produit │ KG Projet │ fed │ ──────► │ Consommateur CDC │
- └──────────────────────────────────────────────┘         │ routeur, pont KG │
-                                                          │ planificateur    │
-      ▲ WebSocket : flux d'événements ────────────────────└──────────────────┘
+ │ orchestration │ KG Produit │ KG Projet │ fed │ ──────► │ CDC consumer     │
+ └──────────────────────────────────────────────┘         │ router, KG bridge│
+                                                          │ scheduler        │
+      ▲ WebSocket: event stream ──────────────────────────└──────────────────┘
 ```
 
-- **Neo4j Enterprise en local (Docker)** : une base d'orchestration, une base par KG et une base composite pour la fédération. Utilisateurs distincts pour la passerelle, le CDC et l'administration.
-- **Passerelle** : requêtes figées, calcul des droits, contrôle du budget, journal des accès, appels au LLM pour le compte des runtimes.
-- **Consommateur CDC** : un curseur par base, le routage des topics, le pont des KG, le planificateur des routines, et le flux d'événements vers l'interface.
-- **Runtimes d'agents** : agents LLM et agents à règles ; ils n'ont ni clé LLM ni accès direct à la base.
+- **Local Neo4j Enterprise (Docker)**: one orchestration database, one database per KG and one composite database for federation. Distinct users for the gateway, the CDC and administration.
+- **Gateway**: frozen queries, rights computation, budget control, access log, calls to the LLM on behalf of the runtimes.
+- **CDC consumer**: one cursor per database, topic routing, the KG bridge, the routine scheduler, and the event stream to the interface.
+- **Agent runtimes**: LLM agents and rule-based agents; they have neither an LLM key nor direct access to the database.
 
-**Abstraction du fournisseur LLM.** La passerelle expose une interface unique (génération, appel d'outils, embeddings, comptage des tokens). Gemini est le premier fournisseur branché ; un autre s'ajoute sans toucher aux agents. `AgentVersion.model` indique le modèle de chaque agent, et changer de modèle crée une nouvelle version.
+**LLM provider abstraction.** The gateway exposes a single interface (generation, tool calling, embeddings, token counting). Gemini is the first provider plugged in; another can be added without touching the agents. `AgentVersion.model` indicates each agent's model, and changing the model creates a new version.
 
-**Clé Gemini** (Paramètres → Modèles, réservé à un administrateur) : champ en écriture seule (seuls les 4 derniers caractères et la date sont réaffichés) ; bouton Tester (appelle la liste des modèles, valide la clé et remplit la liste déroulante) ; boutons Remplacer et Supprimer ; stockage chiffré par la passerelle (clé maître en variable d'environnement), hors du graphe, du dépôt, des journaux et du navigateur.
+**Gemini key** (Settings → Models, restricted to an administrator): write-only field (only the last 4 characters and the date are displayed again); Test button (calls the model list, validates the key and fills the dropdown); Replace and Delete buttons; encrypted storage by the gateway (master key in an environment variable), outside the graph, the repository, the logs and the browser.
 
-## Points à vérifier et questions ouvertes
+## Points to verify and open questions
 
-**À vérifier sur la version cible de Neo4j :**
+**To verify on the target Neo4j version:**
 
-- [ ] `MATCH ACYCLIC` et `MATCH ANY` sur les motifs quantifiés.
-- [ ] `USE graph.byName(...)` avec un nom calculé, dans un `CALL` sur une base composite.
-- [ ] Les privilèges exacts exigés par `db.cdc.query`.
-- [ ] Le filtrage dans l'index vectoriel (clause `SEARCH`), par rapport à un filtre appliqué après la recherche.
-- [ ] Plus tard : PBAC avec `IN`, et l'effet du PBAC sur le top-k vectoriel.
+- [ ] `MATCH ACYCLIC` and `MATCH ANY` on quantified patterns.
+- [ ] `USE graph.byName(...)` with a computed name, inside a `CALL` on a composite database.
+- [ ] The exact privileges required by `db.cdc.query`.
+- [ ] Filtering inside the vector index (`SEARCH` clause), compared with a filter applied after the search.
+- [ ] Later: PBAC with `IN`, and the effect of PBAC on the vector top-k.
 
-**Questions ouvertes :**
+**Open questions:**
 
-- [ ] La supervision donne-t-elle accès à l'épisodique du subordonné (`Workspace`, sessions) ?
-- [ ] Qui écrit le mandat : toujours un humain, ou un agent dans la limite de son propre mandat ?
-- [ ] Le découpage des KG : par domaine ou par équipe ?
-- [ ] Le text2cypher dans les KG est-il autorisé dès le PoC ?
-- [ ] Le curateur : agent, humain, ou agent avec validation humaine selon le type d'assertion ?
-- [ ] La granularité des buckets : jour ou heure.
+- [ ] Does supervision give access to the subordinate's episodic memory (`Workspace`, sessions)?
+- [ ] Who writes the mandate: always a human, or an agent within the limits of its own mandate?
+- [ ] How to split the KGs: by domain or by team?
+- [ ] Is text2cypher in the KGs allowed from the PoC onwards?
+- [ ] The curator: agent, human, or agent with human approval depending on the assertion type?
+- [ ] Bucket granularity: day or hour.
