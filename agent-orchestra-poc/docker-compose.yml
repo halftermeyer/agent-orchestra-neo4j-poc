@@ -45,6 +45,7 @@ services:
       NEO4J_GATEWAY_PASSWORD: ${NEO4J_GATEWAY_PASSWORD:-gateway-dev-pw}
       NEO4J_KGCURATOR_PASSWORD: ${NEO4J_KGCURATOR_PASSWORD:-kgcurator-dev-pw}
       ORCHESTRA_DATA_DIR: /data
+      ORCHESTRA_DEMO_LOGIN: ${ORCHESTRA_DEMO_LOGIN:-1}
     volumes:
       - .:/app
       - gateway-data:/data
@@ -80,6 +81,14 @@ services:
     volumes:
       - .:/app
     command: ["python", "-m", "orchestra.runtime"]
+  ui:
+    build: ./ui
+    profiles: [app]
+    depends_on:
+      gateway: {condition: service_started}
+      cdc: {condition: service_started}
+    ports:
+      - "15173:80"
   tools:
     build: .
     profiles: [tools]
