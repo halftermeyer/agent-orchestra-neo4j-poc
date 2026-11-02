@@ -9,6 +9,14 @@ const pick = async (page: Page, id: string) => { await page.goto("/"); await pag
 test.describe.configure({ mode: "serial" });
 
 // historique du flux vide au départ : sinon les réveils d'une exécution précédente se superposent aux attentes
+const BASE = process.env.UI_URL ?? "http://localhost:15173";
+async function adminApi<T>(path: string, body?: unknown): Promise<T> {
+  const login = await (await fetch(`${BASE}/api/demo/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ userId: "admin" }) })).json();
+  const r = await fetch(`${BASE}/api${path}`, { method: body === undefined ? "GET" : "POST", headers: { "content-type": "application/json", authorization: `Bearer ${login.token}` }, body: body === undefined ? undefined : JSON.stringify(body) });
+  return r.json() as Promise<T>;
+}
+let runId = "";
+
 test.beforeAll(async () => {
   execSync("docker compose --profile app restart cdc", { cwd: "..", stdio: "ignore" });
   for (let i = 0; i < 40; i++) {
@@ -17,6 +25,9 @@ test.beforeAll(async () => {
   }
   throw new Error("le consommateur CDC ne redémarre pas");
 });
+
+// la relecture lira tout ce que les tests précédents auront produit : on ouvre un enregistrement avant eux
+test.beforeAll(async () => { runId = (await adminApi<{ id: string }>("/replay/runs", { name: "Enregistrement e2e", note: "tests de navigateur" })).id; });
 
 test("choix de l'utilisateur de démonstration, flux connecté", async ({ page }) => {
   await page.goto("/");
@@ -113,6 +124,59 @@ test("le comité vote jusqu'au quorum ; l'avatar affiche le vote", async ({ page
   await page.getByTestId("user-comite-3").click();
   await page.waitForTimeout(800);
   await expect(page.getByTestId("approvals")).toHaveCount(0);                    // quorum atteint : plus de demande en attente
+});
+
+test("relecture : le même flux reconstruit depuis le graphe, avec chapitres, vitesse, barre de temps et suivi", async ({ page }) => {
+  await adminApi(`/replay/runs/${runId}/end`, {});
+  await pick(page, "admin");
+  await page.getByTestId("tab-relecture").click();
+  await page.getByTestId("replay-source").selectOption({ label: "Enregistrement · Enregistrement e2e" });
+  await page.getByTestId("replay-load").click();
+  await expect(page.getByTestId("replay-controls")).toBeVisible();
+  await expect(page.getByTestId("replay-title")).toContainText("Enregistrement e2e");
+  // chapitres repérés dans le flux : l'incident publié et la demande de validation du comité
+  await expect(page.getByTestId("chapter-incident")).toBeVisible();
+  await expect(page.getByTestId("chapter-vote")).toBeVisible();
+  await expect(page.getByTestId("replay-time")).toContainText("00:00 /");
+  for (const id of ["qualite", "comite-1", "coordinateur"]) await expect(page.getByTestId(`avatar-${id}`)).toHaveAttribute("data-state", "idle");
+  // vitesses ×1 à ×20
+  for (const sp of [1, 2, 5, 10, 20]) { await page.getByTestId(`replay-speed-${sp}`).click(); await expect(page.getByTestId(`replay-speed-${sp}`)).toHaveClass(/on/); }
+  // lecture à ×2 (l'enregistrement ne dure que ~20 s) : Qualité est réveillée comme en direct
+  await page.getByTestId("replay-speed-2").click();
+  await page.getByTestId("replay-play").click();
+  await expect(page.getByTestId("avatar-qualite")).toHaveAttribute("data-state", "woken", { timeout: 15000 });
+  await shot(page, "12-relecture-lecture");
+  // pause : le temps ne bouge plus
+  await page.getByTestId("replay-play").click();
+  const t1 = await page.getByTestId("replay-time").innerText();
+  await page.waitForTimeout(700);
+  expect(await page.getByTestId("replay-time").innerText()).toBe(t1);
+  // barre de temps : retour au début = tout le monde au repos ; positionner plus loin recalcule l'état
+  const setSlider = (frac: number) => page.getByTestId("replay-slider").evaluate((el: HTMLInputElement, f: number) => {
+    const v = Number(el.min) + (Number(el.max) - Number(el.min)) * f;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(el, String(v));   // contourne le suivi de valeur de React
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }, frac);
+  await setSlider(0);
+  await expect(page.getByTestId("replay-time")).toContainText("00:00 /");
+  await expect(page.getByTestId("avatar-qualite")).toHaveAttribute("data-state", "idle");
+  // suivi d'un agent : anneau sur son poste, les autres s'estompent
+  await page.getByTestId("replay-follow").selectOption("qualite");
+  await expect(page.getByTestId("scene")).toHaveAttribute("data-follow", "qualite");
+  await expect(page.getByTestId("station-qualite")).toHaveAttribute("data-followed", "true");
+  await expect(page.getByTestId("station-essais")).toHaveAttribute("data-followed", "false");
+  await page.getByTestId("replay-follow").selectOption("");
+  // chapitre « Vote du comité » : on saute à la demande de validation puis le vote du premier membre s'affiche
+  await page.getByTestId("chapter-vote").click();
+  await expect(page.getByTestId("avatar-comite-1").getByTestId("bubble")).toContainText("J'approuve", { timeout: 20000 });
+  await expect(page.getByTestId("replay-time")).not.toContainText("00:00 /");
+  await shot(page, "13-relecture-chapitre-vote");
+  // le journal garde la même description que le direct
+  await page.getByTestId("replay-view-journal").click();
+  await expect(page.getByTestId("replay-journal")).toContainText("Membre du comité 1 approuve");
+  // le graphe lit les mêmes événements
+  await page.getByTestId("replay-view-graphe").click();
+  await expect(page.getByTestId("nvl")).toBeVisible();
 });
 
 /** Valeur réelle de la clé Gemini de l'environnement (jamais affichée : seuls des booléens sortent des assertions). */

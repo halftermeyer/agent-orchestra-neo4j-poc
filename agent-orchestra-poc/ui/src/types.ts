@@ -62,3 +62,6 @@ export interface TimelineItem {
 }
 export interface ModelsStatus { configured: boolean; source: "ui" | "env" | null; last4: string | null; updatedAt: string | null; provider: string; model: string | null }
 export interface Me { id: string; name: string; canSendTo: string[]; kgs: string[]; inboxes: string[] }
+export interface RunInfo { id: string; name: string; note: string | null; chainId: string | null; startedAt: string; endedAt: string | null }
+export interface RecordingInfo { slug: string; name: string | null; note: string | null; from: string | null; to: string | null; events: number }
+export interface ReplayDoc { name?: string | null; note?: string | null; from?: string | null; to?: string | null; events: StreamEvent[] }

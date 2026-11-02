@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Api, loadSession, saveSession } from "./api";
 import { Chat } from "./Chat";
+import { ReplayView } from "./Replay";
 import { GraphView } from "./GraphView";
 import { Scene } from "./Scene";
 import { Settings } from "./Settings";
@@ -8,7 +9,7 @@ import { Timeline } from "./Timeline";
 import { AppProvider, useApp } from "./store";
 import type { DemoUser, Session } from "./types";
 
-const TABS = [["chat", "Chat"], ["scene", "Scène"], ["graphe", "Graphe"], ["frise", "Frise"], ["parametres", "Paramètres → Modèles"]] as const;
+const TABS = [["chat", "Chat"], ["scene", "Scène"], ["graphe", "Graphe"], ["frise", "Frise"], ["relecture", "Relecture"], ["parametres", "Paramètres → Modèles"]] as const;
 type Tab = (typeof TABS)[number][0];
 
 export default function App() {
@@ -56,6 +57,7 @@ function Shell({ onLogout }: { onLogout: () => void }) {
         {tab === "scene" && <Scene />}
         {tab === "graphe" && <GraphView />}
         {tab === "frise" && <Timeline />}
+        {tab === "relecture" && <ReplayView />}
         {tab === "parametres" && <Settings />}
       </main>
     </div>

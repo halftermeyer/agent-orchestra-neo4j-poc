@@ -17,7 +17,7 @@ const stationPos = (id: string, i: number): [number, number] => POS[id] ?? [150 
 const mailbox = (p: [number, number]): [number, number] => [p[0] - 62, p[1] + 30];
 
 export function Scene() {
-  const { topology, live, flights, names } = useApp();
+  const { topology, live, flights, names, follow } = useApp();
   if (!topology) return <p className="muted">Chargement de la scène…</p>;
   const agents = topology.agents;
   const where = (id: string): [number, number] => {
@@ -27,7 +27,7 @@ export function Scene() {
   };
   return (
     <div className="scene-wrap">
-      <svg viewBox="0 0 1280 740" className="scene" role="img" aria-label="Plateau des agents et des humains" data-testid="scene">
+      <svg viewBox="0 0 1280 740" className="scene" role="img" aria-label="Plateau des agents et des humains" data-testid="scene" data-follow={follow ?? ""}>
         <defs>
           <pattern id="floor" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#E7EBF1" strokeWidth="1" /></pattern>
         </defs>
@@ -70,11 +70,13 @@ function Zone({ x, y, w, h, label, tiny }: { x: number; y: number; w: number; h:
 }
 
 function Station({ agent, pos, name, pending, facts }: { agent: Agent; pos: [number, number]; name: string; pending: number; facts: number }) {
-  const { stateOf } = useApp();
+  const { stateOf, follow } = useApp();
   const s = stateOf(agent.id);
+  const dim = !!follow && follow !== agent.id;
   const [x, y] = pos;
   return (
-    <g transform={`translate(${x} ${y})`} data-testid={`station-${agent.id}`}>
+    <g transform={`translate(${x} ${y})`} data-testid={`station-${agent.id}`} data-followed={follow === agent.id ? "true" : "false"} opacity={dim ? 0.3 : 1}>
+      {follow === agent.id && <rect x="-92" y="-62" width="184" height="196" rx="18" fill="none" stroke="#F0562A" strokeWidth="3" strokeDasharray="8 5" />}
       <rect x="-78" y="26" width="156" height="58" rx="12" fill="#fff" stroke="#D5DCE8" />
       <rect x="-60" y="22" width="120" height="10" rx="5" fill="#E4D6C4" />
       <Avatar agent={agent} state={s} />

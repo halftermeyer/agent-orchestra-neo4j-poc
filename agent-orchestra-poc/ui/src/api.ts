@@ -1,6 +1,6 @@
 import type {
-  AgentCard, AgentLive, ChatMessage, DemoUser, Incident, KgNeighborhood, Me, ModelsStatus, PendingApproval, RightsPath,
-  Session, TimelineItem, Topology,
+  AgentCard, AgentLive, ChatMessage, DemoUser, Incident, KgNeighborhood, Me, ModelsStatus, PendingApproval, RecordingInfo, ReplayDoc, RightsPath,
+  RunInfo, Session, StreamEvent, TimelineItem, Topology,
 } from "./types";
 
 const BASE = "/api";
@@ -51,6 +51,12 @@ export const Api = {
   rights: (id: string) => get<{ memories: RightsPath[] }>(`/graph/rights/${encodeURIComponent(id)}`).then((r) => r.memories),
   kg: (kg: string, key: string) => get<KgNeighborhood>(`/graph/kg/${kg}/neighborhood?key=${encodeURIComponent(key)}`),
   timeline: (hours = 24) => get<{ items: TimelineItem[] }>(`/timeline?hours=${hours}`).then((r) => r.items),
+  runs: () => get<{ runs: RunInfo[] }>("/replay/runs").then((r) => r.runs),
+  recordings: () => get<{ recordings: RecordingInfo[] }>("/replay/recordings").then((r) => r.recordings),
+  recording: (slug: string) => get<ReplayDoc>(`/replay/recordings/${encodeURIComponent(slug)}`),
+  // reconstruit le flux depuis le graphe : mêmes événements normalisés qu'en direct
+  replayEvents: (q: { runId?: string; since?: string }) =>
+    get<{ events: StreamEvent[] }>(`/replay/events?${new URLSearchParams(q as Record<string, string>)}`).then((r) => r.events),
   models: () => get<ModelsStatus>("/settings/models"),
   // écriture seule : la clé n'est jamais relue, seuls les 4 derniers caractères et la date sont réaffichés
   setKey: (apiKey: string) => call<ModelsStatus>("/settings/models/key", { method: "PUT", body: JSON.stringify({ apiKey }) }),

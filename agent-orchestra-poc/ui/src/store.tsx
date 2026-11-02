@@ -6,7 +6,7 @@ import type { AgentLive, Session, StreamEvent, Topology } from "./types";
 
 export interface Flight { id: number; from: string; to: string; at: number }
 
-interface AppCtx {
+export interface AppCtx {
   session: Session;
   stream: EventStream;
   connected: boolean;
@@ -19,8 +19,10 @@ interface AppCtx {
   recentSends: { from: string; to: string; at: number }[];
   refreshTopology: () => void;
   stateOf: (id: string) => AvatarState;
+  follow?: string | null;           // relecture : agent suivi
+  replay?: boolean;
 }
-const Ctx = createContext<AppCtx | null>(null);
+export const Ctx = createContext<AppCtx | null>(null);
 export const useApp = () => { const c = useContext(Ctx); if (!c) throw new Error("hors contexte"); return c; };
 
 let flightId = 0;
