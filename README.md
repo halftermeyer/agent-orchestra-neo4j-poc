@@ -18,6 +18,14 @@ make app         # passerelle, consommateur CDC, runtimes d'agents, interface �
 
 Neo4j : HTTP 17474, Bolt 17687. Passerelle : 18000. Consommateur CDC : 18001. `make ui` lance l'interface sans les runtimes (donc sans appel LLM) ; `make reset` remet tout à zéro.
 
+## Relecture et scénario
+
+L'onglet **Relecture** rejoue le flux d'événements reconstruit depuis le graphe, ou un enregistrement fichier, sur la scène, le graphe et le journal : lecture/pause, vitesse ×1 à ×20, barre de temps, compression des temps morts, chapitres (incident, analyse, vote, lancement, gouvernance), suivi d'un agent. Un scénario réel est fourni : [`agent-orchestra-poc/data/scenarios/scenario-complet.json`](agent-orchestra-poc/data/scenarios/scenario-complet.json) (de l'incident à la gouvernance, avec la boucle légitime, le vote, le lancement, la relance et l'auditeur qui suspend une boucle sans fin).
+
+```bash
+make scenario   # remet la base à zéro, lance la pile et rejoue le scénario complet avec les vrais agents (≈ 5 min, ≈ 200 000 tokens Gemini)
+```
+
 ## Tests
 
 ```bash

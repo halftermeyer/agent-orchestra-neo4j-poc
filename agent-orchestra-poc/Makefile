@@ -1,4 +1,4 @@
-.PHONY: up down reset init seed test shell keygen gateway app ui e2e
+.PHONY: up down reset init seed test shell keygen gateway app ui e2e scenario
 up:
 	docker compose up -d --wait neo4j
 init: up
@@ -28,3 +28,11 @@ e2e: keygen
 	$(MAKE) seed
 	docker compose --profile app up -d --build gateway cdc ui
 	cd ui && npm ci && npx playwright install chromium && npx playwright test
+
+# Scénario complet avec les vrais agents (Gemini) : base remise à zéro, pile complète, enregistrement exporté dans data/scenarios/
+scenario: keygen
+	docker compose --profile app --profile tools down -v
+	$(MAKE) seed
+	docker compose --profile app up -d --build gateway cdc runtime ui
+	@until curl -sf localhost:18001/health >/dev/null && curl -sf localhost:18000/health >/dev/null; do sleep 1; done; sleep 15
+	docker compose --profile app exec -T cdc python scripts/run_scenario.py
