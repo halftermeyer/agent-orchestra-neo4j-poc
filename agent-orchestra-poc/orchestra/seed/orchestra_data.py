@@ -104,7 +104,9 @@ TOOLS = [
 EXTRA_CAN_USE = [("coordinateur", "launch_modification", "2-of-3")]
 
 KGS = [{"id": "produit", "dbName": "kgproduit"}, {"id": "projet", "dbName": "kgprojet"}]
-CAN_QUERY = {"coordinateur": ["produit", "projet"], "qualite": ["produit"], "ingenierie": ["produit"],
+CAN_QUERY = {"ing-qualite": ["produit"], "comite-1": ["produit"], "comite-2": ["produit"], "comite-3": ["produit"],
+             "chef-projet": ["produit", "projet"],
+             "coordinateur": ["produit", "projet"], "qualite": ["produit"], "ingenierie": ["produit"],
              "essais": ["produit"], "planification": ["produit", "projet"], "interpreteur-bom": ["produit"]}
 
 def _flt(field, op, value):

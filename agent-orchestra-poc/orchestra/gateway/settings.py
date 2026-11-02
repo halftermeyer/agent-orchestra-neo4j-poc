@@ -18,6 +18,8 @@ class Settings:
     default_budget: int = 50                # messages par chaîne
     default_token_budget: int = 200_000
     share_ttl_days: int = 30
+    demo_login: bool = False                # sélection d'utilisateur sans mot de passe : démonstration uniquement
+    incidents_file: str = str(Path(__file__).resolve().parents[2] / "data" / "incidents.json")
     max_live_days: int = 30
     embed_dim: int = 768
     embed_model: str = "gemini-embedding-001"
@@ -34,6 +36,7 @@ class Settings:
             neo4j_user="gateway",
             neo4j_password=e.get("NEO4J_GATEWAY_PASSWORD", cls.neo4j_password),
             db=e.get("ORCHESTRA_DB", "orchestra"),
+            demo_login=e.get("ORCHESTRA_DEMO_LOGIN", "0").lower() in ("1", "true", "yes"),
             kg_password=e.get("NEO4J_KGCURATOR_PASSWORD", cls.kg_password),
             master_key=master,
             data_dir=Path(e.get("ORCHESTRA_DATA_DIR", "/data")),

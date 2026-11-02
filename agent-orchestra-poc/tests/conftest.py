@@ -129,7 +129,7 @@ def fake():
 @pytest.fixture(scope="session")
 def client(testdb, fake, tmp_path_factory):
     st = Settings(db=testdb, master_key=MASTER, data_dir=tmp_path_factory.mktemp("gw"), neo4j_uri=config.NEO4J_URI,
-                  neo4j_password=config.GATEWAY_PASSWORD, kg_password=config.KGCURATOR_PASSWORD)
+                  neo4j_password=config.GATEWAY_PASSWORD, kg_password=config.KGCURATOR_PASSWORD, demo_login=True)
     app = create_app(st, llm_factory=lambda key: fake)
     with TestClient(app, raise_server_exceptions=False) as c:
         c.ctx = app.state.ctx
