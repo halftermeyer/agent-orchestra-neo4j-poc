@@ -2,49 +2,49 @@
   {
     "id": "INC-001",
     "kind": "incident",
-    "componentId": "PRT-0045",
+    "componentId": "PRT-0102",
     "severity": "critique",
-    "description": "Défaillance prématurée de Relais électrique réf. 674 chez le client",
+    "description": "Défaillance prématurée de Câble électrique réf. 371 chez le client",
     "observedAt": "2026-03-02"
   },
   {
     "id": "INC-002",
     "kind": "incident",
-    "componentId": "PRT-0049",
+    "componentId": "PRT-0045",
     "severity": "majeure",
-    "description": "Vibration anormale mesurée sur Platine structure réf. 641 à 69 h de service",
+    "description": "Vibration anormale mesurée sur Relais électrique réf. 674 à 69 h de service",
     "observedAt": "2026-03-05"
   },
   {
     "id": "INC-003",
     "kind": "incident",
-    "componentId": "PRT-0052",
+    "componentId": "PRT-0049",
     "severity": "critique",
-    "description": "Défaillance prématurée de Panneau structure réf. 619 chez le client",
+    "description": "Défaillance prématurée de Platine structure réf. 641 chez le client",
     "observedAt": "2026-03-08"
   },
   {
     "id": "INC-004",
     "kind": "incident",
-    "componentId": "PRT-0158",
+    "componentId": "PRT-0154",
     "severity": "mineure",
-    "description": "Échauffement excessif de Clapet hydraulique réf. 380 pendant la recette",
+    "description": "Échauffement excessif de Carter mécanique réf. 564 pendant la recette",
     "observedAt": "2026-03-11"
   },
   {
     "id": "INC-005",
     "kind": "incident",
-    "componentId": "PRT-0190",
+    "componentId": "PRT-0189",
     "severity": "mineure",
-    "description": "Corrosion visible sur Tuyauterie hydraulique réf. 843 après 622 h",
+    "description": "Corrosion visible sur Tuyauterie hydraulique réf. 891 après 622 h",
     "observedAt": "2026-03-14"
   },
   {
     "id": "INC-006",
     "kind": "incident",
-    "componentId": "PRT-0195",
+    "componentId": "PRT-0194",
     "severity": "majeure",
-    "description": "Fuite constatée sur Cadre structure réf. 439 après 49 h de fonctionnement",
+    "description": "Fuite constatée sur Collecteur fluidique réf. 495 après 49 h de fonctionnement",
     "observedAt": "2026-03-17"
   },
   {
@@ -66,9 +66,9 @@
   {
     "id": "INC-009",
     "kind": "incident",
-    "componentId": "PRT-0148",
+    "componentId": "PRT-0147",
     "severity": "mineure",
-    "description": "Échauffement excessif de Arbre mécanique réf. 599 pendant la recette",
+    "description": "Échauffement excessif de Alimentation électrique réf. 575 pendant la recette",
     "observedAt": "2026-03-26"
   },
   {

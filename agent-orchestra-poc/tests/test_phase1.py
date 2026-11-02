@@ -162,3 +162,15 @@ def test_incidents_file_matches_kg(q):
     assert len(inc) == 10
     ids = {r["id"] for r in q("kgproduit", "MATCH (p:Part) RETURN p.id AS id")}
     assert all(i["componentId"] in ids for i in inc)
+
+
+def test_first_incident_provokes_the_legitimate_engineering_tests_loop():
+    """INC-001 doit faire proposer une pièce sans essai (refusée) puis une pièce couverte (acceptée) : voir le scénario."""
+    p = K.generate_kg_produit()
+    inc = K.generate_incidents(p)
+    loop = K.loop_parts(p)
+    assert inc[0]["componentId"] == loop[0] and len(loop) >= 1
+    parts, parents, tests_of, candidates = K._bom_index(p)
+    c = candidates(inc[0]["componentId"])
+    assert tests_of(inc[0]["componentId"]) and not tests_of(c[0]) and tests_of(c[1])
+    assert len({i["componentId"] for i in inc}) == 10

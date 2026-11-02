@@ -111,6 +111,48 @@ def generate_kg_projet(tests: list[dict], l1_ids: list[str], seed: int = SEED) -
     return {"tasks": tasks, "depends": deps, "resources": resources, "assigned": assigned}
 
 
+def _bom_index(produit: dict):
+    parts = {x["id"]: x for x in produit["parts"]}
+    parents: dict[str, set] = {}
+    for c in produit["contains"]:
+        parents.setdefault(c["to"], set()).add(c["from"])
+    direct: dict[str, set] = {}
+    for c in produit["covers"]:
+        direct.setdefault(c["to"], set()).add(c["from"])
+
+    def ancestors(x, seen=None):
+        seen = seen if seen is not None else set()
+        for a in parents.get(x, ()):
+            if a not in seen:
+                seen.add(a)
+                ancestors(a, seen)
+        return seen
+
+    def tests_of(x):
+        """Comme la requête `part_tests` : essais qui couvrent la pièce ou un ensemble qui la contient."""
+        return set(direct.get(x, ())) | {t for a in ancestors(x) for t in direct.get(a, ())}
+
+    def candidates(x):
+        """Comme la requête `replacement_candidates` : même niveau et même famille, par criticité puis identifiant."""
+        return sorted((y for y, q in parts.items() if q["level"] == parts[x]["level"] and q["family"] == parts[x]["family"] and y != x),
+                      key=lambda y: (parts[y]["criticality"], y))
+    return parts, parents, tests_of, candidates
+
+
+def loop_parts(produit: dict) -> list[str]:
+    """Pièces qui provoquent la boucle légitime Ingénierie ↔ Essais : la pièce est couverte et partagée, son premier
+    candidat de remplacement n'est couvert par aucun essai (Essais le refuse), le deuxième l'est (Essais l'accepte)."""
+    parts, parents, tests_of, candidates = _bom_index(produit)
+    out = []
+    for x in sorted(parts):
+        if parts[x]["level"] != 3 or len(parents.get(x, ())) < 2 or not tests_of(x):
+            continue
+        c = candidates(x)
+        if len(c) >= 2 and not tests_of(c[0]) and tests_of(c[1]):
+            out.append(x)
+    return out
+
+
 def generate_incidents(produit: dict, seed: int = SEED) -> list[dict]:
     rng = random.Random(seed + 2)
     by_id = {p["id"]: p for p in produit["parts"]}
@@ -119,8 +161,11 @@ def generate_incidents(produit: dict, seed: int = SEED) -> list[dict]:
         parents.setdefault(c["to"], set()).add(c["from"])
     covered = {c["to"] for c in produit["covers"]}
     shared = sorted(p for p, ps in parents.items() if len(ps) > 1 and by_id[p]["level"] == 3 and p in covered)
-    others = sorted(p["id"] for p in produit["parts"] if p["level"] == 3 and p["id"] not in shared)
-    chosen = shared[:3] + rng.sample(others, 7)
+    loop = loop_parts(produit)
+    assert loop, "aucune pièce ne provoque la boucle Ingénierie ↔ Essais : revoir la génération des essais"
+    shared = [p for p in shared if p != loop[0]]
+    others = sorted(p["id"] for p in produit["parts"] if p["level"] == 3 and p["id"] not in shared and p != loop[0])
+    chosen = [loop[0]] + shared[:2] + rng.sample(others, 7)       # INC-001 : l'incident du scénario (avec boucle légitime)
     templates = [
         ("Fuite constatée sur {n} après {h} h de fonctionnement", "majeure"),
         ("Vibration anormale mesurée sur {n} à {h} h de service", "majeure"),
