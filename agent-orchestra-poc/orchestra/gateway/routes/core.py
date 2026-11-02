@@ -246,6 +246,21 @@ def resume_chain(chain_id: str, b: Resume, p: Principal = Depends(principal), ct
     return to_json(row)
 
 
+class CloseChain(Strict):
+    reason: str = Field(default="", max_length=500)
+
+
+@router.post("/chains/{chain_id}/close")
+def close_chain(chain_id: str, b: CloseChain, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
+    """Décision humaine : clore définitivement une chaîne (active ou suspendue). Plus aucun envoi n'y est accepté."""
+    if not (p.is_admin or p.is_person):
+        raise Forbidden("clore une chaîne est une décision humaine")
+    row = ctx.store.write({"agentId": p.id, "chainId": chain_id}, lambda r: r.one("chain_close", chainId=chain_id, by=p.id, reason=b.reason))
+    if row is None:
+        raise Conflict("chaîne inexistante ou déjà close")
+    return to_json(row)
+
+
 class Quarantine(Strict):
     reason: str = Field(max_length=500)
 

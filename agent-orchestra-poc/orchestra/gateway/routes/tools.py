@@ -88,6 +88,10 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
     quorum, size = int(m[1]), int(m[2])
     key = _key(p, b.idempotencyKey)
     aid = uuid.uuid4().hex
+    # une seule demande en attente par outil et par chaîne : un agent réveillé plusieurs fois ne multiplie pas les validations
+    same = ctx.store.read(lambda r: r.one("approval_pending_same", agentId=p.id, tool=b.tool, chainId=s["chainId"]))
+    if same:
+        return to_json({**same, "replayed": True, "duplicateOf": same["id"]})
 
     def tx(r):
         row = r.one("approval_create", agentId=p.id, tool=b.tool, sessionId=b.sessionId, key=key, electorate=b.electorate,
