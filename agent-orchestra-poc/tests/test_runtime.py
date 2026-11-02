@@ -53,7 +53,7 @@ def test_agent_session_end_to_end(world, tq, fake, gw_url):
     assert tq("MATCH (:Fact)-[:ABOUT]->(r:EntityRef) RETURN r.db AS db, r.key AS k") == [{"db": "kgproduit", "k": "PRT-0001"}]
     # le LLM voit le résultat de l'outil, son contexte et sa liste de destinataires
     system, contents = fake.history[1]
-    assert "t-b" in system and "part_where_used" in system and "Ton mandat" in system
+    assert "t-b" in system and "part_where_used" in system and "Your mandate" in system
     first = fake.history[0][1][0]["text"]
     assert "Fuite constatée" in first and "incident" in first and "ing-qualite" in first
     assert any(c["role"] == "tool" and c["name"] == "query_kg" and c["result"]["rowCount"] == 1 for c in contents)
@@ -71,10 +71,10 @@ def test_refusals_are_returned_to_the_llm_and_traced_as_failed(world, tq, fake, 
     ]
     assert runner("t-a", gw_url).handle(mid) == "completed"
     results = {c["name"]: c["result"] for c in fake.history[1][1] if c["role"] == "tool"}
-    assert "non autorisés" in results["send_message"]["error"]
+    assert "not allowed" in results["send_message"]["error"]
     assert "403" in results["query_kg"]["error"]
-    assert "refusé" in results["cpa_simulate"]["error"]
-    assert "inconnu" in results["outil_imaginaire"]["error"]
+    assert "refused" in results["cpa_simulate"]["error"]
+    assert "unknown tool" in results["outil_imaginaire"]["error"]
     st = {r["t"]: r["s"] for r in tq("MATCH (:Session)-[:CALLED]->(tc:ToolCall)-[:OF]->(t:Tool) RETURN t.name AS t, tc.status AS s")}
     assert st == {"send_message": "failed", "query_kg": "failed"}          # cpa_simulate : refusé avant même d'être tracé (pas de CAN_USE)
 
@@ -194,4 +194,4 @@ def test_the_catalog_in_the_prompt_is_unambiguous(world, fake, gw_url):
     runner("t-a", gw_url).handle(world.trigger(a))
     system = fake.history[0][0]
     assert 'kg="produit", template="part_info", params={"partId": <str>}' in system
-    assert "sans parenthèses ni préfixe" in system
+    assert "no parentheses or prefix" in system

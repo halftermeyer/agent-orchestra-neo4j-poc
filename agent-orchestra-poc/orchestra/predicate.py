@@ -12,24 +12,24 @@ MAX_DEPTH = 5
 
 def validate(p: Any, depth: int = 0) -> None:
     if depth > MAX_DEPTH or not isinstance(p, dict):
-        raise ValueError("prédicat invalide")
+        raise ValueError("invalid predicate")
     if "all" in p or "any" in p:
         key = "all" if "all" in p else "any"
         if set(p) != {key} or not isinstance(p[key], list) or not p[key]:
-            raise ValueError("all/any : liste non vide attendue")
+            raise ValueError("all/any: a non-empty list is expected")
         for q in p[key]:
             validate(q, depth + 1)
     elif "not" in p:
         if set(p) != {"not"}:
-            raise ValueError("not : clé unique")
+            raise ValueError("not: a single key is expected")
         validate(p["not"], depth + 1)
     else:
         if set(p) - {"field", "op", "value"} or "field" not in p or p.get("op") not in LEAF_OPS:
-            raise ValueError(f"feuille invalide (ops : {sorted(LEAF_OPS)})")
+            raise ValueError(f"invalid leaf (ops: {sorted(LEAF_OPS)})")
         if not isinstance(p["field"], str) or not p["field"]:
-            raise ValueError("field invalide")
+            raise ValueError("invalid field")
         if p["op"] in ("in", "nin") and not isinstance(p.get("value"), list):
-            raise ValueError("in/nin : liste attendue")
+            raise ValueError("in/nin: a list is expected")
 
 
 def _get(field: str, payload: dict, msg: dict):

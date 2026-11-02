@@ -39,19 +39,19 @@ def generate(b: Generate, p: Principal = Depends(require_service), ctx=Depends(g
     me = ctx.store.read(lambda r: r.one("me", agentId=p.id))
     model = (me["version"] or {}).get("model")
     if not model:
-        raise Conflict("cet agent n'a pas de modèle (agent à règles)")
+        raise Conflict("this agent has no model (rule-based agent)")
     allowed = {t["name"] for t in me["tools"]}
     bad = [t for t in b.tools if t not in allowed or t not in TOOL_SPECS]
     if bad:
-        raise Forbidden(f"outils non autorisés : {bad}")
+        raise Forbidden(f"tools not allowed: {bad}")
     st = ctx.settings
     meta = {"agentId": p.id, "chainId": s["chainId"]}
     chk = ctx.store.write(meta, lambda r: r.one("chain_tokens_check", chainId=s["chainId"], agentId=p.id,
                                                defaultBudget=st.default_budget, defaultTokenBudget=st.default_token_budget))
     if chk["status"] != "active":
-        raise Conflict(f"chaîne {chk['status']}")
+        raise Conflict(f"chain {chk['status']}")
     if chk["tokensSpent"] >= chk["tokenBudget"]:
-        raise BudgetExhausted("budget de tokens de la chaîne épuisé")
+        raise BudgetExhausted("chain token budget exhausted")
     res = ctx.llm().generate(
         model=model, system=b.system, contents=[c.model_dump(exclude_none=True) for c in b.contents],
         tools=[{"name": t, **TOOL_SPECS[t]} for t in b.tools] or None)

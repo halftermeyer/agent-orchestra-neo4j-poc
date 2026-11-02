@@ -8,7 +8,7 @@ def test_kg_templates_and_rights(client, world):
     a, b = world.agent("t-a", kgs=["produit"]), world.agent("t-b")
     q = lambda who, kg, t, params=None: world.post("/kg/query", who, {"kg": kg, "template": t, "params": params or {}})
     r = q(a, "produit", "part_info", {"partId": "PRT-0001"})
-    assert r.status_code == 200 and r.json()["rows"][0]["name"].startswith("Station")
+    assert r.status_code == 200 and r.json()["rows"][0]["name"].startswith("Modular pumping station")
     assert len(q(a, "produit", "part_children", {"partId": "PRT-0001"}).json()["rows"]) == 6
     shared = q(a, "produit", "part_where_used", {"partId": "PRT-0045"}).json()["rows"]
     assert shared and shared[0]["level"] >= 2 and any(x["level"] == 0 for x in shared)

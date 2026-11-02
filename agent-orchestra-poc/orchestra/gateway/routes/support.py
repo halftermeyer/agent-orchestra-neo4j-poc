@@ -28,7 +28,7 @@ def _msg(row: dict) -> dict:
 def inbox_message(message_id: str, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("inbox_message", agentId=p.id, messageId=message_id))
     if row is None:
-        raise NotFound("message absent de votre inbox")
+        raise NotFound("message not in your inbox")
     return to_json(_msg(row))
 
 
@@ -64,22 +64,22 @@ def create_commitment(b: NewCommitment, p: Principal = Depends(require_service),
     elif b.dueInMinutes:
         due = now + timedelta(minutes=b.dueInMinutes)
     else:
-        raise Forbidden("dueInMinutes ou dueAt requis")
+        raise Forbidden("dueInMinutes or dueAt required")
     if due <= now:
-        raise Forbidden("l'échéance doit être dans le futur")
+        raise Forbidden("the due date must be in the future")
     cid = f"cm-{uuid.uuid4().hex[:12]}"
 
     def tx(r):
         plan = r.one("commitment_plan", agentId=p.id, to=b.to)
         if plan is None or not plan["debtorInbox"]:
-            raise NotFound("destinataire de l'engagement introuvable")
+            raise NotFound("commitment recipient not found")
         row = r.one("commitment_create", id=cid, agentId=p.id, sessionId=b.sessionId, to=b.to, description=b.description,
                     dueAt=due.isoformat())
         if row is None:
-            raise Forbidden("engagement refusé (outil commit non autorisé ou session fermée)")
+            raise Forbidden("commitment refused (commit tool not allowed or session closed)")
         owner = b.to if plan["creditorCanRemind"] else p.id
         payload = {"kind": "commitment-due", "commitmentId": cid, "debtor": p.id, "creditor": b.to, "description": b.description,
-                   "body": f"Échéance de l'engagement {cid} : {b.description}"}
+                   "body": f"Commitment {cid} is due: {b.description}"}
         r.one("routine_create", agentId=owner, id=f"rt-commit-{cid}", trigger="once", cron=None, tz=None, runAt=due.isoformat(),
               payload=json.dumps(payload), filter=None, misfire="fire", deliverTo=plan["debtorInbox"], listensTo=None)
         return row
@@ -96,7 +96,7 @@ def open_commitments(p: Principal = Depends(require_agent), ctx=Depends(get_ctx)
 def get_commitment(cid: str, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("commitment_get", id=cid, agentId=p.id))
     if row is None:
-        raise NotFound("engagement introuvable")
+        raise NotFound("commitment not found")
     return to_json(row)
 
 
@@ -104,7 +104,7 @@ def get_commitment(cid: str, p: Principal = Depends(require_agent), ctx=Depends(
 def fulfill_commitment(cid: str, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one("commitment_fulfill", id=cid, agentId=p.id))
     if row is None:
-        raise NotFound("engagement ouvert introuvable (ou non à vous)")
+        raise NotFound("open commitment not found (or not yours)")
     return to_json(row)
 
 
@@ -124,19 +124,19 @@ def launch_modification(b: Launch, p: Principal = Depends(require_service), ctx=
         return (r.one("launch_context", key=key, agentId=p.id), r.all("kg_authorize", agentId=p.id, kgIds=["produit"]))
     lc, auth = ctx.store.read(pre)
     if lc is None:
-        raise NotFound("appel launch_modification introuvable")
+        raise NotFound("launch_modification call not found")
     if lc["approvalStatus"] != "approved":
-        raise Forbidden(f"validation {lc['approvalStatus']} : aucune exécution")
+        raise Forbidden(f"approval {lc['approvalStatus']}: nothing executed")
     if lc["toolCallStatus"] != "working":
-        raise Conflict(f"appel déjà {lc['toolCallStatus']}")
+        raise Conflict(f"call already {lc['toolCallStatus']}")
     if not auth:
-        raise Forbidden("pas de droit sur le KG Produit")
+        raise Forbidden("no right on the Product KG")
     args = json.loads(lc["args"] or "{}")
     part, repl = args.get("part_id"), args.get("replacement_id")
     if not (part and repl):
-        raise Conflict("la validation ne porte pas part_id / replacement_id")
+        raise Conflict("the approval carries no part_id / replacement_id")
     if ctx.store.kg_driver is None:
-        raise Conflict("conservateur de KG non configuré")
+        raise Conflict("KG curator not configured")
     db, change_key = auth[0]["dbName"], f"{lc['approvalId']}"
 
     def apply(r):
@@ -146,7 +146,7 @@ def launch_modification(b: Launch, p: Principal = Depends(require_service), ctx=
         row = r.one("kg_write/apply_modification", partId=part, replacementId=repl, changeKey=change_key,
                     reason=f"validation {lc['approvalId']}")
         if row is None:
-            raise Conflict("pièces introuvables ou déjà retirées")
+            raise Conflict("parts not found or already retired")
         return row
     out = ctx.store.write_kg(db, {"agentId": p.id, "chainId": s["chainId"]}, apply)
     # l'appel d'outil est clos par l'agent (tools/calls/{key}/end), avec le message ou le fait produit
@@ -157,7 +157,7 @@ def launch_modification(b: Launch, p: Principal = Depends(require_service), ctx=
 # ---------- auditeur : signaux ----------
 def _auditor(p: Principal):
     if p.role != "auditor":
-        raise Forbidden("réservé à l'auditeur")
+        raise Forbidden("reserved to the auditor")
 
 
 def _cos(a, b):

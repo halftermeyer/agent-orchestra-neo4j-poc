@@ -31,7 +31,7 @@ class Settings:
         e = os.environ
         master = e.get("ORCHESTRA_MASTER_KEY", "")
         if not master:
-            raise RuntimeError("ORCHESTRA_MASTER_KEY manquante : lance `make keygen`.")
+            raise RuntimeError("ORCHESTRA_MASTER_KEY is missing: run `make keygen`.")
         return cls(
             neo4j_uri=e.get("NEO4J_URI", cls.neo4j_uri),
             neo4j_user="gateway",

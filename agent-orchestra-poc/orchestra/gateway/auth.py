@@ -29,7 +29,7 @@ def parse_token(master_key: str, token: str) -> tuple[str, str]:
             raise ValueError
         return kind, ident
     except Exception:
-        raise Unauthorized("jeton invalide") from None
+        raise Unauthorized("invalid token") from None
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,7 @@ def get_ctx(request: Request):
 def principal(request: Request, ctx=Depends(get_ctx)) -> Principal:
     header = request.headers.get("authorization", "")
     if not header.lower().startswith("bearer "):
-        raise Unauthorized("jeton manquant")
+        raise Unauthorized("missing token")
     kind, ident = parse_token(ctx.settings.master_key, header[7:].strip())
     if kind == "admin":
         return Principal("admin", "admin")
@@ -59,41 +59,41 @@ def principal(request: Request, ctx=Depends(get_ctx)) -> Principal:
         return Principal("sys", ident)
     row = ctx.store.read(lambda r: r.one("principal", id=ident))
     if row is None:
-        raise Unauthorized("agent inconnu")
+        raise Unauthorized("unknown agent")
     person = "Person" in row["labels"]
     if (kind == "user") != person:
-        raise Unauthorized("jeton incohérent avec le type d'agent")
+        raise Unauthorized("token inconsistent with the agent type")
     if row["quarantined"]:
-        raise Forbidden("agent en quarantaine")
+        raise Forbidden("agent is quarantined")
     return Principal(kind, ident, person, row["role"])
 
 
 def require_admin(p: Principal = Depends(principal)) -> Principal:
     if not p.is_admin:
-        raise Forbidden("réservé à l'administrateur")
+        raise Forbidden("reserved to the administrator")
     return p
 
 
 def require_agent(p: Principal = Depends(principal)) -> Principal:
     if p.is_admin or p.kind == "sys":
-        raise Forbidden("action d'agent : jeton de service ou d'utilisateur requis")
+        raise Forbidden("agent action: a service or user token is required")
     return p
 
 
 def require_service(p: Principal = Depends(principal)) -> Principal:
     if p.kind != "svc":
-        raise Forbidden("réservé aux runtimes d'agents")
+        raise Forbidden("reserved to agent runtimes")
     return p
 
 
 def require_person(p: Principal = Depends(principal)) -> Principal:
     if p.kind != "user":
-        raise Forbidden("réservé aux personnes")
+        raise Forbidden("reserved to people")
     return p
 
 
 def require_sys(p: Principal = Depends(principal)) -> Principal:
     """Acteurs système (consommateur CDC) : jamais un agent, jamais l'UI."""
     if p.kind != "sys":
-        raise Forbidden("réservé au consommateur CDC")
+        raise Forbidden("reserved to the CDC consumer")
     return p

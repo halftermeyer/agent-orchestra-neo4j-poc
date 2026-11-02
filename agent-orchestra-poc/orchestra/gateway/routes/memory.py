@@ -42,7 +42,7 @@ class NewFact(Strict):
 def _embed(ctx, text: str) -> list[float]:
     v = ctx.llm().embed([text], ctx.settings.embed_dim)[0]
     if len(v) != ctx.settings.embed_dim:
-        raise Conflict(f"dimension d'embedding inattendue : {len(v)}")
+        raise Conflict(f"unexpected embedding dimension: {len(v)}")
     return v
 
 
@@ -52,13 +52,13 @@ def _check_about_and_sources(ctx, p, about, derived_from):
             dbs = sorted({a.db for a in about})
             ok = {k["dbName"] for k in r.all("kg_authorize", agentId=p.id, kgIds=dbs)}
             if set(dbs) - ok:
-                raise Forbidden(f"pas de droit sur le(s) graphe(s) : {sorted(set(dbs) - ok)}")
+                raise Forbidden(f"no right on graph(s): {sorted(set(dbs) - ok)}")
         if derived_from:
             scope_ = compute_scope(r, p.id)
             vis = {x["id"] for x in r.all("facts_in_scope", ids=derived_from,
                                            scopes=[{"id": k, "asOf": v} for k, v in scope_.items()])}
             if set(derived_from) - vis:
-                raise Forbidden("derivedFrom : faits hors de votre périmètre de lecture")
+                raise Forbidden("derivedFrom: facts outside your read scope")
     ctx.store.read(tx)
 
 
@@ -73,7 +73,7 @@ def remember(b: NewFact, p: Principal = Depends(require_service), ctx=Depends(ge
         confidence=b.confidence, validFrom=b.validFrom.isoformat() if b.validFrom else None,
         about=[a.model_dump() for a in b.about], derivedFrom=b.derivedFrom))
     if row is None:
-        raise NotFound("mémoire ou session introuvable")
+        raise NotFound("memory or session not found")
     return to_json({"id": row["id"], "memoryId": row["memoryId"], "validFrom": row["validFrom"]})
 
 
@@ -93,7 +93,7 @@ def revise(fact_id: str, b: Revise, p: Principal = Depends(require_service), ctx
         "fact_revise", agentId=p.id, sessionId=b.sessionId, oldId=fact_id, factId=new_id, statement=b.statement,
         embedding=emb, confidence=b.confidence))
     if row is None:
-        raise NotFound("fait introuvable dans votre mémoire, ou déjà fermé")
+        raise NotFound("fact not found in your memory, or already closed")
     return to_json(row)
 
 

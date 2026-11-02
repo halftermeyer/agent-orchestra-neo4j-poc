@@ -24,9 +24,9 @@ PERFORMATIVES = Literal["inform", "request", "query", "agree", "refuse", "propos
 def load_session(ctx, p: Principal, session_id: str, need_open: bool = True) -> dict:
     s = ctx.store.read(lambda r: r.one("session_get", sessionId=session_id))
     if s is None or s["agentId"] != p.id:
-        raise NotFound("session introuvable")
+        raise NotFound("session not found")
     if need_open and s["closedAt"] is not None:
-        raise Conflict("session fermée")
+        raise Conflict("session closed")
     return s
 
 
@@ -45,12 +45,12 @@ def open_session(b: OpenSession, p: Principal = Depends(require_service), ctx=De
     """Idempotent : MERGE sur le message déclencheur (clé `<messageId>@<agentId>`)."""
     m = ctx.store.read(lambda r: r.one("message_get", messageId=b.messageId))
     if m is None:
-        raise NotFound("message introuvable")
+        raise NotFound("message not found")
     meta = {"agentId": p.id, "chainId": m["chainId"] or b.messageId}
     row = ctx.store.write(meta, lambda r: r.one("session_open", agentId=p.id, messageId=b.messageId,
                                                triggerMsgId=f"{b.messageId}@{p.id}"))
     if row is None:
-        raise Forbidden("ce message n'est pas dans l'inbox de cet agent")
+        raise Forbidden("this message is not in this agent's inbox")
     return to_json(row)
 
 
@@ -107,7 +107,7 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
     st = ctx.settings
     recipients = list(dict.fromkeys(b.to))
     if b.id and p.kind != "svc":
-        raise Forbidden("identifiant imposé réservé aux services")
+        raise Forbidden("forced id is reserved to services")
     msg_id = b.id or uuid.uuid4().hex
 
     def pre(r):
@@ -122,19 +122,19 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
 
     denied = [x for x in recipients if x not in sc["allowed"]]
     if denied:
-        raise Forbidden(f"envoi non autorisé (CAN_SEND_TO) vers : {denied}")
+        raise Forbidden(f"sending not allowed (CAN_SEND_TO) to: {denied}")
     if not sc["isPerson"] and not sc["hasMandate"]:
         if b.performative != "query" or not set(recipients) <= set(sc["supervisorInboxes"]):
-            raise Forbidden("sans mandat : seule une question (query) à son responsable est permise")
+            raise Forbidden("no mandate: only a question (query) to your supervisor is allowed")
 
     if p.kind == "svc":
         if sess is None or sess["agentId"] != p.id:
-            raise Forbidden("session ouverte requise")
+            raise Forbidden("an open session is required")
         if sess["closedAt"] is not None:
-            raise Conflict("session fermée")
+            raise Conflict("session closed")
         chain_id = sess["chainId"]
         if b.chainId and b.chainId != chain_id:
-            raise Forbidden("une session ne peut écrire que dans sa propre chaîne")
+            raise Forbidden("a session can only write in its own chain")
     else:
         chain_id = b.chainId or uuid.uuid4().hex
     conversation_id = b.conversationId or chain_id
@@ -142,15 +142,15 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
     attach = None
     if b.attachMemory:
         if not mem[1]:
-            raise Forbidden("partage de mémoire non autorisé (ni propriétaire, ni CAN_SHARE)")
+            raise Forbidden("memory sharing not allowed (neither owner nor CAN_SHARE)")
         now = datetime.now(timezone.utc)
         a = b.attachMemory
         if a.mode == "live":
             if a.until is None:
-                raise Forbidden("un partage live doit expirer (until)")
+                raise Forbidden("a live share must expire (until)")
             until = a.until if a.until.tzinfo else a.until.replace(tzinfo=timezone.utc)
             if until <= now or until > now + timedelta(days=st.max_live_days):
-                raise Forbidden(f"until doit être dans le futur et à moins de {st.max_live_days} jours")
+                raise Forbidden(f"until must be in the future and within {st.max_live_days} days")
         else:
             until = now + timedelta(days=st.share_ttl_days)
         attach = {"memoryId": mem[0], "mode": a.mode, "until": until.isoformat(), "private": a.private}
@@ -159,7 +159,7 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
         ex = r.one("message_get", messageId=msg_id)
         if ex:
             if ex["from"] != p.id:
-                raise Conflict("identifiant de message déjà utilisé")
+                raise Conflict("message id already in use")
             return {"duplicate": True, "createdAt": ex["createdAt"]}
         ch = r.one("chain_charge_messages", chainId=chain_id, agentId=p.id, n=len(recipients),
                    defaultBudget=st.default_budget, defaultTokenBudget=st.default_token_budget)
@@ -182,12 +182,12 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
     try:
         out = ctx.store.write({"agentId": p.id, "chainId": chain_id}, tx)
     except ConstraintError:
-        raise Conflict("message en double") from None
+        raise Conflict("duplicate message") from None
     if "refused" in out:
         ch = out["refused"]
         if ch["prev"] != "active":
-            raise Conflict(f"chaîne {ch['prev']}")
-        raise BudgetExhausted(f"budget de la chaîne épuisé ({ch['spent']}/{ch['budget']}) : chaîne suspendue")
+            raise Conflict(f"chain {ch['prev']}")
+        raise BudgetExhausted(f"chain budget exhausted ({ch['spent']}/{ch['budget']}): chain suspended")
     return to_json({"id": msg_id, "chainId": chain_id, "conversationId": conversation_id, "recipients": recipients,
                     "createdAt": out["createdAt"], "duplicate": out.get("duplicate", False)})
 
@@ -213,7 +213,7 @@ def create_chain(b: CreateChain, p: Principal = Depends(require_admin), ctx=Depe
 def get_chain(chain_id: str, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("chain_get", chainId=chain_id))
     if row is None:
-        raise NotFound("chaîne introuvable")
+        raise NotFound("chain not found")
     return to_json(row)
 
 
@@ -226,7 +226,7 @@ def suspend_chain(chain_id: str, b: Reason, p: Principal = Depends(require_servi
     row = ctx.store.write({"agentId": p.id, "chainId": chain_id}, lambda r: r.one(
         "chain_suspend", agentId=p.id, chainId=chain_id, reason=b.reason))
     if row is None:
-        raise Forbidden("réservé à l'auditeur (outil suspend_chain) et à une chaîne existante")
+        raise Forbidden("reserved to the auditor (suspend_chain tool), on an existing chain")
     return to_json(row)
 
 
@@ -238,11 +238,11 @@ class Resume(Strict):
 @router.post("/chains/{chain_id}/resume")
 def resume_chain(chain_id: str, b: Resume, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
     if not (p.is_admin or p.is_person):
-        raise Forbidden("la reprise d'une chaîne est une décision humaine")
+        raise Forbidden("resuming a chain is a human decision")
     row = ctx.store.write({"agentId": p.id, "chainId": chain_id}, lambda r: r.one(
         "chain_resume", chainId=chain_id, by=p.id, extraBudget=b.extraBudget, extraTokens=b.extraTokens))
     if row is None:
-        raise Conflict("chaîne inexistante ou non suspendue")
+        raise Conflict("chain does not exist or is not suspended")
     return to_json(row)
 
 
@@ -254,10 +254,10 @@ class CloseChain(Strict):
 def close_chain(chain_id: str, b: CloseChain, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
     """Décision humaine : clore définitivement une chaîne (active ou suspendue). Plus aucun envoi n'y est accepté."""
     if not (p.is_admin or p.is_person):
-        raise Forbidden("clore une chaîne est une décision humaine")
+        raise Forbidden("closing a chain is a human decision")
     row = ctx.store.write({"agentId": p.id, "chainId": chain_id}, lambda r: r.one("chain_close", chainId=chain_id, by=p.id, reason=b.reason))
     if row is None:
-        raise Conflict("chaîne inexistante ou déjà close")
+        raise Conflict("chain does not exist or is already closed")
     return to_json(row)
 
 
@@ -270,15 +270,15 @@ def quarantine(target: str, b: Quarantine, p: Principal = Depends(require_servic
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one(
         "quarantine", agentId=p.id, target=target, reason=b.reason))
     if row is None:
-        raise Forbidden("réservé à l'auditeur, sur un autre agent logiciel")
+        raise Forbidden("reserved to the auditor, on another software agent")
     return to_json(row)
 
 
 @router.post("/agents/{target}/release")
 def release(target: str, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
     if not (p.is_admin or p.is_person):
-        raise Forbidden("la levée d'une quarantaine est une décision humaine")
+        raise Forbidden("lifting a quarantine is a human decision")
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one("unquarantine", target=target, by=p.id))
     if row is None:
-        raise Conflict("agent absent ou pas en quarantaine")
+        raise Conflict("agent not found or not quarantined")
     return to_json(row)

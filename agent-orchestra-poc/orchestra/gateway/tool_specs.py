@@ -3,33 +3,33 @@ S = lambda **props: {"type": "object", "properties": props, "required": list(pro
 STR = {"type": "string"}
 
 TOOL_SPECS = {
-    "send_message": {"description": "Envoie un message à une ou plusieurs inbox autorisées.",
+    "send_message": {"description": "Send a message to one or more allowed inboxes.",
                      "parameters": {"type": "object", "required": ["to", "performative", "body"], "properties": {
                          "to": {"type": "array", "items": STR}, "performative": STR, "body": STR,
                          "attach_memory": {"type": "boolean"}, "payload": {"type": "object"}}}},
-    "set_status": {"description": "Publie une phrase courte décrivant ce que tu fais.", "parameters": S(text=STR)},
-    "remember": {"description": "Enregistre un fait dans ta mémoire.",
+    "set_status": {"description": "Publish a short sentence describing what you are doing.", "parameters": S(text=STR)},
+    "remember": {"description": "Store a fact in your memory.",
                  "parameters": {"type": "object", "required": ["statement"], "properties": {
                      "statement": STR, "confidence": {"type": "number"},
                      "about": {"type": "array", "items": {"type": "object", "properties": {"db": STR, "key": STR, "label": STR}}}}}},
-    "recall": {"description": "Cherche dans les mémoires que tu as le droit de lire.", "parameters": S(query=STR)},
-    "query_kg": {"description": "Interroge un graphe de connaissance avec un modèle de requête.",
+    "recall": {"description": "Search the memories you are allowed to read.", "parameters": S(query=STR)},
+    "query_kg": {"description": "Query a knowledge graph with a query template.",
                  "parameters": {"type": "object", "required": ["kg", "template"], "properties": {
                      "kg": STR, "template": STR, "params": {"type": "object"}}}},
-    "commit": {"description": "Prends un engagement envers un autre agent (une minuterie te relancera à l'échéance), "
-                              "ou solde un engagement existant avec `fulfills`.",
+    "commit": {"description": "Make a commitment to another agent (a timer will remind you when it is due), "
+                              "or settle an existing commitment with `fulfills`.",
                "parameters": {"type": "object", "properties": {
                    "to": STR, "description": STR, "due_in_minutes": {"type": "integer"}, "fulfills": STR}}},
-    "request_approval": {"description": "Demande la validation du comité pour une action irréversible (ex. launch_modification). "
-                                         "Les arguments figés ici sont ceux qui seront exécutés si la validation est obtenue.",
+    "request_approval": {"description": "Ask the committee to approve an irreversible action (e.g. launch_modification). "
+                                         "The arguments frozen here are the ones that will be executed if approval is obtained.",
                          "parameters": {"type": "object", "required": ["tool", "description"], "properties": {
                              "tool": STR, "description": STR, "part_id": STR, "replacement_id": STR}}},
-    "launch_modification": {"description": "Lance la modification approuvée (écrit la nouvelle version dans le KG Produit). "
-                                           "Utilisable seulement après une validation `approved`.",
+    "launch_modification": {"description": "Launch the approved modification (writes the new version into the Product KG). "
+                                           "Usable only after an `approved` approval.",
                             "parameters": S(approval_id=STR)},
-    "cpa_simulate": {"description": "Simule un retard sur le planning (chemin critique).",
+    "cpa_simulate": {"description": "Simulate a delay on the schedule (critical path).",
                      "parameters": {"type": "object", "required": ["task_id", "delay_days"],
                                     "properties": {"task_id": STR, "delay_days": {"type": "integer"}}}},
-    "suspend_chain": {"description": "Suspend une chaîne causale.", "parameters": S(chain_id=STR, reason=STR)},
-    "quarantine_agent": {"description": "Met un agent en quarantaine.", "parameters": S(target=STR, reason=STR)},
+    "suspend_chain": {"description": "Suspend a causal chain.", "parameters": S(chain_id=STR, reason=STR)},
+    "quarantine_agent": {"description": "Put an agent in quarantine.", "parameters": S(target=STR, reason=STR)},
 }

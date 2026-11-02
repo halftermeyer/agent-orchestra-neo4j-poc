@@ -19,7 +19,7 @@ router = APIRouter(prefix="/internal")
 def inbox_owners(inbox_id: str, p: Principal = Depends(require_sys), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("inbox_owners", inboxId=inbox_id))
     if not row["exists"]:
-        raise NotFound("inbox introuvable")
+        raise NotFound("inbox not found")
     return row
 
 
@@ -27,7 +27,7 @@ def inbox_owners(inbox_id: str, p: Principal = Depends(require_sys), ctx=Depends
 def message(message_id: str, p: Principal = Depends(require_sys), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("message_full", messageId=message_id))
     if row is None:
-        raise NotFound("message introuvable")
+        raise NotFound("message not found")
     row["payload"] = json.loads(row.pop("payloadJson")) if row.get("payloadJson") else None
     return to_json(row)
 
@@ -57,7 +57,7 @@ def advance(routine_id: str, b: Advance, p: Principal = Depends(require_sys), ct
         "routine_advance", id=routine_id, nextRunAt=iso(b.nextRunAt), fired=iso(b.fired), skipped=iso(b.skipped),
         error=b.error, disable=b.disable))
     if row is None:
-        raise NotFound("routine introuvable")
+        raise NotFound("routine not found")
     return row
 
 
@@ -82,11 +82,11 @@ def deliver(b: Deliver, p: Principal = Depends(require_sys), ctx=Depends(get_ctx
     st = ctx.settings
     auth = ctx.store.read(lambda r: r.one("deliver_authorize", actingAgent=b.actingAgent, inbox=b.inbox))
     if auth is None:
-        raise NotFound("agent logiciel ou inbox introuvable")
+        raise NotFound("software agent or inbox not found")
     if auth["quarantined"]:
-        raise Forbidden("agent en quarantaine")
+        raise Forbidden("agent is quarantined")
     if not auth["ok"]:
-        raise Forbidden(f"{b.actingAgent} n'a pas le droit d'écrire dans {b.inbox} (CAN_SEND_TO)")
+        raise Forbidden(f"{b.actingAgent} is not allowed to write to {b.inbox} (CAN_SEND_TO)")
     chain_id = b.chainId or b.id
 
     def tx(r):
@@ -108,8 +108,8 @@ def deliver(b: Deliver, p: Principal = Depends(require_sys), ctx=Depends(get_ctx
     if "refused" in out:
         ch = out["refused"]
         if ch["prev"] != "active":
-            raise Conflict(f"chaîne {ch['prev']}")
-        raise BudgetExhausted(f"budget de la chaîne épuisé ({ch['spent']}/{ch['budget']})")
+            raise Conflict(f"chain {ch['prev']}")
+        raise BudgetExhausted(f"chain budget exhausted ({ch['spent']}/{ch['budget']})")
     return to_json({"id": b.id, "chainId": chain_id, "duplicate": out.get("duplicate", False)})
 
 
@@ -131,6 +131,6 @@ def sync_ref(b: SyncRef, p: Principal = Depends(require_sys), ctx=Depends(get_ct
         row = ctx.store.write(meta, lambda r: r.one("entityref_delete", db=b.db, key=b.key))
     else:
         if not b.target:
-            raise Forbidden("same_as exige target")
+            raise Forbidden("same_as requires target")
         row = ctx.store.write(meta, lambda r: r.one("entityref_same_as", db=b.db, key=b.key, target=b.target, label=b.label))
     return {"updated": row is not None}

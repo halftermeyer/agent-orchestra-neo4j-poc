@@ -13,7 +13,7 @@ class Queries:
                    for p in QUERY_DIR.rglob("*.cypher")}
         bad = [n for n, t in self._q.items() if not t.lstrip().startswith("CYPHER 25")]
         if bad:
-            raise RuntimeError(f"requêtes sans 'CYPHER 25' : {bad}")
+            raise RuntimeError(f"queries without 'CYPHER 25': {bad}")
 
     def __getitem__(self, name: str) -> str:
         return self._q[name]

@@ -39,7 +39,7 @@ def create_app(settings: CdcSettings | None = None, autostart: bool = True, cons
             try:
                 scheduler.tick()
             except Exception as e:
-                log.error("scheduler : %s", type(e).__name__)
+                log.error("scheduler: %s", type(e).__name__)
             stop.wait(settings.scheduler_interval)
 
     @asynccontextmanager

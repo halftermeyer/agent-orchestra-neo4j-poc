@@ -31,9 +31,9 @@ def start_call(b: StartCall, p: Principal = Depends(require_service), ctx=Depend
     s = load_session(ctx, p, b.sessionId)
     auth = ctx.store.read(lambda r: r.one("tool_authorize", agentId=p.id, tool=b.tool))
     if auth is None:
-        raise Forbidden("outil non autorisé (CAN_USE ; le droit ne s'hérite pas)")
+        raise Forbidden("tool not allowed (CAN_USE; the right is not inherited)")
     if auth["effect"] == "irreversible":
-        raise Forbidden("action irréversible : passer par /approvals")
+        raise Forbidden("irreversible action: go through /approvals")
     key = _key(p, b.idempotencyKey)
     args = json.dumps(b.args)[:4000] if b.args is not None else None
     try:
@@ -57,11 +57,11 @@ def end_call(key: str, b: EndCall, p: Principal = Depends(require_service), ctx=
     full = _key(p, key)
     cur = ctx.store.read(lambda r: r.one("toolcall_get", key=full, agentId=p.id))
     if cur is None:
-        raise NotFound("appel d'outil introuvable")
+        raise NotFound("tool call not found")
     if cur["status"] in ("completed", "failed", "canceled"):
         return to_json({**cur, "replayed": True})
     if cur["status"] != "working":
-        raise Conflict(f"appel en état {cur['status']}")
+        raise Conflict(f"call in state {cur['status']}")
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one(
         "toolcall_end", key=full, agentId=p.id, status=b.status, tokens=b.tokens, error=b.error,
         factId=b.factId, messageId=b.messageId))
@@ -81,10 +81,10 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
     s = load_session(ctx, p, b.sessionId)
     auth = ctx.store.read(lambda r: r.one("tool_authorize", agentId=p.id, tool=b.tool))
     if auth is None or auth["effect"] != "irreversible":
-        raise Forbidden("outil non autorisé ou non soumis à validation")
+        raise Forbidden("tool not allowed or not subject to approval")
     m = re.fullmatch(r"(\d+)-of-(\d+)", auth["approval"] or "")
     if not m:
-        raise Conflict("politique d'approbation invalide")
+        raise Conflict("invalid approval policy")
     quorum, size = int(m[1]), int(m[2])
     key = _key(p, b.idempotencyKey)
     aid = uuid.uuid4().hex
@@ -97,9 +97,9 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
         row = r.one("approval_create", agentId=p.id, tool=b.tool, sessionId=b.sessionId, key=key, electorate=b.electorate,
                     approvalId=aid, quorum=quorum, size=size, args=json.dumps(b.args)[:4000] if b.args else None)
         if row is None:
-            raise Forbidden("électorat non autorisé (CAN_SEND_TO) ou session fermée")
+            raise Forbidden("electorate not allowed (CAN_SEND_TO) or session closed")
         if row["electors"] < size:
-            raise Conflict(f"électorat trop petit : {row['electors']} < {size}")
+            raise Conflict(f"electorate too small: {row['electors']} < {size}")
         return row
     try:
         row = ctx.store.write({"agentId": p.id, "chainId": s["chainId"]}, tx)
@@ -122,7 +122,7 @@ def _can_see(ctx, p, ap) -> bool:
 def get_approval(approval_id: str, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     ap = ctx.store.read(lambda r: r.one("approval_get", approvalId=approval_id))
     if ap is None or not _can_see(ctx, p, ap):
-        raise NotFound("validation introuvable")
+        raise NotFound("approval not found")
     return to_json(ap)
 
 
@@ -136,25 +136,25 @@ def vote(approval_id: str, b: Vote, p: Principal = Depends(require_person), ctx=
     """Seules des personnes votent (un agent logiciel recommande, il ne vote pas)."""
     ap = ctx.store.read(lambda r: r.one("approval_get", approvalId=approval_id))
     if ap is None:
-        raise NotFound("validation introuvable")
+        raise NotFound("approval not found")
     el = ctx.store.read(lambda r: r.one("approval_eligibility", personId=p.id, approvalId=approval_id))
     if el["member"]:
         effective, on_behalf = p.id, None
     elif el["delegatorId"]:
         effective, on_behalf = el["delegatorId"], el["delegatorId"]
     else:
-        raise Forbidden("vous ne faites pas partie de l'électorat (ni délégué en cours)")
+        raise Forbidden("you are not part of the electorate (nor a current delegate)")
     if ap["status"] != "pending":
-        raise Conflict(f"validation déjà {ap['status']}")
+        raise Conflict(f"approval already {ap['status']}")
 
     def tx(r):
         v = r.one("approval_vote", approvalId=approval_id, personId=p.id, decision=b.decision, comment=b.comment,
                   effectiveVoter=effective, onBehalfOf=on_behalf)
         if v is None:
-            raise Conflict("validation close, ou cette voix a déjà été exprimée")
+            raise Conflict("approval closed, or this vote was already cast")
         return r.one("approval_tally", approvalId=approval_id)
     try:
         out = ctx.store.write({"agentId": p.id, "chainId": ap["chainId"] or "none"}, tx)
     except ConstraintError:
-        raise Conflict("vous avez déjà voté") from None
+        raise Conflict("you have already voted") from None
     return to_json(out)

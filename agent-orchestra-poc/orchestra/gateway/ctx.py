@@ -12,7 +12,7 @@ from orchestra.gateway.store import Store
 def default_llm_factory(settings: Settings) -> Callable[[str], LLMProvider]:
     def make(key: str) -> LLMProvider:
         if settings.llm_provider != "gemini":
-            raise NotConfigured(f"fournisseur inconnu : {settings.llm_provider}")
+            raise NotConfigured(f"unknown provider: {settings.llm_provider}")
         from orchestra.gateway.llm.gemini import GeminiProvider
         return GeminiProvider(key, settings.embed_model)
     return make
@@ -28,7 +28,7 @@ class Ctx:
     def llm(self, key: str | None = None) -> LLMProvider:
         key = key or self.keystore.get()
         if not key:
-            raise NotConfigured("aucune clé LLM : Paramètres → Modèles")
+            raise NotConfigured("no LLM key: Settings → Models")
         return self.llm_factory(key)
 
     def log_access(self, agent_id: str, kind: str, granted: bool, targets: list[str], detail: str = "", chain_id: str = "none"):

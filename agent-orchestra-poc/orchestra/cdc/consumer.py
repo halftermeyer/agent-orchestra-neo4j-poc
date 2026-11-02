@@ -54,7 +54,7 @@ class Consumer:
             if not any(c in (e.code or "") for c in ("ChangeDataCapture.FutureIdentifier", "ChangeDataCapture.InvalidIdentifier")):
                 raise
             # le curseur ne correspond pas à ce journal (base recréée : postérieur à sa fin ; ou autre base). Rien à rattraper.
-            log.warning("curseur de %s sans rapport avec le journal (base recréée ?) : réinitialisé à la position courante", db)
+            log.warning("cursor of %s does not belong to the log (database recreated?): reset to the current position", db)
             self.cursors.set(db, self.source.current(db))
             self.stats.cursor_resets += 1
             return 0
@@ -68,7 +68,7 @@ class Consumer:
                 if e.transient:
                     raise                     # on ne fait pas avancer le curseur : on réessaie
                 self.stats.errors += 1
-                log.error("tx %s ignorée (%s)", tx_id, e)
+                log.error("tx %s skipped (%s)", tx_id, e)
             self.stats.tx += 1
             self.stats.events += len(tx)
             self._record_lag(tx[0])
@@ -82,7 +82,7 @@ class Consumer:
                 n = self.poll_once()
             except Exception as e:  # base ou passerelle indisponible : on réessaie
                 self.stats.errors += 1
-                log.error("poll en échec : %s", type(e).__name__)
+                log.error("poll failed: %s", type(e).__name__)
                 n = 0
             if n == 0:
                 stop.wait(self.s.poll_interval)
@@ -117,14 +117,14 @@ class Consumer:
             chain = ((e["metadata"].get("txMetadata") or {}).get("chainId")) or None
             if "Approval" in ev["labels"] and before.get("status") == "pending" and after.get("status") in ("approved", "rejected"):
                 who = after["requestedBy"]
-                word = "approuvée" if after["status"] == "approved" else "refusée"
+                word = "approved" if after["status"] == "approved" else "rejected"
                 self._deliver_system(f"approval:{after['id']}:{after['status']}", f"approval:{after['id']}", who, f"inbox:{who}",
-                                     f"La validation {after['id']} ({after.get('policy')}) a été {word} par le comité.",
+                                     f"Approval {after['id']} ({after.get('policy')}) was {word} by the committee.",
                                      {"kind": "approval-decided", "approvalId": after["id"], "status": after["status"]}, chain)
             elif ("Chain" in ev["labels"] and before.get("status") == "active" and after.get("status") == "suspended"
                   and after.get("suspendReason") in ("budget", "tokens")):
                 self._deliver_system(f"chain-suspended:{after['id']}", "gateway", "auditeur", "inbox:auditeur",
-                                     f"La chaîne {after['id']} est suspendue ({after.get('suspendReason')} épuisé).",
+                                     f"Chain {after['id']} is suspended ({after.get('suspendReason')} exhausted).",
                                      {"kind": "chain-suspended", "chainId": after["id"], "reason": after.get("suspendReason"),
                                       "spent": after.get("spent"), "budget": after.get("budget")}, None)
 
@@ -136,7 +136,7 @@ class Consumer:
             if e.transient:
                 raise
             self.stats.errors += 1
-            log.warning("notification %s refusée (%s)", mid, e.status)
+            log.warning("notification %s refused (%s)", mid, e.status)
 
     def _message(self, mid: str) -> dict:
         if mid not in self._msgs:
@@ -183,7 +183,7 @@ class Consumer:
                 if r["filter"] and not predicate.evaluate(json.loads(r["filter"]), msg.get("payload"), msg):
                     continue
             except Exception as e:
-                log.error("filtre invalide (routine %s) : %s", r["id"], e)
+                log.error("invalid filter (routine %s): %s", r["id"], e)
                 continue
             try:
                 self.gw.deliver(id=f"evt:{r['id']}:{msg['id']}", **{"from": f"routine:{r['id']}"}, actingAgent=r["owner"],
@@ -194,7 +194,7 @@ class Consumer:
                 if e.transient:
                     raise
                 self.stats.errors += 1
-                log.warning("routine %s : livraison refusée (%s)", r["id"], e.status)
+                log.warning("routine %s: delivery refused (%s)", r["id"], e.status)
                 self.hub.publish({"t": datetime.now(timezone.utc).isoformat(), "type": "error", "actor": r["owner"],
                                   "target": r["deliverTo"], "payload": {"routine": r["id"], "status": e.status, "reason": e.body[:200]}})
 
@@ -210,7 +210,7 @@ class Consumer:
                        "changeCount": len(changes), "changes": changes[: self.s.max_changes_in_raw],
                        "truncated": len(changes) > self.s.max_changes_in_raw}
             self.gw.deliver(id=f"raw:{db}:{tx_id}", **{"from": self.s.bridge_agent}, actingAgent=self.s.bridge_agent,
-                            inbox=f"kg.{kg_id}.raw", performative="inform", body=f"{len(changes)} changement(s) dans {db} (tx {tx_id})",
+                            inbox=f"kg.{kg_id}.raw", performative="inform", body=f"{len(changes)} change(s) in {db} (tx {tx_id})",
                             payload=payload, chainId=chain)
         self._sync_refs(db, tx)
 

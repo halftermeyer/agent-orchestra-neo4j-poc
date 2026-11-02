@@ -31,13 +31,13 @@ class ToolExecutor:
     def run(self, name: str, args: dict, key: str) -> dict:
         handler = getattr(self, f"_t_{name}", None)
         if handler is None:
-            return {"error": f"outil inconnu : {name}"}
+            return {"error": f"unknown tool: {name}"}
         if name == "launch_modification":              # clos l'appel créé par la validation, pas un nouvel appel
             return self._guard(lambda: handler(args, key))
         try:
             self.c.post("/tools/calls", {"sessionId": self.sid, "tool": name, "idempotencyKey": key, "args": _short(args, 1500)})
         except ClientError as e:
-            return {"error": f"outil refusé par la passerelle ({e.status}) : {e.body[:200]}"}
+            return {"error": f"tool refused by the gateway ({e.status}): {e.body[:200]}"}
         fact_id = msg_id = None
         try:
             result, produced = handler(args, key)
@@ -68,7 +68,7 @@ class ToolExecutor:
         for n in to:
             (inboxes if self._inbox(n) else unknown).append(self._inbox(n) or n)
         if unknown:
-            return {"error": f"destinataires non autorisés : {unknown}. Autorisés : {sorted(self._allowed_names())}"}, {}
+            return {"error": f"recipients not allowed: {unknown}. Allowed: {sorted(self._allowed_names())}"}, {}
         body = {"to": inboxes, "performative": a.get("performative", "inform"), "body": a.get("body", ""),
                 "sessionId": self.sid, "inReplyTo": self.trigger}
         if a.get("payload"):
@@ -126,13 +126,13 @@ class ToolExecutor:
         tool = a.get("tool", "")
         electorate = self.s.electorates.get(tool)
         if not electorate:
-            return {"error": f"aucun électorat défini pour l'outil {tool}"}, {}
+            return {"error": f"no electorate defined for tool {tool}"}, {}
         r = self.c.post("/approvals", {"sessionId": self.sid, "tool": tool, "idempotencyKey": f"{key}-approval", "electorate": electorate,
                                        "args": {"part_id": a.get("part_id"), "replacement_id": a.get("replacement_id"),
                                                 "description": a.get("description")}})
         self.awaiting_approval = True
         return {"approvalId": r["id"], "status": r.get("status", "pending"),
-                "note": "En attente du vote du comité ; tu seras réveillé à la décision. Termine ton tour."}, {}
+                "note": "Waiting for the committee vote; you will be woken when it decides. End your turn."}, {}
 
     def _t_launch_modification(self, a, key):
         ap = self.c.approval(a["approval_id"])
@@ -150,7 +150,7 @@ class ToolExecutor:
                 return {"projectDays": base["projectDays"], "criticalPath": base["criticalPath"]}, {}
             return cpa.simulate_delay(tasks, a["task_id"], int(a["delay_days"])), {}
         except KeyError:
-            return {"error": f"tâche inconnue : {a.get('task_id')}"}, {}
+            return {"error": f"unknown task: {a.get('task_id')}"}, {}
 
     def _t_suspend_chain(self, a, key):
         r = self.c.post(f"/chains/{a['chain_id']}/suspend", {"reason": a.get("reason", "")[:500]})

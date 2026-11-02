@@ -39,7 +39,7 @@ def _window(ctx, run_id: str | None, t_from: str | None, t_to: str | None):
     if run_id:
         run = ctx.store.read(lambda r: r.one("run_get", id=run_id))
         if run is None:
-            raise NotFound("enregistrement introuvable")
+            raise NotFound("recording not found")
         run = to_json(run)
         return run, run["startedAt"], run["endedAt"] or t_to
     return None, t_from, t_to
@@ -76,7 +76,7 @@ def start_run(b: NewRun, p: Principal = Depends(require_admin), ctx=Depends(get_
 def end_run(run_id: str, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one("run_end", id=run_id))
     if row is None:
-        raise NotFound("enregistrement introuvable")
+        raise NotFound("recording not found")
     return to_json(row)
 
 
@@ -94,7 +94,7 @@ class Export(Strict):
 def export_run(run_id: str, b: Export, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
     """Fige l'enregistrement dans un fichier portable (versionnable) : il survit à la remise à zéro de la base."""
     if not SLUG.match(b.slug):
-        raise NotFound("nom d'enregistrement invalide")
+        raise NotFound("invalid recording name")
     run, a, z = _window(ctx, run_id, None, None)
     events = reconstruct(ctx, a, z or datetime.now(timezone.utc).isoformat())
     doc = {"name": run["name"], "note": run["note"], "from": a, "to": z, "exportedAt": datetime.now(timezone.utc).isoformat(), "events": events}
@@ -116,5 +116,5 @@ def list_recordings(p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
 def get_recording(slug: str, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
     path = _dir(ctx) / f"{slug}.json"
     if not SLUG.match(slug) or not path.exists():
-        raise NotFound("enregistrement introuvable")
+        raise NotFound("recording not found")
     return json.loads(path.read_text(encoding="utf-8"))

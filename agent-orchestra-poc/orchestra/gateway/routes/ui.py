@@ -12,18 +12,18 @@ from orchestra.gateway.routes.memory import compute_scope
 from orchestra.gateway.store import to_json
 
 router = APIRouter()
-ADMIN_ENTRY = {"id": "admin", "name": "Administrateur", "title": "Paramètres et supervision", "admin": True}
+ADMIN_ENTRY = {"id": "admin", "name": "Administrator", "title": "Settings and supervision", "admin": True}
 
 
 def require_ui(p: Principal = Depends(principal)) -> Principal:
     if p.kind not in ("user", "admin"):
-        raise Forbidden("réservé aux utilisateurs de l'interface")
+        raise Forbidden("reserved to UI users")
     return p
 
 
 def _demo(ctx):
     if not ctx.settings.demo_login:
-        raise NotFound("connexion de démonstration désactivée")
+        raise NotFound("demo login disabled")
 
 
 @router.get("/demo/users")
@@ -45,7 +45,7 @@ def demo_login(b: Login, ctx=Depends(get_ctx)):
         return {"token": make_token(ctx.settings.master_key, "admin", "admin"), "kind": "admin", "id": "admin", "name": ADMIN_ENTRY["name"]}
     row = next((u for u in ctx.store.read(lambda r: r.all("demo_users")) if u["id"] == b.userId), None)
     if row is None:
-        raise NotFound("utilisateur inconnu")
+        raise NotFound("unknown user")
     return {"token": make_token(ctx.settings.master_key, "user", b.userId), "kind": "user", "id": b.userId, "name": row["name"]}
 
 
@@ -89,7 +89,7 @@ def graph_state(p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
 def agent_card(agent_id: str, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
     row = ctx.store.read(lambda r: r.one("agent_card", agentId=agent_id))
     if row is None:
-        raise NotFound("agent introuvable")
+        raise NotFound("agent not found")
     return to_json(row)
 
 
@@ -115,10 +115,10 @@ def kg_neighborhood(kg_id: str, key: str, p: Principal = Depends(require_ui), ct
     """Voisinage d'une entité d'un KG. Une personne doit avoir le droit sur le KG (CAN_QUERY), comme pour tout accès aux KG."""
     template = {"produit": "kg/graph_part", "projet": "kg/graph_task"}.get(kg_id)
     if template is None:
-        raise NotFound("graphe inconnu")
+        raise NotFound("unknown graph")
     auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=p.id, kgIds=[kg_id]))
     if not p.is_admin and not auth:
-        raise Forbidden("pas de droit sur ce graphe de connaissance (CAN_QUERY)")
+        raise Forbidden("no right on this knowledge graph (CAN_QUERY)")
     db = auth[0]["dbName"] if auth else next(k["dbName"] for k in ctx.store.read(lambda r: r.one("topology"))["kgs"] if k["id"] == kg_id)
     rows = ctx.store.run_in(db, template, key=key)
     nodes: dict[str, dict] = {}

@@ -25,6 +25,6 @@ class RuntimeSettings:
     def from_env(cls) -> "RuntimeSettings":
         e = os.environ
         if not e.get("ORCHESTRA_MASTER_KEY"):
-            raise RuntimeError("ORCHESTRA_MASTER_KEY manquante : lance `make keygen`.")
+            raise RuntimeError("ORCHESTRA_MASTER_KEY is missing: run `make keygen`.")
         return cls(gateway_url=e.get("GATEWAY_URL", "http://gateway:8000"), wake_url=e.get("CDC_WS_URL", "ws://cdc:8001"),
                    master_key=e["ORCHESTRA_MASTER_KEY"], max_turns=int(e.get("RUNTIME_MAX_TURNS", "10")))

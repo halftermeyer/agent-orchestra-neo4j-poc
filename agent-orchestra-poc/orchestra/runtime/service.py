@@ -42,7 +42,7 @@ class AgentWorker:
                             self.enqueue(m["messageId"])
             except Exception as e:
                 if not self.stop.is_set():
-                    log.warning("%s : réveil indisponible (%s), nouvel essai", self.agent, type(e).__name__)
+                    log.warning("%s: wake-up channel unavailable (%s), retrying", self.agent, type(e).__name__)
                     self.stop.wait(2)
 
     def run(self):
@@ -54,7 +54,7 @@ class AgentWorker:
                 continue
             t0 = time.time()
             status = self.runner.handle(mid)
-            log.info("%s : message %s → %s (%.1f s)", self.agent, mid[:12], status, time.time() - t0)
+            log.info("%s: message %s -> %s (%.1f s)", self.agent, mid[:12], status, time.time() - t0)
 
 
 def run_all(settings: RuntimeSettings):
@@ -62,7 +62,7 @@ def run_all(settings: RuntimeSettings):
     threads = [threading.Thread(target=AgentWorker(a, settings, stop).run, name=a, daemon=True) for a in settings.agents]
     for t in threads:
         t.start()
-    log.info("runtimes démarrés : %s (le pont KG est un agent à règles porté par le consommateur CDC)", ", ".join(settings.agents))
+    log.info("runtimes started: %s (the KG bridge is a rule-based agent carried by the CDC consumer)", ", ".join(settings.agents))
     try:
         while True:
             time.sleep(3600)

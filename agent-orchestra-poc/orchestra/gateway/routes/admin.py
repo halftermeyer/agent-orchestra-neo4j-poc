@@ -20,13 +20,13 @@ def create_supervises(b: Supervise, p: Principal = Depends(require_admin), ctx=D
     def tx(r):
         chk = r.one("supervises_lock", **{"from": b.supervisor, "to": b.subordinate})
         if chk is None:
-            raise NotFound("agent introuvable")
+            raise NotFound("agent not found")
         if chk["self"]:
-            raise Conflict("un agent ne se supervise pas lui-même")
+            raise Conflict("an agent cannot supervise itself")
         if chk["cycle"]:
-            raise Conflict("cette supervision créerait un cycle")
+            raise Conflict("this supervision would create a cycle")
         if chk["softwareOverPerson"]:
-            raise Forbidden("un agent logiciel ne supervise pas un humain")
+            raise Forbidden("a software agent does not supervise a human")
         return r.one("supervises_create", **{"from": b.supervisor, "to": b.subordinate})
     return to_json(ctx.store.write({"agentId": p.id, "chainId": "none"}, tx))
 
@@ -42,7 +42,7 @@ def new_version(agent_id: str, b: NewVersion, p: Principal = Depends(require_adm
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one(
         "version_create", agentId=agent_id, by=p.id, model=b.model, prompt=b.prompt))
     if row is None:
-        raise NotFound("agent logiciel introuvable")
+        raise NotFound("software agent not found")
     return to_json(row)
 
 

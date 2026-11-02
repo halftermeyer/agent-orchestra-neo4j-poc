@@ -25,14 +25,14 @@ FEDERATED = {"impact_part": ({"partId": (str, None)}, ["produit", "projet"], "fe
 def _validate(spec: dict, params: dict) -> dict:
     extra = set(params) - set(spec)
     if extra:
-        raise Forbidden(f"paramètres inconnus : {sorted(extra)}")
+        raise Forbidden(f"unknown parameters: {sorted(extra)}")
     out = {}
     for name, (typ, default) in spec.items():
         v = params.get(name, default)
         if v is None or not isinstance(v, typ) or isinstance(v, bool):
-            raise Forbidden(f"paramètre invalide : {name}")
+            raise Forbidden(f"invalid parameter: {name}")
         if typ is list and not all(isinstance(x, str) for x in v):
-            raise Forbidden(f"paramètre invalide : {name}")
+            raise Forbidden(f"invalid parameter: {name}")
         if typ is int:
             v = max(1, min(v, 20))
         out[name] = v
@@ -48,15 +48,15 @@ class KgQuery(Strict):
 @router.post("/kg/query")
 def kg_query(b: KgQuery, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     if b.template not in TEMPLATES:
-        raise NotFound(f"modèle de requête inconnu : {b.template}. Modèles disponibles : {sorted(TEMPLATES)}")
+        raise NotFound(f"unknown query template: {b.template}. Available templates: {sorted(TEMPLATES)}")
     kg_id, spec = TEMPLATES[b.template]
     if b.kg != kg_id:
-        raise Forbidden(f"le modèle {b.template} porte sur le graphe « {kg_id} »")
+        raise Forbidden(f"the template {b.template} applies to the {kg_id} graph")
     params = _validate(spec, b.params)
     auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=p.id, kgIds=[kg_id]))
     ctx.log_access(p.id, "kg.query", bool(auth), [kg_id], detail=b.template)
     if not auth:
-        raise Forbidden("pas de droit sur ce graphe de connaissance (CAN_QUERY)")
+        raise Forbidden("no right on this knowledge graph (CAN_QUERY)")
     return {"rows": to_json(ctx.store.run_in(auth[0]["dbName"], f"kg/{b.template}", **params))}
 
 
@@ -68,14 +68,14 @@ class Federated(Strict):
 @router.post("/kg/federated")
 def kg_federated(b: Federated, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     if b.template not in FEDERATED:
-        raise NotFound("modèle fédéré inconnu")
+        raise NotFound("unknown federated template")
     spec, kgs, qname = FEDERATED[b.template]
     params = _validate(spec, b.params)
     auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=p.id, kgIds=kgs))
     granted = len({k["id"] for k in auth}) == len(kgs)
     ctx.log_access(p.id, "kg.federated", granted, kgs, detail=b.template)
     if not granted:
-        raise Forbidden("la requête fédérée exige un droit sur chaque graphe touché")
+        raise Forbidden("a federated query requires a right on every graph it touches")
     return {"rows": to_json(ctx.store.run_in("fed", qname, **params))}
 
 
@@ -91,7 +91,7 @@ def kg_resolve(b: Resolve, p: Principal = Depends(require_agent), ctx=Depends(ge
     auth = [a for a in auth if a["dbName"] == b.db]
     ctx.log_access(p.id, "kg.resolve", bool(auth), [b.db], detail=b.key)
     if not auth:
-        raise Forbidden("pas de droit sur ce graphe de connaissance (CAN_QUERY)")
+        raise Forbidden("no right on this knowledge graph (CAN_QUERY)")
     rows = ctx.store.run_in(b.db, "kg/entity_exists", key=b.key)
     ref = ctx.store.read(lambda r: r.one("entityref_redirect", db=b.db, key=b.key))
     return to_json({**rows[0], "deletedAt": ref["deletedAt"], "redirectTo": ref["redirectTo"]})

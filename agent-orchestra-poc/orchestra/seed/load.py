@@ -106,4 +106,4 @@ def run_all():
         load_orchestra(drv)
         load_kg_produit(drv, produit)
         load_kg_projet(drv, projet)
-    print(f"seed OK: {len(produit['parts'])} pièces, {len(produit['tests'])} essais, {len(projet['tasks'])} tâches, {len(incidents)} incidents")
+    print(f"seed OK: {len(produit['parts'])} parts, {len(produit['tests'])} tests, {len(projet['tasks'])} tasks, {len(incidents)} incidents")

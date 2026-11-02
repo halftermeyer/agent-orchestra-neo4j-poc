@@ -20,7 +20,7 @@ def critical_path(tasks: list[dict]) -> dict:
             if indeg[s] == 0:
                 q.append(s)
     if len(order) != len(tasks):
-        raise ValueError("cycle dans les dépendances du planning")
+        raise ValueError("cycle in the schedule dependencies")
     es, ef = {}, {}
     for i in order:                                              # passe avant
         es[i] = max((ef[d] for d in by_id[i].get("dependsOn", []) if d in by_id), default=0)

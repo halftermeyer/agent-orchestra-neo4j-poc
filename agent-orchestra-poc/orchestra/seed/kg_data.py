@@ -1,4 +1,4 @@
-"""Données synthétiques déterministes (graine fixe). Produit fictif : station de pompage modulaire SPM-7."""
+"""Deterministic synthetic data (fixed seed). Fictional product: modular pumping station SPM-7."""
 import random
 from datetime import date, timedelta
 
@@ -6,23 +6,23 @@ SEED = 42
 PROJECT_START = date(2026, 1, 5)
 
 FAMILIES = {
-    "Hydraulique": ["Pompe", "Vanne", "Clapet", "Joint", "Tuyauterie", "Filtre", "Bride", "Raccord"],
-    "Électrique": ["Moteur", "Variateur", "Capteur", "Contacteur", "Câble", "Relais", "Alimentation"],
-    "Mécanique": ["Palier", "Arbre", "Accouplement", "Roulement", "Support", "Carter", "Vis"],
-    "Contrôle": ["Automate", "Sonde", "Afficheur", "Passerelle", "Carte E/S", "Module radio"],
-    "Structure": ["Châssis", "Panneau", "Charnière", "Platine", "Cadre", "Traverse"],
-    "Fluidique": ["Réservoir", "Buse", "Diffuseur", "Collecteur", "Soupape", "Purgeur"],
+    "Hydraulic": ["Pump", "Valve", "Check valve", "Seal", "Piping", "Filter", "Flange", "Fitting"],
+    "Electrical": ["Motor", "Drive", "Sensor", "Contactor", "Cable", "Relay", "Power supply"],
+    "Mechanical": ["Bearing", "Shaft", "Coupling", "Roller bearing", "Bracket", "Housing", "Screw"],
+    "Control": ["PLC", "Probe", "Display", "Gateway", "I/O card", "Radio module"],
+    "Structural": ["Frame", "Panel", "Hinge", "Base plate", "Chassis", "Crossbeam"],
+    "Fluidic": ["Tank", "Nozzle", "Diffuser", "Manifold", "Relief valve", "Drain"],
 }
-SUBASSEMBLIES = ["Groupe motopompe", "Armoire de commande", "Circuit hydraulique", "Châssis et carrosserie", "Instrumentation", "Réservoir et collecteurs"]
-TEST_KINDS = ["pression", "vibration", "fatigue", "étanchéité", "thermique", "CEM", "endurance"]
+SUBASSEMBLIES = ["Motor-pump unit", "Control cabinet", "Hydraulic circuit", "Frame and body", "Instrumentation", "Tank and manifolds"]
+TEST_KINDS = ["pressure", "vibration", "fatigue", "leak-tightness", "thermal", "EMC", "endurance"]
 TASK_PHASES = {
-    "Conception": ["Cahier des charges détaillé", "Revue de conception préliminaire", "Conception du groupe motopompe", "Conception de l'armoire", "Plans du châssis", "Revue de conception critique"],
-    "Prototype": ["Approvisionnement prototype", "Assemblage prototype", "Câblage et paramétrage", "Mise en service banc", "Premier démarrage"],
-    "Essais": ["Essais de pression", "Essais de vibration", "Essais d'étanchéité", "Essais thermiques", "Essais CEM", "Essais d'endurance", "Analyse des résultats d'essais"],
-    "Industrialisation": ["Dossier de fabrication", "Outillage", "Série pilote", "Qualification du procédé", "Formation atelier"],
-    "Livraison": ["Préparation documentaire", "Pré-série client", "Recette client", "Revue de fin de projet", "Transfert au service après-vente", "Clôture du projet", "Retour d'expérience"],
+    "Design": ["Detailed requirements", "Preliminary design review", "Motor-pump unit design", "Cabinet design", "Frame drawings", "Critical design review"],
+    "Prototype": ["Prototype procurement", "Prototype assembly", "Wiring and configuration", "Bench commissioning", "First start-up"],
+    "Testing": ["Pressure tests", "Vibration tests", "Leak-tightness tests", "Thermal tests", "EMC tests", "Endurance tests", "Test results analysis"],
+    "Industrialisation": ["Manufacturing file", "Tooling", "Pilot series", "Process qualification", "Workshop training"],
+    "Delivery": ["Documentation package", "Customer pre-series", "Customer acceptance", "Project closing review", "Handover to after-sales", "Project closure", "Lessons learned"],
 }
-ROLES = ["Ingénieur hydraulique", "Ingénieur électricien", "Mécanicien d'essais", "Technicien banc", "Automaticien", "Qualiticien", "Chef d'atelier", "Dessinateur"]
+ROLES = ["Hydraulics engineer", "Electrical engineer", "Test mechanic", "Bench technician", "Control engineer", "Quality engineer", "Workshop manager", "Draughtsman"]
 
 
 def generate_kg_produit(seed: int = SEED) -> dict:
@@ -30,7 +30,7 @@ def generate_kg_produit(seed: int = SEED) -> dict:
     parts, contains = [], []
     pid = lambda n: f"PRT-{n:04d}"
     n = 1
-    parts.append({"id": pid(n), "name": "Station de pompage modulaire SPM-7", "level": 0, "family": "Produit", "revision": "A", "criticality": 5})
+    parts.append({"id": pid(n), "name": "Modular pumping station SPM-7", "level": 0, "family": "Produit", "revision": "A", "criticality": 5})
     root = pid(n)
     l1 = []
     for name in SUBASSEMBLIES:
@@ -43,14 +43,14 @@ def generate_kg_produit(seed: int = SEED) -> dict:
         for j in range(5):
             n += 1
             fam = fam_names[(i + j) % len(fam_names)]
-            parts.append({"id": pid(n), "name": f"Ensemble {rng.choice(FAMILIES[fam]).lower()} {SUBASSEMBLIES[i].split()[0].lower()} {j + 1}", "level": 2, "family": fam, "revision": "A", "criticality": rng.randint(2, 5)})
+            parts.append({"id": pid(n), "name": f"{fam} {rng.choice(FAMILIES[fam]).lower()} assembly {j + 1} ({SUBASSEMBLIES[i].lower()})", "level": 2, "family": fam, "revision": "A", "criticality": rng.randint(2, 5)})
             l2.append(pid(n)); contains.append({"from": parent, "to": pid(n), "qty": 1})
     n_l3 = 200 - len(parts)
     l3 = []
     for k in range(n_l3):
         n += 1
         fam = fam_names[rng.randrange(len(fam_names))]
-        parts.append({"id": pid(n), "name": f"{rng.choice(FAMILIES[fam])} {fam.lower()} réf. {rng.randint(100, 999)}", "level": 3, "family": fam, "revision": rng.choice("AAAB"), "criticality": rng.randint(1, 5)})
+        parts.append({"id": pid(n), "name": f"{fam} {rng.choice(FAMILIES[fam]).lower()} ref. {rng.randint(100, 999)}", "level": 3, "family": fam, "revision": rng.choice("AAAB"), "criticality": rng.randint(1, 5)})
         l3.append(pid(n))
         parent = l2[k % len(l2)] if k < 3 * len(l2) else rng.choice(l2)
         contains.append({"from": parent, "to": pid(n), "qty": rng.randint(1, 8)})
@@ -66,7 +66,7 @@ def generate_kg_produit(seed: int = SEED) -> dict:
     for t in range(1, 51):
         kind = TEST_KINDS[(t - 1) % len(TEST_KINDS)]
         tid = f"TST-{t:03d}"
-        tests.append({"id": tid, "name": f"Essai de {kind} n°{t}", "kind": kind, "durationDays": rng.randint(1, 10), "status": "passed"})
+        tests.append({"id": tid, "name": f"{kind.capitalize()} test no. {t}", "kind": kind, "durationDays": rng.randint(1, 10), "status": "passed"})
         pool = covered_targets if t <= 40 else coverable
         for target in rng.sample(pool, rng.randint(1, 5)):
             covers.append({"from": tid, "to": target})
@@ -91,7 +91,7 @@ def generate_kg_projet(tests: list[dict], l1_ids: list[str], seed: int = SEED) -
         for p in rng.sample(range(max(0, i - 4), i), min(i, rng.randint(1, 2))):
             deps.append({"from": t["id"], "to": tasks[p]["id"]})  # from DEPENDS_ON to
     for t in tasks:
-        if t["phase"] == "Essais":
+        if t["phase"] == "Testing":
             kinds = [k for k in TEST_KINDS if k.lower() in t["name"].lower()]
             if kinds:  # lien métier par clé (pas de relation entre bases)
                 t["testRefs"] = [x["id"] for x in tests if x["kind"] == kinds[0]]
@@ -106,7 +106,7 @@ def generate_kg_projet(tests: list[dict], l1_ids: list[str], seed: int = SEED) -
         t["plannedStartDay"] = start
         t["plannedStart"] = (PROJECT_START + timedelta(days=start)).isoformat()
         t["status"] = "planned"
-    resources = [{"id": f"RES-{i + 1}", "name": f"Ressource {i + 1}", "role": ROLES[i], "capacity": 1.0} for i in range(len(ROLES))]
+    resources = [{"id": f"RES-{i + 1}", "name": f"Resource {i + 1}", "role": ROLES[i], "capacity": 1.0} for i in range(len(ROLES))]
     assigned = [{"from": t["id"], "to": rng.choice(resources)["id"]} for t in tasks]
     return {"tasks": tasks, "depends": deps, "resources": resources, "assigned": assigned}
 
@@ -167,11 +167,11 @@ def generate_incidents(produit: dict, seed: int = SEED) -> list[dict]:
     others = sorted(p["id"] for p in produit["parts"] if p["level"] == 3 and p["id"] not in shared and p != loop[0])
     chosen = [loop[0]] + shared[:2] + rng.sample(others, 7)       # INC-001 : l'incident du scénario (avec boucle légitime)
     templates = [
-        ("Fuite constatée sur {n} après {h} h de fonctionnement", "majeure"),
-        ("Vibration anormale mesurée sur {n} à {h} h de service", "majeure"),
-        ("Défaillance prématurée de {n} chez le client", "critique"),
-        ("Échauffement excessif de {n} pendant la recette", "mineure"),
-        ("Corrosion visible sur {n} après {h} h", "mineure"),
+        ("Leak found on {n} after {h} h of operation", "major"),
+        ("Abnormal vibration measured on {n} at {h} h of service", "major"),
+        ("Premature failure of {n} at the customer", "critical"),
+        ("Excessive heating of {n} during acceptance", "minor"),
+        ("Visible corrosion on {n} after {h} h", "minor"),
     ]
     start = date(2026, 3, 2)
     out = []

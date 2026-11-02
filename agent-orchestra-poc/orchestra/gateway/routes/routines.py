@@ -47,22 +47,22 @@ def create_routine(b: NewRoutine, p: Principal = Depends(require_agent), ctx=Dep
     try:
         if b.trigger == "cron":
             if not b.cron or not croniter.is_valid(b.cron):
-                raise ValueError("expression cron invalide")
+                raise ValueError("invalid cron expression")
             ZoneInfo(b.tz)
         elif b.trigger == "once":
             if b.runAt is None:
-                raise ValueError("runAt requis pour une minuterie")
+                raise ValueError("runAt is required for a timer")
         else:
             if not b.listensTo or b.filter is None:
-                raise ValueError("listensTo et filter requis pour un abonnement")
+                raise ValueError("listensTo and filter are required for a subscription")
             predicate.validate(b.filter)
     except Exception as e:
         raise Forbidden(str(e)) from None
     chk = ctx.store.read(lambda r: r.one("routine_authorize", agentId=p.id, deliverTo=b.deliverTo, listensTo=b.listensTo))
     if not chk["canDeliver"]:
-        raise Forbidden("envoi non autorisé vers cette inbox (CAN_SEND_TO)")
+        raise Forbidden("sending to this inbox is not allowed (CAN_SEND_TO)")
     if not chk["topicOk"]:
-        raise NotFound("topic introuvable")
+        raise NotFound("topic not found")
     run_at = None
     if b.runAt:
         run_at = (b.runAt if b.runAt.tzinfo else b.runAt.replace(tzinfo=timezone.utc)).isoformat()
@@ -80,5 +80,5 @@ def disable_routine(routine_id: str, p: Principal = Depends(principal), ctx=Depe
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one(
         "routine_disable", id=routine_id, agentId=p.id, isAdmin=p.is_admin))
     if row is None:
-        raise NotFound("routine introuvable ou non possédée")
+        raise NotFound("routine not found or not owned")
     return to_json(row)

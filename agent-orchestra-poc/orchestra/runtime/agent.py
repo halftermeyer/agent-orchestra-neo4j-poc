@@ -8,11 +8,12 @@ from orchestra.runtime.tools import ToolExecutor
 
 log = logging.getLogger("orchestra.runtime")
 
-COMMON_RULES = """Règles communes :
-- Agis uniquement par tes outils. N'invente jamais d'identifiant (pièce, essai, tâche, agent) : lis-les dans les messages ou interroge un graphe.
-- Appelle `set_status` au début avec une phrase courte, puis travaille. Pas de message de politesse ni d'accusé de réception : n'envoie un message que s'il porte une action ou une information utile.
-- Réponds toujours dans la chaîne en cours (c'est automatique). Quand tu as fini, n'appelle plus d'outil et termine par une phrase de bilan.
-- Les noms de destinataires de `send_message` sont ceux de la liste « Destinataires autorisés »."""
+COMMON_RULES = """Common rules:
+- Act only through your tools. Never invent an identifier (part, test, task, agent): read it from the messages or query a graph.
+- Call `set_status` first with a short sentence, then work. No pleasantries or acknowledgements: only send a message if it carries an action or useful information.
+- Always answer within the current chain (this is automatic). When you are done, stop calling tools and finish with a one-sentence summary.
+- Recipient names for `send_message` are those in the "Allowed recipients" list.
+- Write every message, status and fact in English."""
 
 
 def _compact(x):
@@ -46,27 +47,27 @@ class AgentRunner:
             for t in self._templates if t["kg"] in me["kgs"] or t["kg"] == "federated" and set(me["kgs"]) >= {"produit", "projet"})
         commitments = self.c.open_commitments()
         parts = [v.get("prompt") or "", COMMON_RULES,
-                 f"Ton identifiant : {self.agent}. Date (UTC) : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}.",
-                 f"Ton mandat : {m.get('purpose')}. Périmètre : {m.get('scope')}. Critère de réussite : {m.get('successCriteria')}.",
-                 "Destinataires autorisés : " + ", ".join(sorted(x.removeprefix("inbox:") for x in me["canSendTo"]))]
+                 f"Your identifier: {self.agent}. Date (UTC): {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}.",
+                 f"Your mandate: {m.get('purpose')}. Scope: {m.get('scope')}. Success criterion: {m.get('successCriteria')}.",
+                 "Allowed recipients: " + ", ".join(sorted(x.removeprefix("inbox:") for x in me["canSendTo"]))]
         if tpl:
-            parts.append("Graphes interrogeables avec `query_kg` : passe EXACTEMENT ces valeurs (le nom du modèle seul, sans parenthèses ni préfixe ; "
-                         "les paramètres dans `params`). Pour les clés `about` de `remember`, utilise db = kgproduit ou kgprojet :\n" + tpl)
+            parts.append("Graphs you can query with `query_kg`: pass EXACTLY these values (the template name alone, no parentheses or prefix; "
+                         "parameters go in `params`). For the `about` keys of `remember`, use db = kgproduit or kgprojet:\n" + tpl)
         if commitments:
-            parts.append("Engagements ouverts (solde-les avec `commit` et `fulfills`) :\n" + "\n".join(
-                f"  - {c['id']} envers {c['toAgent']} avant {c['dueAt'][:16]} : {c['description']}" for c in commitments))
+            parts.append("Open commitments (settle them with `commit` and `fulfills`):\n" + "\n".join(
+                f"  - {c['id']} to {c['toAgent']} before {c['dueAt'][:16]}: {c['description']}" for c in commitments))
         return "\n\n".join(parts)
 
     def user_message(self, msg: dict, thread: list[dict]) -> str:
-        lines = [f"Tu es réveillé par un message de {msg['from']} ({msg['performative']}) dans la chaîne {msg['chainId']} :",
-                 msg["body"] or "(sans texte)"]
+        lines = [f"You were woken by a message from {msg['from']} ({msg['performative']}) in chain {msg['chainId']}:",
+                 msg["body"] or "(no text)"]
         if msg.get("payload"):
-            lines.append("Données jointes : " + json.dumps(_compact(msg["payload"]), ensure_ascii=False, separators=(",", ":")))
+            lines.append("Attached data: " + json.dumps(_compact(msg["payload"]), ensure_ascii=False, separators=(",", ":")))
         if msg.get("hasSharedMemory"):
-            lines.append("Une mémoire t'a été partagée avec ce message : consulte-la avec `recall`.")
+            lines.append("A memory was shared with you along with this message: read it with `recall`.")
         earlier = [m for m in thread if m["id"] != msg["id"]]
         if earlier:
-            lines.append("Fil de la conversation (ce que tu as envoyé ou reçu avant) :\n" + "\n".join(_fmt_msg(m, self.agent) for m in earlier))
+            lines.append("Conversation thread (what you sent or received before):\n" + "\n".join(_fmt_msg(m, self.agent) for m in earlier))
         return "\n".join(lines)
 
     # ----- cycle d'une session -----
@@ -76,7 +77,7 @@ class AgentRunner:
         if p.get("kind") == "commitment-due":
             try:
                 if self.c.commitment(p["commitmentId"])["status"] != "open":
-                    return "engagement déjà soldé"
+                    return "commitment already settled"
             except ClientError:
                 pass
         return None
@@ -85,7 +86,7 @@ class AgentRunner:
         try:
             sess = self.c.open_session(message_id)
         except ClientError as e:
-            log.warning("%s : session refusée pour %s (%s)", self.agent, message_id, e.status)
+            log.warning("%s: session refused for %s (%s)", self.agent, message_id, e.status)
             return "refused"
         if sess.get("closedAt"):
             return "already-done"
@@ -94,14 +95,14 @@ class AgentRunner:
             msg = self.c.message(message_id)
             reason = self.gate(msg)
             if reason:
-                log.info("%s : %s — pas de LLM (%s)", self.agent, message_id[:12], reason)
+                log.info("%s: %s — no LLM call (%s)", self.agent, message_id[:12], reason)
             else:
                 status = self.work(sid, msg)
         except ClientError as e:                       # budget épuisé, chaîne suspendue, LLM indisponible…
-            log.warning("%s : session %s en échec (%s %s)", self.agent, sid, e.status, e.body[:120])
+            log.warning("%s: session %s failed (%s %s)", self.agent, sid, e.status, e.body[:120])
             status = "failed"
         except Exception:
-            log.exception("%s : erreur interne", self.agent)
+            log.exception("%s: internal error", self.agent)
             status = "failed"
         try:
             self.c.close_session(sid, status)
@@ -130,5 +131,5 @@ class AgentRunner:
                 contents.append({"role": "tool", "name": call["name"], "result": result if isinstance(result, dict) else {"result": result}})
             if tools.awaiting_approval:
                 return "input-required"
-        log.warning("%s : limite de %d tours atteinte", self.agent, self.s.max_turns)
+        log.warning("%s: turn limit of %d reached", self.agent, self.s.max_turns)
         return "failed"
