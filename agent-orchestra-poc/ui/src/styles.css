@@ -24,7 +24,7 @@ main { padding: 16px 18px; flex: 1; }
 .user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 22px; }
 .user-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 12px; border-radius: 14px; background: #fff; } .user-card span:last-child { color: var(--muted); font-size: 12px; }
 .user-dot { width: 46px; height: 46px; border-radius: 50%; margin-bottom: 6px; }
-.scene-wrap { max-width: 1280px; margin: 0 auto; } .scene { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 18px; }
+.scene-wrap { max-width: 1280px; margin: 0 auto; } .scene { width: 100%; height: auto; max-height: calc(100vh - 150px); border: 1px solid var(--line); border-radius: 18px; }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; list-style: none; padding: 8px 4px; margin: 0; font-size: 12px; color: var(--muted); } .legend.inline { padding: 0; margin-left: 12px; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #9AA4B2; }
 .dot-woken { background: #F0562A; } .dot-thinking { background: #4C8EDA; } .dot-tool { background: #3B6FD4; } .dot-sending { background: #E0702B; } .dot-learning { background: #F5B642; } .dot-waiting { background: #B0B7C3; } .dot-error { background: #E04646; }
@@ -59,3 +59,4 @@ pre { white-space: pre-wrap; font-size: 11.5px; background: #F6F8FB; padding: 8p
 .log { list-style: none; margin: 0; padding: 8px 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; font-size: 12.5px; max-height: 560px; overflow: auto; } .log li { padding: 4px 0; border-bottom: 1px solid #F0F3F8; } .log time { color: var(--muted); margin-right: 6px; font-variant-numeric: tabular-nums; }
 .log.full { max-height: none; } .pill { font-size: 10.5px; background: #EEF2F8; border-radius: 99px; padding: 0 7px; margin-right: 4px; } .pill-error { background: #FDECEA; color: var(--danger); } .pill-vote { background: #E5F6EC; color: var(--ok); } .pill-waiting { background: #FFF4E5; }
 .replay-stage .scene-wrap { margin: 0; width: 100%; max-width: none; }
+.replay-stage .scene { max-height: max(420px, calc(100vh - 530px)); }
