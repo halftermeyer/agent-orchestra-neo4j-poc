@@ -157,6 +157,9 @@ class Consumer:
         msg = self._message(messageId)
         own = self._owners_of(inbox)
         base = {"messageId": messageId, "performative": msg["performative"], "chainId": msg["chainId"], "inbox": inbox}
+        kind = (msg.get("payload") or {}).get("kind")
+        if kind:
+            base["kind"] = kind                      # sert aux chapitres de la relecture
         if own["topic"]:
             self.hub.publish({"t": t, "type": "sent", "actor": msg["from"], "target": inbox, "payload": {**base, "topic": True}})
             self._route(msg, inbox)

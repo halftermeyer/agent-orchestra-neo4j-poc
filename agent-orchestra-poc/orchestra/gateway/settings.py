@@ -19,6 +19,7 @@ class Settings:
     default_token_budget: int = 200_000
     share_ttl_days: int = 30
     demo_login: bool = False                # sélection d'utilisateur sans mot de passe : démonstration uniquement
+    recordings_dir: str = str(Path(__file__).resolve().parents[2] / "data" / "scenarios")
     incidents_file: str = str(Path(__file__).resolve().parents[2] / "data" / "incidents.json")
     max_live_days: int = 30
     embed_dim: int = 768

@@ -14,8 +14,9 @@ def _short(x, limit):
 
 
 class ToolExecutor:
-    def __init__(self, client, settings, agent_id: str, session_id: str, trigger_id: str, can_send_to: list[str]):
+    def __init__(self, client, settings, agent_id: str, session_id: str, trigger_id: str, can_send_to: list[str], templates: list[dict] | None = None):
         self.c, self.s, self.agent, self.sid, self.trigger = client, settings, agent_id, session_id, trigger_id
+        self.templates = templates or []
         self.can_send_to = set(can_send_to)
         self.awaiting_approval = False
         self.sent = 0
@@ -99,6 +100,13 @@ class ToolExecutor:
 
     def _t_query_kg(self, a, key):
         kg, tpl, params = a.get("kg", ""), a.get("template", ""), a.get("params") or {}
+        # tolérance : les LLM recopient parfois la signature du catalogue (« produit/part_info(partId) »)
+        if "/" in tpl:
+            prefix, tpl = tpl.split("/", 1)
+            kg = kg or prefix
+        tpl = tpl.split("(")[0].strip()
+        if not kg:                                   # graphe omis : on le déduit du catalogue
+            kg = next((t["kg"] for t in self.templates if t["name"] == tpl), "")
         if kg == "federated":
             r = self.c.post("/kg/federated", {"template": tpl, "params": params})
         else:

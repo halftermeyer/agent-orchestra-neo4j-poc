@@ -48,7 +48,7 @@ class KgQuery(Strict):
 @router.post("/kg/query")
 def kg_query(b: KgQuery, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
     if b.template not in TEMPLATES:
-        raise NotFound("modèle de requête inconnu")
+        raise NotFound(f"modèle de requête inconnu : {b.template}. Modèles disponibles : {sorted(TEMPLATES)}")
     kg_id, spec = TEMPLATES[b.template]
     if b.kg != kg_id:
         raise Forbidden(f"le modèle {b.template} porte sur le graphe « {kg_id} »")

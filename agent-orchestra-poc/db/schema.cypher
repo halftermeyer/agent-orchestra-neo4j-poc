@@ -30,6 +30,7 @@ CREATE CONSTRAINT toolcall_key IF NOT EXISTS FOR (n:ToolCall) REQUIRE n.idempote
 CREATE CONSTRAINT approval_key IF NOT EXISTS FOR (n:Approval) REQUIRE n.id IS NODE KEY;
 CREATE CONSTRAINT kg_id IF NOT EXISTS FOR (n:KnowledgeGraph) REQUIRE n.id IS UNIQUE;
 CREATE CONSTRAINT entityref_key IF NOT EXISTS FOR (n:EntityRef) REQUIRE (n.db, n.key) IS NODE KEY;
+CREATE CONSTRAINT run_key IF NOT EXISTS FOR (n:Run) REQUIRE n.id IS NODE KEY;
 // Un vote par personne et par validation
 CREATE CONSTRAINT vote_once IF NOT EXISTS FOR ()-[r:VOTED]-() REQUIRE (r.approvalId, r.personId) IS UNIQUE;
 

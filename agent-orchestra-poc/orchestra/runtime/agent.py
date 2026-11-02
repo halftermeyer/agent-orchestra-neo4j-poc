@@ -41,16 +41,17 @@ class AgentRunner:
         v, m = me["version"] or {}, me["mandate"] or {}
         if self._templates is None:
             self._templates = self.c.templates() if me["kgs"] else []
-        tpl = "\n".join(f"  - {t['kg']}/{t['name']}({', '.join(f'{k}: {v}' for k, v in t['params'].items())})" for t in self._templates
-                        if t["kg"] in me["kgs"] or t["kg"] == "federated" and set(me["kgs"]) >= {"produit", "projet"})
+        tpl = "\n".join(
+            f"  - kg=\"{t['kg']}\", template=\"{t['name']}\", params={{{', '.join(f'\"{k}\": <{v}>' for k, v in t['params'].items())}}}"
+            for t in self._templates if t["kg"] in me["kgs"] or t["kg"] == "federated" and set(me["kgs"]) >= {"produit", "projet"})
         commitments = self.c.open_commitments()
         parts = [v.get("prompt") or "", COMMON_RULES,
                  f"Ton identifiant : {self.agent}. Date (UTC) : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}.",
                  f"Ton mandat : {m.get('purpose')}. Périmètre : {m.get('scope')}. Critère de réussite : {m.get('successCriteria')}.",
                  "Destinataires autorisés : " + ", ".join(sorted(x.removeprefix("inbox:") for x in me["canSendTo"]))]
         if tpl:
-            parts.append("Graphes interrogeables avec `query_kg` (kg/modèle(paramètres)) ; pour les clés `about` de `remember`, utilise "
-                         "db = kgproduit ou kgprojet :\n" + tpl)
+            parts.append("Graphes interrogeables avec `query_kg` : passe EXACTEMENT ces valeurs (le nom du modèle seul, sans parenthèses ni préfixe ; "
+                         "les paramètres dans `params`). Pour les clés `about` de `remember`, utilise db = kgproduit ou kgprojet :\n" + tpl)
         if commitments:
             parts.append("Engagements ouverts (solde-les avec `commit` et `fulfills`) :\n" + "\n".join(
                 f"  - {c['id']} envers {c['toAgent']} avant {c['dueAt'][:16]} : {c['description']}" for c in commitments))
@@ -114,7 +115,9 @@ class AgentRunner:
         return self.converse(sid, msg, me, [{"role": "user", "text": self.user_message(msg, thread)}])
 
     def converse(self, sid: str, msg: dict, me: dict, contents: list[dict], key_prefix: str = "t") -> str:
-        tools = ToolExecutor(self.c, self.s, self.agent, sid, msg["id"], me["canSendTo"])
+        if self._templates is None:
+            self._templates = self.c.templates() if me["kgs"] else []
+        tools = ToolExecutor(self.c, self.s, self.agent, sid, msg["id"], me["canSendTo"], self._templates)
         names = [t["name"] for t in me["tools"] if t["name"] in TOOL_SPECS]
         system = self.system_prompt(me)
         for turn in range(self.s.max_turns):

@@ -18,7 +18,7 @@ from orchestra.seed.load import load_orchestra
 ROOT = Path(__file__).resolve().parents[1]
 TESTDB = "orchestratest"
 MASTER = "test-master-key"
-DYNAMIC = ["Message", "Session", "StatusUpdate", "Fact", "EntityRef", "ToolCall", "Approval", "Chain", "AccessLog", "InboxDay", "WorkDay", "Commitment"]
+DYNAMIC = ["Message", "Session", "StatusUpdate", "Fact", "EntityRef", "ToolCall", "Approval", "Chain", "AccessLog", "InboxDay", "WorkDay", "Commitment", "Run"]
 
 
 @pytest.fixture(scope="session")
@@ -129,7 +129,8 @@ def fake():
 @pytest.fixture(scope="session")
 def client(testdb, fake, tmp_path_factory):
     st = Settings(db=testdb, master_key=MASTER, data_dir=tmp_path_factory.mktemp("gw"), neo4j_uri=config.NEO4J_URI,
-                  neo4j_password=config.GATEWAY_PASSWORD, kg_password=config.KGCURATOR_PASSWORD, demo_login=True)
+                  neo4j_password=config.GATEWAY_PASSWORD, kg_password=config.KGCURATOR_PASSWORD, demo_login=True,
+                  recordings_dir=str(tmp_path_factory.mktemp("rec")))
     app = create_app(st, llm_factory=lambda key: fake)
     with TestClient(app, raise_server_exceptions=False) as c:
         c.ctx = app.state.ctx

@@ -61,7 +61,7 @@ def normalize_tx(events: list[dict]) -> tuple[list[dict], list[dict]]:
                 emit("status", status_agent.get(ev["elementId"]), None, text=after.get("text"))
             elif "ToolCall" in labels:
                 key, actor = after.get("idempotencyKey") or before.get("idempotencyKey"), after.get("agentId") or before.get("agentId")
-                tool = tool_of.get(key)
+                tool = after.get("tool") or before.get("tool") or tool_of.get(key)   # `tool` est dénormalisé : la fin d'un appel est une autre transaction
                 if op == "c":
                     st = after.get("status")
                     emit("waiting" if st == "input-required" else "tool.start", actor, tool, key=key, status=st)

@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from orchestra.gateway.ctx import Ctx, default_llm_factory
 from orchestra.gateway.errors import ApiError
 from orchestra.gateway.keystore import KeyStore
-from orchestra.gateway.routes import admin, core, internal, kg, llm, memory, routines, support, tools, ui
+from orchestra.gateway.routes import admin, core, internal, kg, llm, memory, replay, routines, support, tools, ui
 from orchestra.gateway.settings import Settings
 from orchestra.gateway.store import Store
 
@@ -42,6 +42,6 @@ def create_app(settings: Settings | None = None, llm_factory=None) -> FastAPI:
     def health():
         return {"ok": True}
 
-    for m in (core, memory, tools, kg, admin, llm, routines, internal, support, ui):
+    for m in (core, memory, tools, kg, admin, llm, routines, internal, support, ui, replay):
         app.include_router(m.router)
     return app
