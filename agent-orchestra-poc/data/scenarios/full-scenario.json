@@ -1,0 +1,4928 @@
+{
+ "name": "Full scenario: from incident to governance",
+ "note": "INC-001 on PRT-0102",
+ "from": "2026-11-02T08:05:31.228000+00:00",
+ "to": "2026-11-02T08:11:32.167000+00:00",
+ "exportedAt": "2026-11-02T08:11:32.216717+00:00",
+ "events": [
+  {
+   "t": "2026-11-02T08:05:31.527000+00:00",
+   "type": "sent",
+   "actor": "ing-qualite",
+   "target": "incidents",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "incidents",
+    "messageId": "5b2367073df344c2b3d15e0cfef60d4e",
+    "performative": "inform",
+    "topic": true,
+    "kind": "incident"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:31.704000+00:00",
+   "type": "idle",
+   "actor": "ing-qualite",
+   "target": null,
+   "payload": {
+    "session": "ses:direct:5b2367073df344c2b3d15e0cfef60d4e@ing-qualite"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:32.213000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-qualite-incidents",
+   "target": "qualite",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:qualite",
+    "messageId": "evt:rt-qualite-incidents:5b2367073df344c2b3d15e0cfef60d4e",
+    "performative": "inform",
+    "topic": false,
+    "kind": "incident"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:32.213000+00:00",
+   "type": "woken",
+   "actor": "qualite",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:qualite",
+    "messageId": "evt:rt-qualite-incidents:5b2367073df344c2b3d15e0cfef60d4e",
+    "performative": "inform",
+    "kind": "incident"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:34.525000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "set_status",
+   "payload": {
+    "key": "qualite:t0.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:34.573000+00:00",
+   "type": "status",
+   "actor": "qualite",
+   "target": null,
+   "payload": {
+    "text": "Qualifying incident INC-001 for component PRT-0102."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:34.633000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "set_status",
+   "payload": {
+    "key": "qualite:t0.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:36.557000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "query_kg",
+   "payload": {
+    "key": "qualite:t1.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:36.659000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "query_kg",
+   "payload": {
+    "key": "qualite:t1.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:37.875000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "query_kg",
+   "payload": {
+    "key": "qualite:t2.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:38.029000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "query_kg",
+   "payload": {
+    "key": "qualite:t2.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:40.260000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t3.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:40.632000+00:00",
+   "type": "learned",
+   "actor": "qualite",
+   "target": "mem:qualite",
+   "payload": {
+    "factId": "5a3a9dbd036b4d31b55dc055136212af",
+    "statement": "Electrical cable ref. 371 (PRT-0102), Electrical family, level 3."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:40.787000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t3.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:42.817000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t4.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:43.211000+00:00",
+   "type": "learned",
+   "actor": "qualite",
+   "target": "mem:qualite",
+   "payload": {
+    "factId": "400af4415aec4e4dbd720ed0f893cb94",
+    "statement": "Criticality of Electrical cable ref. 371 (PRT-0102) is 1."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:43.250000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t4.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:44.111000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t5.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:44.545000+00:00",
+   "type": "learned",
+   "actor": "qualite",
+   "target": "mem:qualite",
+   "payload": {
+    "factId": "7ccd44d95f3044cf80a41da989059b79",
+    "statement": "Electrical cable ref. 371 (PRT-0102) is used in Structural frame assembly 5 (PRT-0012) and Electrical relay assembly 3 (PRT-0035)."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:44.632000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "remember",
+   "payload": {
+    "key": "qualite:t5.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:47.104000+00:00",
+   "type": "tool.start",
+   "actor": "qualite",
+   "target": "send_message",
+   "payload": {
+    "key": "qualite:t6.0-0d4e@qualite",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:47.259000+00:00",
+   "type": "sent",
+   "actor": "qualite",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "b0b31b96ca1c429aa93da14aa3035e83",
+    "performative": "inform",
+    "topic": false,
+    "kind": "impact-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:47.259000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "b0b31b96ca1c429aa93da14aa3035e83",
+    "performative": "inform",
+    "kind": "impact-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:47.363000+00:00",
+   "type": "tool.end",
+   "actor": "qualite",
+   "target": "send_message",
+   "payload": {
+    "key": "qualite:t6.0-0d4e@qualite",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:49.340000+00:00",
+   "type": "idle",
+   "actor": "qualite",
+   "target": null,
+   "payload": {
+    "session": "ses:evt:rt-qualite-incidents:5b2367073df344c2b3d15e0cfef60d4e@qualite"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:49.347000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "set_status",
+   "payload": {
+    "key": "coordinateur:t0.0-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:49.387000+00:00",
+   "type": "status",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "text": "Received an impact request from qualite. Recalling memory and initiating impact analysis."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:49.430000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "set_status",
+   "payload": {
+    "key": "coordinateur:t0.0-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:50.846000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "recall",
+   "payload": {
+    "key": "coordinateur:t1.0-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:51.546000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "recall",
+   "payload": {
+    "key": "coordinateur:t1.0-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.435000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.0-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.530000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d5edae119d414df581e440c004beae8e",
+    "performative": "request",
+    "topic": false,
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.530000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d5edae119d414df581e440c004beae8e",
+    "performative": "request",
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.627000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.0-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.692000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.1-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.706000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "essais",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "977b7c1ac2a6485096cf8934b728905a",
+    "performative": "request",
+    "topic": false,
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.706000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "977b7c1ac2a6485096cf8934b728905a",
+    "performative": "request",
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.716000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.1-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.728000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.2-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.742000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "planification",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:planification",
+    "messageId": "a64e00c8e062427dbe7ddc55e4a6688b",
+    "performative": "request",
+    "topic": false,
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.742000+00:00",
+   "type": "woken",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:planification",
+    "messageId": "a64e00c8e062427dbe7ddc55e4a6688b",
+    "performative": "request",
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:53.753000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "send_message",
+   "payload": {
+    "key": "coordinateur:t2.2-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:54.596000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "commit",
+   "payload": {
+    "key": "coordinateur:t3.0-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:54.690000+00:00",
+   "type": "waiting",
+   "actor": "coordinateur",
+   "target": "qualite",
+   "payload": {
+    "commitmentId": "cm-fcd675881bca",
+    "description": "Synthesis of impact analysis delivered",
+    "dueAt": "2026-11-02T08:08:54.643187Z"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:54.794000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "commit",
+   "payload": {
+    "key": "coordinateur:t3.0-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.118000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-8905a@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.131000+00:00",
+   "type": "status",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "text": "Listing tests to redo for part PRT-0102."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.145000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-8905a@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.277000+00:00",
+   "type": "tool.start",
+   "actor": "planification",
+   "target": "set_status",
+   "payload": {
+    "key": "planification:t0.0-lanification",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.285000+00:00",
+   "type": "status",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "text": "Simulating schedule impact for part PRT-0102."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.292000+00:00",
+   "type": "tool.end",
+   "actor": "planification",
+   "target": "set_status",
+   "payload": {
+    "key": "planification:t0.0-lanification",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.399000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.399000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:b0b31b96ca1c429aa93da14aa3035e83@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.410000+00:00",
+   "type": "status",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "text": "Analyzing part PRT-0102 for incident INC-001 and looking for replacement candidates."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:55.418000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:56.224000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-8905a@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:56.306000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-8905a@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:56.978000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.0-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.002000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.0-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.032000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.1-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.060000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.1-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.129000+00:00",
+   "type": "tool.start",
+   "actor": "planification",
+   "target": "query_kg",
+   "payload": {
+    "key": "planification:t1.0-lanification",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.353000+00:00",
+   "type": "tool.end",
+   "actor": "planification",
+   "target": "query_kg",
+   "payload": {
+    "key": "planification:t1.0-lanification",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.723000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-8905a@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.760000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "b2a8d7c5d5244d6f921e0f3eee781844",
+    "performative": "inform",
+    "topic": false,
+    "kind": "tests-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.760000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "b2a8d7c5d5244d6f921e0f3eee781844",
+    "performative": "inform",
+    "kind": "tests-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.847000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-8905a@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.897000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:57.970000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.189000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:b2a8d7c5d5244d6f921e0f3eee781844@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.274000+00:00",
+   "type": "tool.start",
+   "actor": "planification",
+   "target": "cpa_simulate",
+   "payload": {
+    "key": "planification:t2.0-lanification",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.374000+00:00",
+   "type": "tool.end",
+   "actor": "planification",
+   "target": "cpa_simulate",
+   "payload": {
+    "key": "planification:t2.0-lanification",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.504000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "remember",
+   "payload": {
+    "key": "essais:t3.0-8905a@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.607000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.647000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "18e9ea58a3d345ebabb823fff9057464",
+    "performative": "propose",
+    "topic": false,
+    "kind": "replacement-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.647000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "18e9ea58a3d345ebabb823fff9057464",
+    "performative": "propose",
+    "kind": "replacement-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.701000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.709000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "remember",
+   "payload": {
+    "key": "ingenierie:t3.1-e@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.788000+00:00",
+   "type": "learned",
+   "actor": "essais",
+   "target": "mem:essais",
+   "payload": {
+    "factId": "ab7d1610e82c43bfad58a50b5e513e71",
+    "statement": "Part PRT-0102 requires tests TST-039 and TST-044, with a total duration of 12 days."
+   }
+  },
+  {
+   "t": "2026-11-02T08:05:59.862000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "remember",
+   "payload": {
+    "key": "essais:t3.0-8905a@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:00.078000+00:00",
+   "type": "learned",
+   "actor": "ingenierie",
+   "target": "mem:ingenierie",
+   "payload": {
+    "factId": "788c699383984b98922cd7de1f67cca6",
+    "statement": "Proposed PRT-0116 as a replacement for PRT-0102 in round 1."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:00.169000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "remember",
+   "payload": {
+    "key": "ingenierie:t3.1-e@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:00.529000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:977b7c1ac2a6485096cf8934b728905a@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:00.792000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:06:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:06:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:00.792000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:06:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:06:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.567000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:d5edae119d414df581e440c004beae8e@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.829000+00:00",
+   "type": "tool.start",
+   "actor": "planification",
+   "target": "send_message",
+   "payload": {
+    "key": "planification:t3.0-lanification",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.900000+00:00",
+   "type": "sent",
+   "actor": "planification",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "bf681d11d4a845ee827a7dd820cb1ea9",
+    "performative": "inform",
+    "topic": false,
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.900000+00:00",
+   "type": "sent",
+   "actor": "planification",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "bf681d11d4a845ee827a7dd820cb1ea9",
+    "performative": "inform",
+    "topic": false,
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.900000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "bf681d11d4a845ee827a7dd820cb1ea9",
+    "performative": "inform",
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.900000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "bf681d11d4a845ee827a7dd820cb1ea9",
+    "performative": "inform",
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:01.983000+00:00",
+   "type": "tool.end",
+   "actor": "planification",
+   "target": "send_message",
+   "payload": {
+    "key": "planification:t3.0-lanification",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:02.114000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-57464@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:02.124000+00:00",
+   "type": "status",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "text": "Assessing replacement proposal for PRT-0102 with PRT-0116."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:02.135000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-57464@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:03.333000+00:00",
+   "type": "status",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "text": "Received planning impact report. Waiting for engineering report."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:03.490000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-57464@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:03.515000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-57464@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:03.545000+00:00",
+   "type": "idle",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "session": "ses:a64e00c8e062427dbe7ddc55e4a6688b@planification"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:05.034000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:bf681d11d4a845ee827a7dd820cb1ea9@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:05.531000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-57464@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:05.588000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "57d48ece4574485b85cbb812b15a739d",
+    "performative": "reject-proposal",
+    "topic": false,
+    "kind": "replacement-verdict"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:05.588000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "57d48ece4574485b85cbb812b15a739d",
+    "performative": "reject-proposal",
+    "kind": "replacement-verdict"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:05.650000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-57464@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:06.305000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:18e9ea58a3d345ebabb823fff9057464@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:06.958000+00:00",
+   "type": "tool.start",
+   "actor": "auditeur",
+   "target": "set_status",
+   "payload": {
+    "key": "auditeur:a1-0.0-00Z@auditeur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:06.978000+00:00",
+   "type": "status",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "text": "Chain is progressing towards the declared loop's stop criterion."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:06.986000+00:00",
+   "type": "tool.end",
+   "actor": "auditeur",
+   "target": "set_status",
+   "payload": {
+    "key": "auditeur:a1-0.0-00Z@auditeur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:07.358000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-d@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:07.368000+00:00",
+   "type": "status",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "text": "Received rejection from Testing, proposing a new replacement part."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:07.376000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-d@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:07.685000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:06:00Z@auditeur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:09.112000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "remember",
+   "payload": {
+    "key": "ingenierie:t1.0-d@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:09.457000+00:00",
+   "type": "learned",
+   "actor": "ingenierie",
+   "target": "mem:ingenierie",
+   "payload": {
+    "factId": "036d9e22a78b4ae8b282d14ed5d819b0",
+    "statement": "Replacement part PRT-0116 was rejected by Testing because it is not covered by any tests."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:09.487000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "remember",
+   "payload": {
+    "key": "ingenierie:t1.0-d@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:10.718000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-d@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:10.736000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-d@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:11.814000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-d@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:11.839000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "2c67a67c06b0489cab5b5906ca7957e1",
+    "performative": "propose",
+    "topic": false,
+    "kind": "replacement-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:11.839000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "2c67a67c06b0489cab5b5906ca7957e1",
+    "performative": "propose",
+    "kind": "replacement-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:11.887000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-d@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:12.657000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:57d48ece4574485b85cbb812b15a739d@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:13.502000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-957e1@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:13.513000+00:00",
+   "type": "status",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "text": "Assessing replacement proposal for PRT-0117."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:13.521000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-957e1@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:14.748000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-957e1@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:14.766000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-957e1@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:16.631000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-957e1@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:16.650000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "b78bad3e78ca4e3fb7f4aa102c26db21",
+    "performative": "accept-proposal",
+    "topic": false,
+    "kind": "replacement-verdict"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:16.650000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "b78bad3e78ca4e3fb7f4aa102c26db21",
+    "performative": "accept-proposal",
+    "kind": "replacement-verdict"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:16.711000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-957e1@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:17.292000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:2c67a67c06b0489cab5b5906ca7957e1@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:18.871000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-1@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:18.879000+00:00",
+   "type": "status",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "text": "Received acceptance for the replacement part. Now confirming and reporting to the coordinator."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:18.888000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-1@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:20.446000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t1.0-1@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:20.471000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "a17a6e3ba22c4b008637f8c2521cc24a",
+    "performative": "agree",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:20.471000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "a17a6e3ba22c4b008637f8c2521cc24a",
+    "performative": "agree"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:20.522000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t1.0-1@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:22.131000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-1@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:22.159000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t2.0-1@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:22.330000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:a17a6e3ba22c4b008637f8c2521cc24a@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:24.279000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "commit",
+   "payload": {
+    "key": "ingenierie:t3.0-1@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:24.325000+00:00",
+   "type": "waiting",
+   "actor": "ingenierie",
+   "target": "coordinateur",
+   "payload": {
+    "commitmentId": "cm-b3ed0de618b6",
+    "description": "Delivery of replacement file for PRT-0102 with PRT-0117.",
+    "dueAt": "2026-11-02T08:08:24.287637Z"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:24.424000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "commit",
+   "payload": {
+    "key": "ingenierie:t3.0-1@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:26.558000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t4.0-1@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:26.584000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "5d1b23b1779a43eda3ac08053f83cc4f",
+    "performative": "inform",
+    "topic": false,
+    "kind": "engineering-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:26.584000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "5d1b23b1779a43eda3ac08053f83cc4f",
+    "performative": "inform",
+    "kind": "engineering-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:26.632000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t4.0-1@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:29.280000+00:00",
+   "type": "status",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "text": "All reports received. Synthesizing information and requesting approval."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:29.440000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:b78bad3e78ca4e3fb7f4aa102c26db21@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:32.540000+00:00",
+   "type": "learned",
+   "actor": "coordinateur",
+   "target": "mem:coordinateur",
+   "payload": {
+    "factId": "02124e5dbe8c4a8a81523bf76b450cc5",
+    "statement": "Impact analysis complete for INC-001 on PRT-0102. Engineering proposes replacement part PRT-0117. Testing requires 12 days for tests TST-039"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:33.907000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "b376cfc1ea264b778531ed140af2ecdf",
+    "performative": "inform",
+    "topic": false,
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:33.907000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "b376cfc1ea264b778531ed140af2ecdf",
+    "performative": "inform",
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:36.571000+00:00",
+   "type": "waiting",
+   "actor": "coordinateur",
+   "target": "launch_modification",
+   "payload": {
+    "key": "coordinateur:t3.0-coordinateur-approval",
+    "status": "input-required"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:36.665000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:5d1b23b1779a43eda3ac08053f83cc4f@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:41.360000+00:00",
+   "type": "vote",
+   "actor": "comite-1",
+   "target": "f16a97dc6941403b9ebde07d3413fb02",
+   "payload": {
+    "decision": "approve"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:46.607000+00:00",
+   "type": "vote",
+   "actor": "comite-2",
+   "target": "f16a97dc6941403b9ebde07d3413fb02",
+   "payload": {
+    "decision": "approve"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:46.609000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "launch_modification",
+   "payload": {
+    "key": "coordinateur:t3.0-coordinateur-approval",
+    "resumed": true,
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:46.710000+00:00",
+   "type": "sent",
+   "actor": "approval:f16a97dc6941403b9ebde07d3413fb02",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "approval:f16a97dc6941403b9ebde07d3413fb02:approved",
+    "performative": "inform",
+    "topic": false,
+    "kind": "approval-decided"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:46.710000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "approval:f16a97dc6941403b9ebde07d3413fb02:approved",
+    "performative": "inform",
+    "kind": "approval-decided"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:48.486000+00:00",
+   "type": "status",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "text": "Approval received, launching modification and informing relevant parties."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:50.304000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "launch_modification",
+   "payload": {
+    "key": "coordinateur:t3.0-coordinateur-approval",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:50.341000+00:00",
+   "type": "sent",
+   "actor": "pont-kg",
+   "target": "kg.produit.raw",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "kg.produit.raw",
+    "messageId": "raw:kgproduit:48",
+    "performative": "inform",
+    "topic": true,
+    "kind": "kg-raw"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:50.452000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-interp-raw",
+   "target": "interpreteur-bom",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:interpreteur-bom",
+    "messageId": "evt:rt-interp-raw:raw:kgproduit:48",
+    "performative": "inform",
+    "topic": false,
+    "kind": "kg-raw"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:50.452000+00:00",
+   "type": "woken",
+   "actor": "interpreteur-bom",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:interpreteur-bom",
+    "messageId": "evt:rt-interp-raw:raw:kgproduit:48",
+    "performative": "inform",
+    "kind": "kg-raw"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "topic": false,
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "ing-qualite",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ing-qualite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "topic": false,
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "comite-1",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "topic": false,
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "comite-2",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "topic": false,
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "comite-3",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "topic": false,
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "woken",
+   "actor": "ing-qualite",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:ing-qualite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "woken",
+   "actor": "comite-1",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "woken",
+   "actor": "comite-2",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "woken",
+   "actor": "comite-3",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:comite",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.248000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "00f76fe1cdbe4fdda36ed7a2d7981d20",
+    "performative": "inform",
+    "kind": "modification-launched"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:51.909000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:approval:f16a97dc6941403b9ebde07d3413fb02:approved@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:55.217000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "set_status",
+   "payload": {
+    "key": "interpreteur-bom:t0.0-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:55.226000+00:00",
+   "type": "status",
+   "actor": "interpreteur-bom",
+   "target": null,
+   "payload": {
+    "text": "Interpreting BOM changes for transaction 48."
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:55.233000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "set_status",
+   "payload": {
+    "key": "interpreteur-bom:t0.0-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:56.726000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t1.0-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:06:56.757000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t1.0-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.472000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.0-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.493000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.0-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.501000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.1-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.516000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.1-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.524000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.2-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.551000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "query_kg",
+   "payload": {
+    "key": "interpreteur-bom:t2.2-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.584000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:07:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:07:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:00.584000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:07:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:07:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:04.651000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:07:00Z@auditeur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.021000+00:00",
+   "type": "tool.start",
+   "actor": "interpreteur-bom",
+   "target": "send_message",
+   "payload": {
+    "key": "interpreteur-bom:t3.0-rpreteur-bom",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.051000+00:00",
+   "type": "sent",
+   "actor": "interpreteur-bom",
+   "target": "produit.bom-changes",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "produit.bom-changes",
+    "messageId": "0e8467ae738b48199a732c51232b1820",
+    "performative": "inform",
+    "topic": true,
+    "kind": "bom-change"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.100000+00:00",
+   "type": "tool.end",
+   "actor": "interpreteur-bom",
+   "target": "send_message",
+   "payload": {
+    "key": "interpreteur-bom:t3.0-rpreteur-bom",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.213000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-essais-bom",
+   "target": "essais",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "evt:rt-essais-bom:0e8467ae738b48199a732c51232b1820",
+    "performative": "inform",
+    "topic": false,
+    "kind": "bom-change"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.213000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:essais",
+    "messageId": "evt:rt-essais-bom:0e8467ae738b48199a732c51232b1820",
+    "performative": "inform",
+    "kind": "bom-change"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.262000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-planif-bom",
+   "target": "planification",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:planification",
+    "messageId": "evt:rt-planif-bom:0e8467ae738b48199a732c51232b1820",
+    "performative": "inform",
+    "topic": false,
+    "kind": "bom-change"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:05.262000+00:00",
+   "type": "woken",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:planification",
+    "messageId": "evt:rt-planif-bom:0e8467ae738b48199a732c51232b1820",
+    "performative": "inform",
+    "kind": "bom-change"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:06.584000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-b1820@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:06.591000+00:00",
+   "type": "status",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "text": "Processing BOM change for part PRT-0117."
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:06.617000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-b1820@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:06.656000+00:00",
+   "type": "status",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "text": "Simulating schedule impact for BOM change on PRT-0117."
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:07.756000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-b1820@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:07.811000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "query_kg",
+   "payload": {
+    "key": "essais:t1.0-b1820@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:09.050000+00:00",
+   "type": "idle",
+   "actor": "interpreteur-bom",
+   "target": null,
+   "payload": {
+    "session": "ses:evt:rt-interp-raw:raw:kgproduit:48@interpreteur-bom"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:10.364000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-b1820@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:10.392000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "12fddee362d04ddf9c42c41f6cd49434",
+    "performative": "inform",
+    "topic": false,
+    "kind": "tests-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:10.392000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "12fddee362d04ddf9c42c41f6cd49434",
+    "performative": "inform",
+    "kind": "tests-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:10.447000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t2.0-b1820@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:11.011000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:evt:rt-essais-bom:0e8467ae738b48199a732c51232b1820@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:13.045000+00:00",
+   "type": "sent",
+   "actor": "planification",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "13a66698124f41f593996af4746ce3f3",
+    "performative": "inform",
+    "topic": false,
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:13.045000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "scenario-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "13a66698124f41f593996af4746ce3f3",
+    "performative": "inform",
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:16.091000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:12fddee362d04ddf9c42c41f6cd49434@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:07:16.558000+00:00",
+   "type": "idle",
+   "actor": "planification",
+   "target": null,
+   "payload": {
+    "session": "ses:evt:rt-planif-bom:0e8467ae738b48199a732c51232b1820@planification"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:00.375000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:08:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:08:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:00.375000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:08:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:08:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:05.610000+00:00",
+   "type": "status",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "text": "The chain is progressing and the declared loop's stop criterion has been met."
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:06.468000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:08:00Z@auditeur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:25.740000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-commit-cm-b3ed0de618b6",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "inbox": "inbox:ingenierie",
+    "messageId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "commitment-due"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:25.740000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "inbox": "inbox:ingenierie",
+    "messageId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "performative": "inform",
+    "kind": "commitment-due"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:27.844000+00:00",
+   "type": "sent",
+   "actor": "chef-projet",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "a09ab513f917446888f4a9aea545e108",
+    "performative": "request",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:27.844000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:coordinateur",
+    "messageId": "a09ab513f917446888f4a9aea545e108",
+    "performative": "request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:27.888000+00:00",
+   "type": "idle",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "session": "ses:direct:a09ab513f917446888f4a9aea545e108@chef-projet"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:28.184000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-Z@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:28.193000+00:00",
+   "type": "status",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "text": "Fulfilling commitment: preparing engineering report for PRT-0102 with replacement PRT-0117."
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:28.211000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "set_status",
+   "payload": {
+    "key": "ingenierie:t0.0-Z@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:29.575000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.0-Z@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:29.627000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "query_kg",
+   "payload": {
+    "key": "ingenierie:t1.0-Z@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.178000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "commit",
+   "payload": {
+    "key": "ingenierie:t2.0-Z@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.265000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "commit",
+   "payload": {
+    "key": "ingenierie:t2.0-Z@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.542000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "qualite",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:qualite",
+    "messageId": "fed1f09bbcb540888d137972a7226342",
+    "performative": "query",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.542000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "fed1f09bbcb540888d137972a7226342",
+    "performative": "query",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.542000+00:00",
+   "type": "woken",
+   "actor": "qualite",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:qualite",
+    "messageId": "fed1f09bbcb540888d137972a7226342",
+    "performative": "query"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:31.542000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:chef-projet",
+    "messageId": "fed1f09bbcb540888d137972a7226342",
+    "performative": "query"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:32.557000+00:00",
+   "type": "idle",
+   "actor": "qualite",
+   "target": null,
+   "payload": {
+    "session": "ses:fed1f09bbcb540888d137972a7226342@qualite"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:33.164000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-Z@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:33.190000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "inbox": "inbox:coordinateur",
+    "messageId": "aa0d52b9ad994e65993d8cb6b1072d57",
+    "performative": "inform",
+    "topic": false,
+    "kind": "engineering-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:33.190000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z",
+    "inbox": "inbox:coordinateur",
+    "messageId": "aa0d52b9ad994e65993d8cb6b1072d57",
+    "performative": "inform",
+    "kind": "engineering-report"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:33.238000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t3.0-Z@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:33.805000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-commit-cm-b3ed0de618b6@2026-11-02T08:08:24Z@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:34.270000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:a09ab513f917446888f4a9aea545e108@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:40.620000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:aa0d52b9ad994e65993d8cb6b1072d57@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:55.238000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-commit-cm-fcd675881bca",
+   "target": "coordinateur",
+   "payload": {
+    "chainId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "inbox": "inbox:coordinateur",
+    "messageId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "commitment-due"
+   }
+  },
+  {
+   "t": "2026-11-02T08:08:55.238000+00:00",
+   "type": "woken",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "inbox": "inbox:coordinateur",
+    "messageId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "performative": "inform",
+    "kind": "commitment-due"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:00.377000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:09:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:09:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:00.377000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:09:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:09:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:00.983000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:09:00Z@auditeur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:07.194000+00:00",
+   "type": "status",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "text": "Sending impact analysis summary to chef-projet and requesting approval from the committee."
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:10.184000+00:00",
+   "type": "learned",
+   "actor": "coordinateur",
+   "target": "mem:coordinateur",
+   "payload": {
+    "factId": "e13635110fd840818e8b314adf765675",
+    "statement": "Impact analysis complete for INC-001 on PRT-0102. Engineering proposes replacement part PRT-0117. Testing requires 12 days for tests TST-039"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:11.614000+00:00",
+   "type": "sent",
+   "actor": "coordinateur",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "inbox": "inbox:chef-projet",
+    "messageId": "43e5f83875a0450d8818616eb6c1bcab",
+    "performative": "inform",
+    "topic": false,
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:11.614000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z",
+    "inbox": "inbox:chef-projet",
+    "messageId": "43e5f83875a0450d8818616eb6c1bcab",
+    "performative": "inform",
+    "kind": "planning-impact"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:12.454000+00:00",
+   "type": "tool.start",
+   "actor": "coordinateur",
+   "target": "request_approval",
+   "payload": {
+    "key": "coordinateur:t4.0-coordinateur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:12.509000+00:00",
+   "type": "waiting",
+   "actor": "coordinateur",
+   "target": "launch_modification",
+   "payload": {
+    "key": "coordinateur:t4.0-coordinateur-approval",
+    "status": "input-required"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:12.517000+00:00",
+   "type": "tool.end",
+   "actor": "coordinateur",
+   "target": "request_approval",
+   "payload": {
+    "key": "coordinateur:t4.0-coordinateur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:09:12.523000+00:00",
+   "type": "idle",
+   "actor": "coordinateur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-commit-cm-fcd675881bca@2026-11-02T08:08:54Z@coordinateur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:00.242000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:10:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:10:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:00.242000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:10:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:10:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:01.046000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:10:00Z@auditeur"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:08.327000+00:00",
+   "type": "sent",
+   "actor": "routine:scenario",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "kick-governance-080531",
+    "performative": "inform",
+    "topic": false,
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:08.327000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "kick-governance-080531",
+    "performative": "inform",
+    "kind": "analysis-request"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:09.835000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "e96b3e05f0a24940bb3f7e23f8f32268",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:09.835000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "e96b3e05f0a24940bb3f7e23f8f32268",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:10.973000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-32268@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:10.978000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:kick-governance-080531@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:11.003000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "6b900dbfbe2f4846b5e9a091e1fcb81f",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:11.003000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "6b900dbfbe2f4846b5e9a091e1fcb81f",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:11.065000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-32268@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:11.560000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:e96b3e05f0a24940bb3f7e23f8f32268@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:12.895000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-f@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:12.906000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "6bb2e9f9b2cd4644a02d2854a4026c94",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:12.906000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "6bb2e9f9b2cd4644a02d2854a4026c94",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:12.913000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-f@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.118000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-26c94@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.134000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "21d2162af6734cd2815a801ef32cb64d",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.134000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "21d2162af6734cd2815a801ef32cb64d",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.143000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-26c94@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.354000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:6b900dbfbe2f4846b5e9a091e1fcb81f@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:14.808000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:6bb2e9f9b2cd4644a02d2854a4026c94@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:15.752000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "72eb676c7dbb4a9987d24fcd809c60bc",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:15.752000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "72eb676c7dbb4a9987d24fcd809c60bc",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:16.889000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:21d2162af6734cd2815a801ef32cb64d@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:17.126000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-c60bc@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:17.136000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "139da6868f0448cf809b988c609f58b0",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:17.136000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "139da6868f0448cf809b988c609f58b0",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:17.143000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-c60bc@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:17.624000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:72eb676c7dbb4a9987d24fcd809c60bc@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:18.754000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-0@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:18.767000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c8ee060a2a484fde9a76244081722461",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:18.767000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c8ee060a2a484fde9a76244081722461",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:18.776000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-0@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:19.221000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:139da6868f0448cf809b988c609f58b0@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:20.052000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-22461@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:20.100000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "f3cf5bf6f4a248d6850bedb01fcc5b6d",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:20.100000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "f3cf5bf6f4a248d6850bedb01fcc5b6d",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:20.106000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-22461@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:20.674000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:c8ee060a2a484fde9a76244081722461@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:21.367000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "9023844893c34820a4743b61f2f3c023",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:21.367000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "9023844893c34820a4743b61f2f3c023",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:22.767000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:f3cf5bf6f4a248d6850bedb01fcc5b6d@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:23.052000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-3c023@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:23.062000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d4507706a4b6472b87d074d48e947d10",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:23.062000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d4507706a4b6472b87d074d48e947d10",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:23.069000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-3c023@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:23.525000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:9023844893c34820a4743b61f2f3c023@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:24.513000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "14d4c9d21ae342e68ad05b70275042b5",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:24.513000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "14d4c9d21ae342e68ad05b70275042b5",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:25.650000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-042b5@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:25.666000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "94f21e2c88f84e549f238974df70d146",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:25.666000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "94f21e2c88f84e549f238974df70d146",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:25.676000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-042b5@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:26.078000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:d4507706a4b6472b87d074d48e947d10@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:26.187000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:14d4c9d21ae342e68ad05b70275042b5@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:27.424000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-6@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:27.439000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c22e2144320b4a759af606cca408845b",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:27.439000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c22e2144320b4a759af606cca408845b",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:27.447000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-6@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:28.140000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:94f21e2c88f84e549f238974df70d146@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:28.622000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-8845b@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:28.635000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "e78ba8dffde74999a5cf4ce77f47e484",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:28.635000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "e78ba8dffde74999a5cf4ce77f47e484",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:28.642000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-8845b@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:29.059000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:c22e2144320b4a759af606cca408845b@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:30.035000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-4@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:30.045000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "9e723aaf684f4d87a1da2c21e7949131",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:30.045000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "9e723aaf684f4d87a1da2c21e7949131",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:30.053000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-4@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:30.614000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:e78ba8dffde74999a5cf4ce77f47e484@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:31.348000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-49131@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:31.362000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "5d9f9ec6be1f41fb88db91071a5589ef",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:31.362000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "5d9f9ec6be1f41fb88db91071a5589ef",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:31.370000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-49131@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:32.634000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:9e723aaf684f4d87a1da2c21e7949131@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:32.825000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "4a800ac18b8a4c648f4d9672446e5acd",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:32.825000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "4a800ac18b8a4c648f4d9672446e5acd",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:34.204000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-e5acd@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:34.220000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d5c74da3b86a4141ae37c4812dd5cf9b",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:34.220000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d5c74da3b86a4141ae37c4812dd5cf9b",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:34.220000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:5d9f9ec6be1f41fb88db91071a5589ef@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:34.232000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-e5acd@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:35.361000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:4a800ac18b8a4c648f4d9672446e5acd@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:35.478000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-b@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:35.497000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "efb5a4b961e3462a948e64a18191b41a",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:35.497000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "efb5a4b961e3462a948e64a18191b41a",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:35.530000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-b@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:36.133000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:d5c74da3b86a4141ae37c4812dd5cf9b@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:36.995000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-1b41a@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:37.011000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "659db9e8c5864668b12306f3ed2eebee",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:37.011000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "659db9e8c5864668b12306f3ed2eebee",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:37.020000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-1b41a@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:37.446000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:efb5a4b961e3462a948e64a18191b41a@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:38.412000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "ffcf032ec6f9435a816ee02b5dca9525",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:38.412000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "ffcf032ec6f9435a816ee02b5dca9525",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:39.655000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-a9525@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:39.664000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "cdfe3a0c8b5144a48967c846b843fccf",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:39.664000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "cdfe3a0c8b5144a48967c846b843fccf",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:39.715000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-a9525@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:40.202000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:ffcf032ec6f9435a816ee02b5dca9525@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:40.727000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:659db9e8c5864668b12306f3ed2eebee@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:43.042000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "6ea21034a2cd4f2c828a19e56a5d0c6d",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:43.042000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "6ea21034a2cd4f2c828a19e56a5d0c6d",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:44.264000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:cdfe3a0c8b5144a48967c846b843fccf@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:44.606000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-d0c6d@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:44.651000+00:00",
+   "type": "status",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "text": "Rejecting proposal for PRT-0113 and requesting rephrasing."
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:44.677000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "set_status",
+   "payload": {
+    "key": "essais:t0.0-d0c6d@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:45.740000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t1.0-d0c6d@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:45.770000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "8716d1268bc84766b2b67334d56afa24",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:45.770000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "8716d1268bc84766b2b67334d56afa24",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:45.823000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t1.0-d0c6d@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:46.322000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:6ea21034a2cd4f2c828a19e56a5d0c6d@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:47.322000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "eb67260bc9954493a686e612e5d44264",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:47.322000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "eb67260bc9954493a686e612e5d44264",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:47.687000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:8716d1268bc84766b2b67334d56afa24@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:48.775000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-44264@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:48.784000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d0ccadabbd00440785f5ef9bc6151664",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:48.784000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d0ccadabbd00440785f5ef9bc6151664",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:48.789000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-44264@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:49.255000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:eb67260bc9954493a686e612e5d44264@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:49.948000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c8a641c6407846399a3895f99ee10df3",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:49.948000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "c8a641c6407846399a3895f99ee10df3",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:50.451000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:d0ccadabbd00440785f5ef9bc6151664@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:51.514000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-10df3@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:51.526000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "1fda3d03011c41b6a010af5fa35d935d",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:51.526000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "1fda3d03011c41b6a010af5fa35d935d",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:51.533000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-10df3@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:52.034000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:c8a641c6407846399a3895f99ee10df3@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:53.204000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "a0e7975bf67c4b518ffa5be74cd01050",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:53.204000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "a0e7975bf67c4b518ffa5be74cd01050",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:53.651000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:1fda3d03011c41b6a010af5fa35d935d@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:54.356000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-01050@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:54.365000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "2ed629dd33644a90a41d198da46e49e0",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:54.365000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "2ed629dd33644a90a41d198da46e49e0",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:54.372000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-01050@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:54.778000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:a0e7975bf67c4b518ffa5be74cd01050@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:56.233000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "5d8df22786544925b9e79cbf407b0e95",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:56.233000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "5d8df22786544925b9e79cbf407b0e95",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:56.881000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:2ed629dd33644a90a41d198da46e49e0@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:57.793000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-b0e95@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:57.804000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "a7ba62dc4ec4453faa6fcd68a70bc746",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:57.804000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "a7ba62dc4ec4453faa6fcd68a70bc746",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:57.812000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-b0e95@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:59.382000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "4cb10a2f1739453dacc114e14b4f7bb5",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:59.382000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "4cb10a2f1739453dacc114e14b4f7bb5",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:10:59.906000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:a7ba62dc4ec4453faa6fcd68a70bc746@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:00.821000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:5d8df22786544925b9e79cbf407b0e95@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:00.933000+00:00",
+   "type": "sent",
+   "actor": "routine:rt-auditeur-scan",
+   "target": "auditeur",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "performative": "inform",
+    "topic": false,
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:00.933000+00:00",
+   "type": "woken",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:auditeur",
+    "messageId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "performative": "inform",
+    "kind": "audit-scan"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:02.524000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-f7bb5@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:02.538000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "eff2ed5d23754a6bbefaa5b05fd5ce13",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:02.538000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "eff2ed5d23754a6bbefaa5b05fd5ce13",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:02.549000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-f7bb5@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:03.223000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:4cb10a2f1739453dacc114e14b4f7bb5@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:03.872000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-3@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:03.885000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "39cef9e0bd584c7182877cd702c80d7e",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:03.885000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "39cef9e0bd584c7182877cd702c80d7e",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:03.893000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-3@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:04.618000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:eff2ed5d23754a6bbefaa5b05fd5ce13@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.009000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-80d7e@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.026000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d9f665b71d0f4d36a7cae5c771be41a7",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.026000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "d9f665b71d0f4d36a7cae5c771be41a7",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.038000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-80d7e@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.513000+00:00",
+   "type": "tool.start",
+   "actor": "auditeur",
+   "target": "set_status",
+   "payload": {
+    "key": "auditeur:a2-0.0-00Z@auditeur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.527000+00:00",
+   "type": "status",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "text": "Suspending chain due to unproductive loop between essais and ingenierie."
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.536000+00:00",
+   "type": "tool.end",
+   "actor": "auditeur",
+   "target": "set_status",
+   "payload": {
+    "key": "auditeur:a2-0.0-00Z@auditeur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:05.653000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:39cef9e0bd584c7182877cd702c80d7e@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:06.583000+00:00",
+   "type": "tool.start",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-7@ingenierie",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:06.595000+00:00",
+   "type": "sent",
+   "actor": "ingenierie",
+   "target": "essais",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "21e71e1dd50c4d9f80fecdb44001fe65",
+    "performative": "propose",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:06.595000+00:00",
+   "type": "woken",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:essais",
+    "messageId": "21e71e1dd50c4d9f80fecdb44001fe65",
+    "performative": "propose"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:06.604000+00:00",
+   "type": "tool.end",
+   "actor": "ingenierie",
+   "target": "send_message",
+   "payload": {
+    "key": "ingenierie:t0.0-7@ingenierie",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:07.101000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:d9f665b71d0f4d36a7cae5c771be41a7@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:08.006000+00:00",
+   "type": "tool.start",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-1fe65@essais",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:08.017000+00:00",
+   "type": "sent",
+   "actor": "essais",
+   "target": "ingenierie",
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "15bc00f67b5041a991ab01027036890f",
+    "performative": "reject-proposal",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:08.017000+00:00",
+   "type": "woken",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "chainId": "governance-080531",
+    "inbox": "inbox:ingenierie",
+    "messageId": "15bc00f67b5041a991ab01027036890f",
+    "performative": "reject-proposal"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:08.024000+00:00",
+   "type": "tool.end",
+   "actor": "essais",
+   "target": "send_message",
+   "payload": {
+    "key": "essais:t0.0-1fe65@essais",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:08.437000+00:00",
+   "type": "idle",
+   "actor": "essais",
+   "target": null,
+   "payload": {
+    "session": "ses:21e71e1dd50c4d9f80fecdb44001fe65@essais"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:09.495000+00:00",
+   "type": "tool.start",
+   "actor": "auditeur",
+   "target": "suspend_chain",
+   "payload": {
+    "key": "auditeur:a2-1.0-00Z@auditeur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:09.591000+00:00",
+   "type": "error",
+   "actor": "auditeur",
+   "target": "governance-080531",
+   "payload": {
+    "reason": "audit",
+    "chainId": "governance-080531"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:09.697000+00:00",
+   "type": "tool.end",
+   "actor": "auditeur",
+   "target": "suspend_chain",
+   "payload": {
+    "key": "auditeur:a2-1.0-00Z@auditeur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:10.418000+00:00",
+   "type": "idle",
+   "actor": "ingenierie",
+   "target": null,
+   "payload": {
+    "session": "ses:15bc00f67b5041a991ab01027036890f@ingenierie"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:10.944000+00:00",
+   "type": "tool.start",
+   "actor": "auditeur",
+   "target": "send_message",
+   "payload": {
+    "key": "auditeur:a2-2.0-00Z@auditeur",
+    "status": "working"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "sent",
+   "actor": "auditeur",
+   "target": "chef-projet",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:chef-projet",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "sent",
+   "actor": "auditeur",
+   "target": "ing-qualite",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:ing-qualite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "sent",
+   "actor": "auditeur",
+   "target": "comite-1",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "sent",
+   "actor": "auditeur",
+   "target": "comite-2",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "sent",
+   "actor": "auditeur",
+   "target": "comite-3",
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform",
+    "topic": false
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "woken",
+   "actor": "ing-qualite",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:ing-qualite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "woken",
+   "actor": "comite-1",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "woken",
+   "actor": "comite-2",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "woken",
+   "actor": "comite-3",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:comite",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.003000+00:00",
+   "type": "woken",
+   "actor": "chef-projet",
+   "target": null,
+   "payload": {
+    "chainId": "rt-auditeur-scan@2026-11-02T08:11:00Z",
+    "inbox": "inbox:chef-projet",
+    "messageId": "bf77491252db4c7c909ca2370bda546e",
+    "performative": "inform"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:11.065000+00:00",
+   "type": "tool.end",
+   "actor": "auditeur",
+   "target": "send_message",
+   "payload": {
+    "key": "auditeur:a2-2.0-00Z@auditeur",
+    "status": "completed"
+   }
+  },
+  {
+   "t": "2026-11-02T08:11:14.054000+00:00",
+   "type": "idle",
+   "actor": "auditeur",
+   "target": null,
+   "payload": {
+    "session": "ses:rt-auditeur-scan@2026-11-02T08:11:00Z@auditeur"
+   }
+  }
+ ]
+}

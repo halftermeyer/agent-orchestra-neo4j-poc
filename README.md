@@ -1,6 +1,6 @@
 # Orchestre d'agents sur Neo4j — PoC
 
-Plateforme d'orchestration multi-agents où **Neo4j sert de bus (CDC) et de mémoire** : inbox, messages, routines, droits par chemins (ReBAC), fédération de graphes de connaissance, gouvernance (budget, auditeur, validations humaines) et traçabilité. Scénario : un incident terrain déclenche une modification produit.
+Plateforme d'orchestration multi-agents où **Neo4j sert de bus (CDC) et de mémoire** : inbox, messages, routines, droits par chemins (ReBAC), fédération de graphes de connaissance, gouvernance (budget, auditeur, validations humaines) et traçabilité. Scénario : un incident terrain déclenche une modification produit. L'interface, le contenu de démo et les messages des agents sont en anglais (vidéo de démonstration) ; la documentation reste en français.
 
 - Spécification : [`docs/spec.md`](docs/spec.md) — Règles du projet : [`CLAUDE.md`](CLAUDE.md) — Spikes et écarts : [`docs/spikes.md`](docs/spikes.md)
 - Code : [`agent-orchestra-poc/`](agent-orchestra-poc/) (passerelle, consommateur CDC, runtimes d'agents, interface React)
@@ -20,7 +20,7 @@ Neo4j : HTTP 17474, Bolt 17687. Passerelle : 18000. Consommateur CDC : 18001. `m
 
 ## Relecture et scénario
 
-L'onglet **Relecture** rejoue le flux d'événements reconstruit depuis le graphe, ou un enregistrement fichier, sur la scène, le graphe et le journal : lecture/pause, vitesse ×1 à ×20, barre de temps, compression des temps morts, chapitres (incident, analyse, vote, lancement, gouvernance), suivi d'un agent. Un scénario réel est fourni : [`agent-orchestra-poc/data/scenarios/scenario-complet.json`](agent-orchestra-poc/data/scenarios/scenario-complet.json) (de l'incident à la gouvernance, avec la boucle légitime, le vote, le lancement, la relance et l'auditeur qui suspend une boucle sans fin).
+L'onglet **Relecture** rejoue le flux d'événements reconstruit depuis le graphe, ou un enregistrement fichier, sur la scène, le graphe et le journal : lecture/pause, vitesse ×1 à ×20, barre de temps, compression des temps morts, chapitres (incident, analyse, vote, lancement, gouvernance), suivi d'un agent. Un scénario réel est fourni : [`agent-orchestra-poc/data/scenarios/full-scenario.json`](agent-orchestra-poc/data/scenarios/full-scenario.json) (de l'incident à la gouvernance, avec la boucle légitime, le vote, le lancement, la relance et l'auditeur qui suspend une boucle sans fin).
 
 ```bash
 make scenario   # remet la base à zéro, lance la pile et rejoue le scénario complet avec les vrais agents (≈ 5 min, ≈ 200 000 tokens Gemini)

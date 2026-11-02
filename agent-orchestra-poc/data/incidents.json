@@ -3,80 +3,80 @@
     "id": "INC-001",
     "kind": "incident",
     "componentId": "PRT-0102",
-    "severity": "critique",
-    "description": "Défaillance prématurée de Câble électrique réf. 371 chez le client",
+    "severity": "critical",
+    "description": "Premature failure of Electrical cable ref. 371 at the customer",
     "observedAt": "2026-03-02"
   },
   {
     "id": "INC-002",
     "kind": "incident",
     "componentId": "PRT-0045",
-    "severity": "majeure",
-    "description": "Vibration anormale mesurée sur Relais électrique réf. 674 à 69 h de service",
+    "severity": "major",
+    "description": "Abnormal vibration measured on Electrical relay ref. 674 at 69 h of service",
     "observedAt": "2026-03-05"
   },
   {
     "id": "INC-003",
     "kind": "incident",
     "componentId": "PRT-0049",
-    "severity": "critique",
-    "description": "Défaillance prématurée de Platine structure réf. 641 chez le client",
+    "severity": "critical",
+    "description": "Premature failure of Structural base plate ref. 641 at the customer",
     "observedAt": "2026-03-08"
   },
   {
     "id": "INC-004",
     "kind": "incident",
     "componentId": "PRT-0154",
-    "severity": "mineure",
-    "description": "Échauffement excessif de Carter mécanique réf. 564 pendant la recette",
+    "severity": "minor",
+    "description": "Excessive heating of Mechanical housing ref. 564 during acceptance",
     "observedAt": "2026-03-11"
   },
   {
     "id": "INC-005",
     "kind": "incident",
     "componentId": "PRT-0189",
-    "severity": "mineure",
-    "description": "Corrosion visible sur Tuyauterie hydraulique réf. 891 après 622 h",
+    "severity": "minor",
+    "description": "Visible corrosion on Hydraulic piping ref. 891 after 622 h",
     "observedAt": "2026-03-14"
   },
   {
     "id": "INC-006",
     "kind": "incident",
     "componentId": "PRT-0194",
-    "severity": "majeure",
-    "description": "Fuite constatée sur Collecteur fluidique réf. 495 après 49 h de fonctionnement",
+    "severity": "major",
+    "description": "Leak found on Fluidic manifold ref. 495 after 49 h of operation",
     "observedAt": "2026-03-17"
   },
   {
     "id": "INC-007",
     "kind": "incident",
     "componentId": "PRT-0070",
-    "severity": "majeure",
-    "description": "Vibration anormale mesurée sur Pompe hydraulique réf. 195 à 142 h de service",
+    "severity": "major",
+    "description": "Abnormal vibration measured on Hydraulic pump ref. 195 at 142 h of service",
     "observedAt": "2026-03-20"
   },
   {
     "id": "INC-008",
     "kind": "incident",
     "componentId": "PRT-0088",
-    "severity": "critique",
-    "description": "Défaillance prématurée de Vis mécanique réf. 152 chez le client",
+    "severity": "critical",
+    "description": "Premature failure of Mechanical screw ref. 152 at the customer",
     "observedAt": "2026-03-23"
   },
   {
     "id": "INC-009",
     "kind": "incident",
     "componentId": "PRT-0147",
-    "severity": "mineure",
-    "description": "Échauffement excessif de Alimentation électrique réf. 575 pendant la recette",
+    "severity": "minor",
+    "description": "Excessive heating of Electrical power supply ref. 575 during acceptance",
     "observedAt": "2026-03-26"
   },
   {
     "id": "INC-010",
     "kind": "incident",
     "componentId": "PRT-0101",
-    "severity": "mineure",
-    "description": "Corrosion visible sur Soupape fluidique réf. 439 après 566 h",
+    "severity": "minor",
+    "description": "Visible corrosion on Fluidic relief valve ref. 439 after 566 h",
     "observedAt": "2026-03-29"
   }
 ]

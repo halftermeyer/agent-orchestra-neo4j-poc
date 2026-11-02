@@ -10,7 +10,7 @@ La spécification fait foi : `docs/spec.md`. Lis-la entièrement avant toute mod
 ## Stack imposée
 - Neo4j Enterprise (image Docker officielle, `NEO4J_ACCEPT_LICENSE_AGREEMENT=yes`), plugins APOC et GDS. Pas d'Aura.
 - Backend Python 3.12 : FastAPI, driver `neo4j` officiel, SDK `google-genai`. Un seul package `orchestra/` avec des services séparés : `gateway`, `cdc`, `runtime`.
-- UI : React + Vite + TypeScript, `@neo4j-nvl/react` pour le graphe, Framer Motion pour la scène. Libellés de l'UI en français.
+- UI : React + Vite + TypeScript, `@neo4j-nvl/react` pour le graphe, Framer Motion pour la scène. Libellés de l'UI, contenu de démo (noms, mandats, prompts, données synthétiques) et messages des agents en anglais (décision du 2026-11-02, pour la vidéo de démonstration) ; les identifiants techniques restent ceux de la spec (`coordinateur`, `kgproduit`, `kg.produit.raw`…). Spec, notes et commentaires de code restent en français.
 - `docker compose` pour tout lancer ; `make` pour les commandes courantes.
 - Les bases (`orchestra`, `kgproduit`, `kgprojet`, composite `fed`), les utilisateurs (admin, gateway, cdc) et l'activation du CDC sont créés par un script d'init idempotent versionné (`db/init/`), jamais à la main.
 - Ports exposés : 17474 (HTTP) et 17687 (Bolt), pour ne pas entrer en conflit avec une instance Neo4j locale déjà lancée.
