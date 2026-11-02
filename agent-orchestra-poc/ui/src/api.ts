@@ -7,7 +7,7 @@ const BASE = "/api";
 const KEY = "orchestra.session";
 
 export function loadSession(): Session | null {
-  const raw = sessionStorage.getItem(KEY);   // sessionStorage : jeton de démonstration seulement, jamais de clé LLM
+  const raw = sessionStorage.getItem(KEY);   // sessionStorage: demo token only, never an LLM key
   return raw ? (JSON.parse(raw) as Session) : null;
 }
 export function saveSession(s: Session | null) {
@@ -26,7 +26,7 @@ async function call<T>(path: string, init: RequestInit = {}, token?: string): Pr
   });
   if (!res.ok) {
     let detail = res.statusText;
-    try { const j = await res.json(); detail = j.detail ?? j.error ?? detail; } catch { /* corps non JSON */ }
+    try { const j = await res.json(); detail = j.detail ?? j.error ?? detail; } catch { /* non-JSON body */ }
     throw new ApiError(res.status, typeof detail === "string" ? detail : JSON.stringify(detail));
   }
   return res.json() as Promise<T>;
@@ -54,11 +54,11 @@ export const Api = {
   runs: () => get<{ runs: RunInfo[] }>("/replay/runs").then((r) => r.runs),
   recordings: () => get<{ recordings: RecordingInfo[] }>("/replay/recordings").then((r) => r.recordings),
   recording: (slug: string) => get<ReplayDoc>(`/replay/recordings/${encodeURIComponent(slug)}`),
-  // reconstruit le flux depuis le graphe : mêmes événements normalisés qu'en direct
+  // rebuilds the stream from the graph: same normalized events as live
   replayEvents: (q: { runId?: string; since?: string }) =>
     get<{ events: StreamEvent[] }>(`/replay/events?${new URLSearchParams(q as Record<string, string>)}`).then((r) => r.events),
   models: () => get<ModelsStatus>("/settings/models"),
-  // écriture seule : la clé n'est jamais relue, seuls les 4 derniers caractères et la date sont réaffichés
+  // write-only: the key is never read back, only the last 4 characters and the date are shown again
   setKey: (apiKey: string) => call<ModelsStatus>("/settings/models/key", { method: "PUT", body: JSON.stringify({ apiKey }) }),
   deleteKey: () => call<ModelsStatus>("/settings/models/key", { method: "DELETE" }),
   testKey: (apiKey?: string) => post<{ ok: boolean; models: string[]; error?: string }>("/settings/models/test", apiKey ? { apiKey } : {}),

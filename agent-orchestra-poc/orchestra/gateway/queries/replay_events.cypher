@@ -1,13 +1,13 @@
 CYPHER 25
 CALL () {
-  // sent : une enveloppe par destinataire (propriétaire de l'inbox) ou vers le topic
+  // sent: one envelope per recipient (inbox owner) or to the topic
   MATCH (i:Inbox)-[:HAS_DAY]->(:InboxDay)-[r:RECEIVED]->(m:Message)
   WITH i, m, r, COLLECT { MATCH (a:Agent)-[:HAS_INBOX]->(i) RETURN a.id } AS owners
   UNWIND (CASE WHEN i:Topic THEN [i.id] ELSE owners END) AS target
   RETURN r.submittedAt AS t, 'sent' AS type, m.from AS actor, target,
          {messageId: m.id, performative: m.performative, chainId: m.chainId, inbox: i.id, topic: i:Topic, pj: m.payloadJson} AS payload
   UNION ALL
-  // woken : à la création de la réception, pour chaque propriétaire (la suspension ou la quarantaine postérieures ne sont pas rejouées)
+  // woken: at receipt creation, for each owner (later suspension or quarantine is not replayed)
   MATCH (a:Agent)-[:HAS_INBOX]->(i:Inbox)-[:HAS_DAY]->(:InboxDay)-[r:RECEIVED]->(m:Message)
   WHERE NOT i:Topic
   RETURN r.submittedAt AS t, 'woken' AS type, a.id AS actor, null AS target,

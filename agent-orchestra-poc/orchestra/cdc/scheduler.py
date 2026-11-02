@@ -1,4 +1,4 @@
-"""Planificateur des routines `cron` et `once`. `nextRunAt` est calculé ici (dans l'application)."""
+"""Scheduler for `cron` and `once` routines. `nextRunAt` is computed here (in the application)."""
 import json
 import logging
 from datetime import datetime, timedelta, timezone
@@ -43,13 +43,13 @@ class Scheduler:
         return n
 
     def _late_ok(self, r: dict, slot: datetime, now: datetime) -> bool:
-        """misfire = skip (défaut) : un créneau trop ancien est ignoré ; misfire = fire : on déclenche quand même."""
+        """misfire = skip (default): a slot that is too old is ignored; misfire = fire: trigger anyway."""
         return r["misfire"] == "fire" or (now - slot).total_seconds() <= self.s.misfire_grace
 
     def _deliver(self, r: dict, slot: datetime) -> str | None:
         payload = json.loads(r["payload"]) if r.get("payload") else {}
         try:
-            # CAN_SEND_TO (ou inbox propre) est revérifié par la passerelle à chaque déclenchement
+            # CAN_SEND_TO (or own inbox) is re-checked by the gateway on every trigger
             self.gw.deliver(id=f"{r['id']}@{iso(slot)}", **{"from": f"routine:{r['id']}"}, actingAgent=r["owner"],
                             inbox=r["deliverTo"], performative="inform",
                             body=payload.get("body") or f"Routine {r['id']} ({iso(slot)})", payload=payload or None)
@@ -63,7 +63,7 @@ class Scheduler:
     def _handle(self, r: dict, now: datetime) -> int:
         if r["trigger"] == "cron":
             nxt = next_after(r["cron"], r["tz"], now)
-            if r["nextRunAt"] is None:                        # première vue : on planifie, on ne déclenche pas
+            if r["nextRunAt"] is None:                        # first sighting: schedule, do not trigger
                 self.gw.advance(r["id"], nextRunAt=iso(nxt))
                 return 0
             slot = parse(r["nextRunAt"])

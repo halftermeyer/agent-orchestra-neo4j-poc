@@ -88,7 +88,7 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
     quorum, size = int(m[1]), int(m[2])
     key = _key(p, b.idempotencyKey)
     aid = uuid.uuid4().hex
-    # une seule demande en attente par outil et par chaîne : un agent réveillé plusieurs fois ne multiplie pas les validations
+    # a single pending request per tool and per chain: an agent woken several times does not multiply approvals
     same = ctx.store.read(lambda r: r.one("approval_pending_same", agentId=p.id, tool=b.tool, chainId=s["chainId"]))
     if same:
         return to_json({**same, "replayed": True, "duplicateOf": same["id"]})
@@ -133,7 +133,7 @@ class Vote(Strict):
 
 @router.post("/approvals/{approval_id}/votes", status_code=201)
 def vote(approval_id: str, b: Vote, p: Principal = Depends(require_person), ctx=Depends(get_ctx)):
-    """Seules des personnes votent (un agent logiciel recommande, il ne vote pas)."""
+    """Only people vote (a software agent recommends, it does not vote)."""
     ap = ctx.store.read(lambda r: r.one("approval_get", approvalId=approval_id))
     if ap is None:
         raise NotFound("approval not found")

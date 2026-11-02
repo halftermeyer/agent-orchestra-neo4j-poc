@@ -11,7 +11,7 @@ const KINDS: Record<string, { label: string; color: string }> = {
 const HOURS = [1, 6, 24];
 const W = 1100, LANE = 34, LEFT = 150;
 
-/** Frise : routines, appels d'outils, votes et engagements, une ligne par acteur. */
+/** Timeline: routines, tool calls, votes and commitments, one row per actor. */
 export function Timeline() {
   const { names } = useApp();
   const [hours, setHours] = useState(1);

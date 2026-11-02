@@ -11,15 +11,15 @@ class CdcSettings:
     neo4j_user: str = "cdc"
     neo4j_password: str = "cdc-dev-pw"
     orchestra_db: str = "orchestra"
-    kg_dbs: dict = field(default_factory=lambda: {"kgproduit": "produit", "kgprojet": "projet"})  # base -> id du KG
-    bridge_dbs: tuple = ("kgproduit",)       # KG dont le pont publie dans kg.<id>.raw
+    kg_dbs: dict = field(default_factory=lambda: {"kgproduit": "produit", "kgprojet": "projet"})  # database -> KG id
+    bridge_dbs: tuple = ("kgproduit",)       # KGs whose bridge publishes to kg.<id>.raw
     bridge_agent: str = "pont-kg"
     gateway_url: str = "http://localhost:18000"
     sys_token: str = ""
     data_dir: Path = field(default_factory=lambda: Path("/data"))
     poll_interval: float = 0.1               # secondes (spike 6 : p50 ≈ 70 ms)
     scheduler_interval: float = 1.0
-    misfire_grace: float = 60.0              # secondes ; au-delà, un créneau `skip` est ignoré
+    misfire_grace: float = 60.0              # seconds; beyond this, a `skip` slot is ignored
     owners_ttl: float = 10.0
     max_changes_in_raw: int = 200
 

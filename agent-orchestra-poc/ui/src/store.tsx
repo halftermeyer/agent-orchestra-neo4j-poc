@@ -19,7 +19,7 @@ export interface AppCtx {
   recentSends: { from: string; to: string; at: number }[];
   refreshTopology: () => void;
   stateOf: (id: string) => AvatarState;
-  follow?: string | null;           // relecture : agent suivi
+  follow?: string | null;           // replay: followed agent
   replay?: boolean;
 }
 export const Ctx = createContext<AppCtx | null>(null);
@@ -44,7 +44,7 @@ export function AppProvider({ session, children }: { session: Session; children:
   personsRef.current = persons;
   const names = useMemo(() => new Map((topology?.agents ?? []).map((a) => [a.id, a.name])), [topology]);
 
-  // état initial de la scène : sessions ouvertes, dernière phrase d'état, attentes
+  // initial scene state: open sessions, last status sentence, waits
   useEffect(() => {
     let alive = true;
     const load = () => Api.state().then((rows) => {
@@ -53,7 +53,7 @@ export function AppProvider({ session, children }: { session: Session; children:
       setStates((prev) => {
         const next = { ...prev };
         for (const r of rows) {
-          if (next[r.id] && next[r.id].pulse > 0) continue;       // le flux a déjà parlé de cet agent
+          if (next[r.id] && next[r.id].pulse > 0) continue;       // the stream has already mentioned this agent
           const base = blank();
           next[r.id] = r.busy ? { ...base, mode: "thinking", busy: true, bubble: r.lastStatus?.text }
             : (r.commitments > 0 || r.inputRequired > 0) ? { ...base, mode: "waiting", waiting: true } : base;
@@ -62,7 +62,7 @@ export function AppProvider({ session, children }: { session: Session; children:
       });
     }).catch(() => undefined);
     load();
-    const t = setInterval(load, 6000);                          // rafraîchit les compteurs (boîtes, mémoire)
+    const t = setInterval(load, 6000);                          // refreshes the counters (inboxes, memory)
     return () => { alive = false; clearInterval(t); };
   }, [session.token]);
 
@@ -79,7 +79,7 @@ export function AppProvider({ session, children }: { session: Session; children:
         setFlights((fl) => [...fl.filter((x) => now - x.at < 3000), f]);
       }
     });
-    for (const ev of stream.buffer) void ev;                    // l'historique est rejoué par le serveur à la connexion
+    for (const ev of stream.buffer) void ev;                    // history is replayed by the server on connection
     const tick = setInterval(() => {
       const now = Date.now();
       setStates((s) => settle(s, now));
@@ -93,7 +93,7 @@ export function AppProvider({ session, children }: { session: Session; children:
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/** Re-déclenche `fn` à chaque événement du flux qui concerne un des types demandés (anti-rebond). */
+/** Re-triggers `fn` on each stream event of one of the requested types (debounced). */
 export function useOnEvents(types: StreamEvent["type"][], fn: (ev: StreamEvent) => void, delay = 300) {
   const { stream } = useApp();
   const ref = useRef(fn);

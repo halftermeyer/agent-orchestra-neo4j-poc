@@ -14,7 +14,7 @@ function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; 
   const ref = useRef<{ fit?: (ids: string[]) => void } | null>(null);
   const ids = nodes.map((n) => n.id);
   const fit = () => ref.current?.fit?.(ids);
-  // recadre la vue quand la mise en page se stabilise, et quand l'ensemble des nœuds change
+  // re-fits the view when the layout settles, and when the set of nodes changes
   const key = ids.join("|");
   useEffect(() => { const t = setTimeout(fit, 900); return () => clearTimeout(t); }, [key]);
   return (
@@ -108,7 +108,7 @@ function Rights({ initial }: { initial: string }) {
   const [paths, setPaths] = useState<RightsPath[]>([]);
   const [sel, setSel] = useState<string | null>(null);
   useEffect(() => {
-    let alive = true;                                  // une réponse tardive pour l'agent précédent ne doit pas écraser la courante
+    let alive = true;                                  // a late response for the previous agent must not overwrite the current one
     Api.rights(agent).then((p) => { if (alive) { setPaths(p); setSel(null); } }).catch(() => { if (alive) setPaths([]); });
     return () => { alive = false; };
   }, [agent]);
@@ -140,7 +140,7 @@ function KgExplorer() {
   const [err, setErr] = useState<string | null>(null);
   const seq = useRef(0);
   const go = (k = key, g = kg) => {
-    const mine = ++seq.current;                        // seule la dernière requête met à jour l'affichage
+    const mine = ++seq.current;                        // only the last request updates the display
     setErr(null);
     Api.kg(g, k).then((d) => { if (mine === seq.current) setData(d); }).catch((e) => { if (mine === seq.current) { setData(null); setErr(String(e)); } });
   };

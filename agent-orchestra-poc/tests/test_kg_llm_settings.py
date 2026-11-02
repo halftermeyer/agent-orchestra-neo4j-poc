@@ -14,12 +14,12 @@ def test_kg_templates_and_rights(client, world):
     assert shared and shared[0]["level"] >= 2 and any(x["level"] == 0 for x in shared)
     assert q(a, "produit", "part_tests", {"partId": "PRT-0045"}).status_code == 200
     assert len(q(a, "produit", "replacement_candidates", {"partId": "PRT-0045", "limit": 3}).json()["rows"]) == 3
-    assert q(b, "produit", "part_info", {"partId": "PRT-0001"}).status_code == 403          # pas de CAN_QUERY
-    assert q(a, "projet", "project_graph").status_code == 403                                 # autre KG
+    assert q(b, "produit", "part_info", {"partId": "PRT-0001"}).status_code == 403          # no CAN_QUERY
+    assert q(a, "projet", "project_graph").status_code == 403                                 # other KG
     assert q(a, "produit", "inconnu").status_code == 404
     assert q(a, "produit", "part_info", {"partId": "x", "cypher": "MATCH (n) RETURN n"}).status_code == 403
     assert q(a, "produit", "part_info", {"partId": 12}).status_code == 403
-    assert q(a, "projet", "part_info", {"partId": "PRT-0001"}).status_code == 403             # mauvais graphe pour le modèle
+    assert q(a, "projet", "part_info", {"partId": "PRT-0001"}).status_code == 403             # wrong graph for the template
 
 
 def test_federated_query_needs_both_graphs(client, world):
@@ -45,7 +45,7 @@ def test_model_settings_are_write_only_and_encrypted(client, world):
     assert r.status_code == 200 and secret not in r.text
     st = client.get("/settings/models", headers=h)
     assert secret not in st.text and st.json()["last4"] == "9876" and st.json()["source"] == "ui" and st.json()["updatedAt"]
-    assert secret not in ctx.keystore.file.read_text()                      # chiffré sur disque
+    assert secret not in ctx.keystore.file.read_text()                      # encrypted on disk
     assert ctx.keystore.get() == secret
     t = client.post("/settings/models/test", json={}, headers=h).json()
     assert t["ok"] and "fake-model-a" in t["models"] and secret not in json.dumps(t)
@@ -53,7 +53,7 @@ def test_model_settings_are_write_only_and_encrypted(client, world):
     assert client.get("/settings/models", headers=h).json()["model"] == "fake-model-a"
     assert client.put("/settings/models/key", json={"apiKey": "test-REPLACED-0001"}, headers=h).json()["last4"] == "0001"
     assert client.delete("/settings/models/key", headers=h).json()["configured"] is False
-    # sans clé, rappel mémoire et génération refusés proprement
+    # without a key, memory recall and generation are cleanly refused
     ctx.keystore.delete()
     assert world.post("/recall", a, {"query": "x"}).status_code == 409
 
@@ -65,7 +65,7 @@ def test_ui_key_has_priority_over_env_initial_value(tmp_path):
     assert ks.get() == "UIKEY-2222" and ks.status()["source"] == "ui" and ks.status()["last4"] == "2222"
     ks.delete()
     assert ks.get() == "ENVKEY-1111"
-    # une autre clé maître ne déchiffre pas
+    # another master key does not decrypt
     ks.set("UIKEY-3333")
     assert KeyStore(tmp_path, "autre-maitre").status()["configured"] is True
     try:
@@ -78,14 +78,14 @@ def test_ui_key_has_priority_over_env_initial_value(tmp_path):
 def test_llm_generate_is_governed(client, world, fake, tq):
     a = world.agent("t-a", tools=["recall", "set_status"])
     sid = world.session(a, chain="c-llm")
-    body = {"sessionId": sid, "contents": [{"role": "user", "text": "salut"}], "system": "tu es A", "tools": ["recall"]}
+    body = {"sessionId": sid, "contents": [{"role": "user", "text": "hi"}], "system": "you are A", "tools": ["recall"]}
     r = world.post("/llm/generate", a, body)
     assert r.status_code == 200, r.text
     assert r.json()["text"] == "ok" and r.json()["usage"] == {"input": 10, "output": 5}
-    assert fake.calls[-1] == {"model": "fake-model", "system": "tu es A", "tools": ["recall"]}      # modèle de l'AgentVersion
+    assert fake.calls[-1] == {"model": "fake-model", "system": "you are A", "tools": ["recall"]}      # model of the AgentVersion
     assert tq("MATCH (c:Chain {id: 'c-llm'}) RETURN c.tokensSpent AS t")[0]["t"] == 15
-    assert world.post("/llm/generate", a, {**body, "tools": ["send_message"]}).status_code == 403   # pas de CAN_USE
-    assert world.post("/llm/generate", a, {**body, "model": "gemini-x"}).status_code == 422          # le modèle n'est pas un argument
+    assert world.post("/llm/generate", a, {**body, "tools": ["send_message"]}).status_code == 403   # no CAN_USE
+    assert world.post("/llm/generate", a, {**body, "model": "gemini-x"}).status_code == 422          # the model is not an argument
     fake.next_tool_calls = [("recall", {"query": "x"})]
     r = world.post("/llm/generate", a, body)
     assert r.json()["toolCalls"] == [{"name": "recall", "args": {"query": "x"}}]

@@ -1,5 +1,5 @@
-"""Curseur persistant par base. Fichier, pas graphe : écrire le curseur dans la base surveillée
-produirait un événement CDC, donc un nouveau curseur, donc une boucle infinie."""
+"""Persistent cursor per database. A file, not the graph: writing the cursor into the watched database
+would produce a CDC event, hence a new cursor, hence an infinite loop."""
 import json
 import os
 import threading

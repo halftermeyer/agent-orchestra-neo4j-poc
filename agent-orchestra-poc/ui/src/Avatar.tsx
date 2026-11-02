@@ -5,7 +5,7 @@ import { MODE_LABEL, type AvatarState } from "./avatarState";
 const hue = (s: string) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
 const ROLE_COLOR: Record<string, string> = { coordinator: "#3B6FD4", specialist: "#4C8EDA", bridge: "#3FA98B", interpreter: "#8B6FD6", auditor: "#E39A2D" };
 
-/** Avatars : créations originales en SVG (robots pour les agents logiciels, silhouettes pour les humains). */
+/** Avatars: original SVG creations (robots for software agents, silhouettes for humans). */
 export function Avatar({ agent, state }: { agent: Agent; state: AvatarState }) {
   const base = agent.person ? `hsl(${hue(agent.id)} 55% 62%)` : ROLE_COLOR[agent.role ?? ""] ?? "#4C8EDA";
   const waiting = state.mode === "waiting";
@@ -17,7 +17,7 @@ export function Avatar({ agent, state }: { agent: Agent; state: AvatarState }) {
     : state.mode === "sending" ? { x: [0, 8, 0] }
     : state.mode === "thinking" ? { rotate: [-2, 2, -2] }
     : state.mode === "tool" ? { y: [0, -3, 0] }
-    : { y: [0, -2.5, 0], scaleY: [1, 1.025, 1] };                      // respiration lente
+    : { y: [0, -2.5, 0], scaleY: [1, 1.025, 1] };                      // slow breathing
   const dur = state.mode === "idle" || state.mode === "waiting" ? 3.6 : state.mode === "woken" ? 0.7 : state.mode === "error" ? 0.5 : state.mode === "sending" ? 0.6 : 1.6;
   const loop = ["idle", "waiting", "thinking", "tool"].includes(state.mode);
   return (

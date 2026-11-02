@@ -40,7 +40,7 @@ def test_cdc_user_minimal_privileges():
     with GraphDatabase.driver(config.NEO4J_URI, auth=(config.CDC_USER, config.CDC_PASSWORD)) as d:
         with d.session(database="orchestra") as s:
             s.run("CALL db.cdc.current() YIELD id RETURN id").consume()
-            # pas de droit MATCH : les lectures directes ne renvoient rien
+            # no MATCH right: direct reads return nothing
             assert s.run("MATCH (n) RETURN count(n) AS n").single()["n"] == 0
             with pytest.raises(ClientError):
                 s.run("CREATE (:Agent {id: 'x'})").consume()
@@ -96,20 +96,20 @@ def test_scenario_actors(q):
     assert set(r) == {"coordinateur", "qualite", "ingenierie", "essais", "planification", "pont-kg", "interpreteur-bom", "auditeur"}
     r = q("orchestra", "MATCH (a:Agent:Person) RETURN collect(a.id) AS ids")[0]["ids"]
     assert set(r) == {"ing-qualite", "comite-1", "comite-2", "comite-3", "chef-projet"}
-    # tout agent logiciel a mandat, version courante ; les règles n'ont pas de modèle
+    # every software agent has a mandate, current version; rules have no model
     assert q("orchestra", "MATCH (a:Agent:SoftwareAgent) WHERE NOT (a)-[:HAS_MANDATE]->(:Mandate) OR NOT (a)-[:CURRENT]->(:AgentVersion) RETURN count(a) AS n")[0]["n"] == 0
     assert q("orchestra", "MATCH (:Agent {id: 'pont-kg'})-[:CURRENT]->(v) RETURN v.kind AS k, v.model AS m")[0] == {"k": "rule", "m": None}
-    # inbox partagée du comité
+    # committee's shared inbox
     assert q("orchestra", "MATCH (p:Agent:Person)-[:HAS_INBOX]->(i:Inbox {id: 'inbox:comite'}) RETURN count(p) AS n")[0]["n"] == 3
     topics = {r["id"] for r in q("orchestra", "MATCH (t:Inbox:Topic) RETURN t.id AS id")}
     assert topics == {"incidents", "kg.produit.raw", "produit.bom-changes"}
 
 
 def test_supervision_rules(q):
-    # pas de cycle : aucun agent n'est atteint par lui-même via au moins un SUPERVISES
+    # no cycle: no agent is reached from itself via at least one SUPERVISES
     assert q("orchestra", "MATCH ACYCLIC (a:Agent)-[:SUPERVISES]->+(b:Agent) WHERE a = b RETURN count(*) AS n")[0]["n"] == 0
     assert q("orchestra", "MATCH (a:Agent)-[:SUPERVISES]->+(a) RETURN count(*) AS n")[0]["n"] == 0
-    # un agent logiciel ne supervise pas un humain
+    # a software agent does not supervise a human
     assert q("orchestra", "MATCH (:SoftwareAgent)-[:SUPERVISES]->(:Person) RETURN count(*) AS n")[0]["n"] == 0
     scope = q("orchestra", "MATCH ACYCLIC (:Agent {id: 'coordinateur'})-[:SUPERVISES]->*(a) RETURN collect(a.id) AS ids")[0]["ids"]
     assert set(scope) >= {"coordinateur", "ingenierie", "essais", "planification"}
@@ -118,7 +118,7 @@ def test_supervision_rules(q):
 
 def test_send_targets_and_tool_rights(q):
     assert q("orchestra", "MATCH (:Agent)-[:CAN_SEND_TO]->(x) WHERE NOT x:Inbox RETURN count(x) AS n")[0]["n"] == 0
-    # le droit d'usage ne s'hérite pas : l'outil irréversible n'est que chez le coordinateur
+    # the usage right is not inherited: the irreversible tool is only with the coordinator
     users = q("orchestra", "MATCH (a)-[c:CAN_USE]->(:Tool {name: 'launch_modification'}) RETURN a.id AS id, c.approval AS ap")
     assert users == [{"id": "coordinateur", "ap": "2-of-3"}]
     assert q("orchestra", "MATCH (a)-[:CAN_USE]->(:Tool {name: 'cpa_simulate'}) RETURN collect(a.id) AS ids")[0]["ids"] == ["planification"]
@@ -132,7 +132,7 @@ def test_routines(q):
     for r in rows:
         if r["tr"] == "event":
             assert r["topic"] and json.loads(r["f"])["op"] == "eq"
-    # chaque routine livre dans une inbox que son propriétaire peut atteindre (CAN_SEND_TO ou la sienne)
+    # each routine delivers into an inbox its owner can reach (CAN_SEND_TO or its own)
     bad = q("orchestra", """MATCH (a)-[:OWNS]->(r:Routine)-[:DELIVERS_TO]->(i:Inbox)
                             WHERE NOT (a)-[:HAS_INBOX]->(i) AND NOT (a)-[:CAN_SEND_TO]->(i) RETURN count(r) AS n""")[0]["n"]
     assert bad == 0
@@ -142,9 +142,9 @@ def test_kg_content(q):
     assert q("kgproduit", "MATCH (p:Part) RETURN count(p) AS n")[0]["n"] == 200
     assert q("kgproduit", "MATCH (t:Test) RETURN count(t) AS n")[0]["n"] == 50
     assert q("kgproduit", "MATCH (v:ProductVersion {current: true}) RETURN v.label AS l")[0]["l"] == "v1.0"
-    # la BOM est un DAG : pas de cycle
+    # the BOM is a DAG: no cycle
     assert q("kgproduit", "MATCH (p:Part)-[:CONTAINS]->+(p) RETURN count(*) AS n")[0]["n"] == 0
-    # des pièces partagées (usage multiple) existent
+    # shared parts (multiple use) exist
     assert q("kgproduit", "MATCH (p:Part)<-[:CONTAINS]-(x) WITH p, count(x) AS c WHERE c > 1 RETURN count(p) AS n")[0]["n"] >= 20
     assert q("kgprojet", "MATCH (t:Task) RETURN count(t) AS n")[0]["n"] == 30
     assert q("kgprojet", "MATCH (t:Task)-[:DEPENDS_ON]->+(t) RETURN count(*) AS n")[0]["n"] == 0
@@ -165,7 +165,7 @@ def test_incidents_file_matches_kg(q):
 
 
 def test_first_incident_provokes_the_legitimate_engineering_tests_loop():
-    """INC-001 doit faire proposer une pièce sans essai (refusée) puis une pièce couverte (acceptée) : voir le scénario."""
+    """INC-001 must lead to proposing a part without tests (refused) then a covered part (accepted): see the scenario."""
     p = K.generate_kg_produit()
     inc = K.generate_incidents(p)
     loop = K.loop_parts(p)

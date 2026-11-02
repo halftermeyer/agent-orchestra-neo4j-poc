@@ -1,5 +1,5 @@
-"""Support de l'interface : connexion de démonstration, chat, validations, topologie, état de la scène,
-fiche agent, droits (avec chemins), voisinage des KG, frise. Lecture seule, sauf la connexion."""
+"""UI support: demo login, chat, approvals, topology, scene state,
+agent card, rights (with paths), KG neighborhood, timeline. Read-only, except login."""
 import json
 from pathlib import Path
 
@@ -28,7 +28,7 @@ def _demo(ctx):
 
 @router.get("/demo/users")
 def demo_users(ctx=Depends(get_ctx)):
-    """Sélection de l'utilisateur pour la démo (aucun mot de passe : à ne jamais activer hors démonstration)."""
+    """User selection for the demo (no password: never enable outside a demo)."""
     _demo(ctx)
     rows = ctx.store.read(lambda r: r.all("demo_users"))
     return {"users": [*rows, ADMIN_ENTRY]}
@@ -62,7 +62,7 @@ def _msg(row: dict) -> dict:
 
 @router.get("/chat/messages")
 def chat_messages(limit: int = 100, p: Principal = Depends(require_person), ctx=Depends(get_ctx)):
-    """L'inbox de la personne connectée (et ce qu'elle a envoyé) : elle ne voit que la sienne."""
+    """The logged-in person's inbox (and what they sent): they only see their own."""
     rows = ctx.store.read(lambda r: r.all("chat_messages", agentId=p.id, limit=max(1, min(limit, 300))))
     return {"messages": to_json([_msg(x) for x in reversed(rows)])}
 
@@ -95,7 +95,7 @@ def agent_card(agent_id: str, p: Principal = Depends(require_ui), ctx=Depends(ge
 
 @router.get("/graph/rights/{agent_id}")
 def rights(agent_id: str, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
-    """Ce qu'un agent peut lire, et par quel chemin : supervision*, puis une relation terminale (liste blanche)."""
+    """What an agent can read, and via which path: supervision*, then a terminal relationship (whitelist)."""
     rows = ctx.store.read(lambda r: r.all("rights_paths", agentId=agent_id))
     best: dict[str, dict] = {}
     for x in rows:
@@ -112,7 +112,7 @@ def rights(agent_id: str, p: Principal = Depends(require_ui), ctx=Depends(get_ct
 
 @router.get("/graph/kg/{kg_id}/neighborhood")
 def kg_neighborhood(kg_id: str, key: str, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
-    """Voisinage d'une entité d'un KG. Une personne doit avoir le droit sur le KG (CAN_QUERY), comme pour tout accès aux KG."""
+    """Neighborhood of a KG entity. A person must have rights on the KG (CAN_QUERY), as for any KG access."""
     template = {"produit": "kg/graph_part", "projet": "kg/graph_task"}.get(kg_id)
     if template is None:
         raise NotFound("unknown graph")
@@ -133,7 +133,7 @@ def kg_neighborhood(kg_id: str, key: str, p: Principal = Depends(require_ui), ct
 
 @router.get("/timeline")
 def timeline(hours: int = 24, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
-    """Frise : routines (passées et à venir), appels d'outils, votes, engagements."""
+    """Timeline: routines (past and upcoming), tool calls, votes, commitments."""
     h = max(1, min(hours, 168))
 
     def q(r):

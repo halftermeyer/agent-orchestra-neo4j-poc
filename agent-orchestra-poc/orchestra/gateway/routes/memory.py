@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 def compute_scope(r, agent_id: str) -> dict[str, datetime]:
-    """Un seul chemin de code pour calculer le périmètre de lecture (ReBAC)."""
+    """A single code path to compute the read scope (ReBAC)."""
     scopes = r.one("scope", agentId=agent_id)["scopes"]
     return {s["id"]: s["asOf"].to_native() for s in scopes}
 
@@ -85,7 +85,7 @@ class Revise(Strict):
 
 @router.post("/facts/{fact_id}/revise", status_code=201)
 def revise(fact_id: str, b: Revise, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """On révise, on n'écrase pas : l'ancien fait est fermé (validTo), le nouveau le remplace (SUPERSEDES)."""
+    """Revise, never overwrite: the old fact is closed (validTo), the new one replaces it (SUPERSEDES)."""
     s = load_session(ctx, p, b.sessionId)
     emb = _embed(ctx, b.statement)
     new_id = uuid.uuid4().hex

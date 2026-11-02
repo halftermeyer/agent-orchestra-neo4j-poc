@@ -89,7 +89,7 @@ def create_app(settings: CdcSettings | None = None, autostart: bool = True, cons
                 for p in pending:
                     p.cancel()
                 if recv in done:
-                    recv.result()          # message client ignoré ; une déconnexion lève WebSocketDisconnect
+                    recv.result()          # client message ignored; a disconnect raises WebSocketDisconnect
                 if get in done:
                     yield get.result()
         except WebSocketDisconnect:
@@ -99,7 +99,7 @@ def create_app(settings: CdcSettings | None = None, autostart: bool = True, cons
 
     @app.websocket("/ws/events")
     async def ws_events(ws: WebSocket):
-        """Flux normalisé {t, type, actor, target, payload}, identique en direct et (phase 6) en relecture."""
+        """Normalized stream {t, type, actor, target, payload}, identical live and (phase 6) in replay."""
         if await _auth(ws, ("user", "admin", "svc")) is None:
             return
         async for (ev,) in _pump(ws, hub.on_event, replay=list(hub.history)):
@@ -107,7 +107,7 @@ def create_app(settings: CdcSettings | None = None, autostart: bool = True, cons
 
     @app.websocket("/ws/wake")
     async def ws_wake(ws: WebSocket):
-        """Réveil d'un runtime : il ne reçoit que les réveils de son propre agent (identité issue du jeton)."""
+        """Runtime wake-up: it only receives wake-ups for its own agent (identity taken from the token)."""
         who = await _auth(ws, ("svc",))
         if who is None:
             return

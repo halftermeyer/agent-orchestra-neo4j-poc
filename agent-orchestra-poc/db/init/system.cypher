@@ -1,4 +1,4 @@
-// Idempotent: bases, composite, alias, utilisateurs, rôles, CDC. Exécuté sur la base `system`.
+// Idempotent: databases, composite, aliases, users, roles, CDC. Run against the `system`.
 CREATE DATABASE orchestra IF NOT EXISTS WAIT;
 CREATE DATABASE kgproduit IF NOT EXISTS WAIT;
 CREATE DATABASE kgprojet IF NOT EXISTS WAIT;
@@ -30,7 +30,7 @@ GRANT ACCESS ON DATABASE fed TO gateway_rw;
 GRANT EXECUTE PROCEDURE apoc.util.* ON DBMS TO gateway_rw;
 GRANT EXECUTE PROCEDURE gds.* ON DBMS TO gateway_rw;
 
-// Privilèges minimaux du CDC (spike 2) : ACCESS + EXECUTE BOOSTED PROCEDURE db.cdc.*
+// Minimal CDC privileges (spike 2) : ACCESS + EXECUTE BOOSTED PROCEDURE db.cdc.*
 CREATE ROLE cdc_reader IF NOT EXISTS;
 CREATE USER cdc IF NOT EXISTS SET PASSWORD $cdcPw CHANGE NOT REQUIRED;
 GRANT ROLE cdc_reader TO cdc;
@@ -39,7 +39,7 @@ GRANT ACCESS ON DATABASE kgproduit TO cdc_reader;
 GRANT ACCESS ON DATABASE kgprojet TO cdc_reader;
 GRANT EXECUTE BOOSTED PROCEDURE db.cdc.* ON DBMS TO cdc_reader;
 
-// Conservateur de KG : écriture dans les KG, réservée aux effets d'outils approuvés (jamais exposé aux agents).
+// KG curator: write access to the KGs, reserved for approved tool effects (never exposed to agents).
 CREATE ROLE kg_curator IF NOT EXISTS;
 CREATE USER kgcurator IF NOT EXISTS SET PASSWORD $kgPw CHANGE NOT REQUIRED;
 GRANT ROLE kg_curator TO kgcurator;

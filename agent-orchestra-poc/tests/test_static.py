@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-import orchestra.gateway.app  # noqa: F401  (charge toutes les routes)
+import orchestra.gateway.app  # noqa: F401  (loads all routes)
 from orchestra.gateway.routes.core import Strict
 from orchestra.gateway.store import QUERIES
 
@@ -14,16 +14,16 @@ def test_all_queries_are_cypher25_files():
 
 
 def test_only_the_store_executes_cypher():
-    """Aucun Cypher construit ailleurs : seul store.py appelle `.run(` ; pas de f-string Cypher."""
+    """No Cypher built elsewhere: only store.py calls `.run(`; no Cypher f-string."""
     for f in GATEWAY.rglob("*.py"):
         src = f.read_text()
         if f.name != "store.py":
-            assert not re.search(r"\.run\(", src.replace("r.one(", "").replace("r.all(", "")), f"{f} exécute du Cypher"
-        assert "MATCH (" not in src or f.name == "store.py", f"{f} contient du Cypher en ligne"
+            assert not re.search(r"\.run\(", src.replace("r.one(", "").replace("r.all(", "")), f"{f} runs Cypher"
+        assert "MATCH (" not in src or f.name == "store.py", f"{f} contains inline Cypher"
 
 
 def test_no_agent_facing_request_model_accepts_an_agent_identity():
-    """Règle 3. Seuls les modèles du module `internal` (jeton sys du consommateur CDC) nomment l'agent d'agissement."""
+    """Rule 3. Only the templates of the `internal` module (sys token of the CDC consumer) name the acting agent."""
     def models(c):
         for s in c.__subclasses__():
             yield s

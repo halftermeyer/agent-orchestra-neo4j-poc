@@ -1,6 +1,6 @@
 # Agent orchestration on Neo4j — PoC
 
-A multi-agent orchestration platform where **Neo4j is both the bus (CDC) and the memory**: inboxes, messages, routines, rights as paths (ReBAC), federation of knowledge graphs, governance (budget, auditor, human approvals) and traceability. Scenario: a field incident triggers a product modification. The UI, the demo content and the agents' messages are in English (demo video); the documentation is in English too, while code comments are still mostly in French.
+A multi-agent orchestration platform where **Neo4j is both the bus (CDC) and the memory**: inboxes, messages, routines, rights as paths (ReBAC), federation of knowledge graphs, governance (budget, auditor, human approvals) and traceability. Scenario: a field incident triggers a product modification. The UI, the demo content and the agents' messages are in English (demo video); so are the documentation, the code comments and the tests (only the technical identifiers inherited from the spec stay in French, e.g. `coordinateur`, `kgproduit`).
 
 - Specification: [`docs/spec.md`](docs/spec.md) — Project rules: [`CLAUDE.md`](CLAUDE.md) — Spikes and deviations: [`docs/spikes.md`](docs/spikes.md)
 - Code: [`agent-orchestra-poc/`](agent-orchestra-poc/) (gateway, CDC consumer, agent runtimes, React UI)

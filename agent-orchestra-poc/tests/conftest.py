@@ -84,7 +84,7 @@ def _clean(request):
     yield
     tq("MATCH (n) WHERE n.test = true OR any(l IN labels(n) WHERE l IN $labels) DETACH DELETE n", labels=DYNAMIC)
     tq("MATCH (a:Agent) WHERE a.quarantined IS NOT NULL SET a.quarantined = false")
-    tq("MATCH (r:Routine) WHERE r.createdAt IS NOT NULL DETACH DELETE r")       # routines créées par l'API (le seed n'a pas createdAt)
+    tq("MATCH (r:Routine) WHERE r.createdAt IS NOT NULL DETACH DELETE r")       # routines created by the API (the seed has no createdAt)
 
 
 class FakeLLM(LLMProvider):
@@ -92,8 +92,8 @@ class FakeLLM(LLMProvider):
         self.usage = Usage(10, 5)
         self.calls = []
         self.next_tool_calls = []
-        self.script = []          # tours scriptés : {"tools": [(nom, args)]} ou {"text": "..."}
-        self.history = []         # (system, contents) de chaque appel
+        self.script = []          # scripted turns: {"tools": [(name, args)]} or {"text": "..."}
+        self.history = []         # (system, contents) of each call
 
     def generate(self, *, model, system, contents, tools=None):
         self.calls.append({"model": model, "system": system, "tools": [t["name"] for t in tools or []]})
@@ -143,7 +143,7 @@ def tok(kind, ident="admin"):
 
 @pytest.fixture
 def world(client, tq, fake):
-    """Fabrique d'agents de test (propriété test=true, supprimés après chaque test)."""
+    """Factory of test agents (property test=true, deleted after each test)."""
     fake.usage = Usage(10, 5)
     fake.next_tool_calls = []
     fake.script = []
@@ -181,7 +181,7 @@ def world(client, tq, fake):
             tq("MATCH (a:Agent {id: $a}), (b:Agent {id: $b}) CREATE (a)-[:SUPERVISES {since: datetime()}]->(b)", a=boss, b=sub)
 
         def trigger(self, agent, chain=None, payload=None, body="x", sender="admin", performative="inform"):
-            """Dépose un message dans l'inbox de l'agent (comme le ferait le routeur)."""
+            """Drops a message into the agent's inbox (as the router would)."""
             mid = uuid.uuid4().hex
             tq("""MATCH (a:Agent {id: $a})-[:HAS_INBOX]->(i:Inbox)
                   MERGE (d:Day:InboxDay {inboxId: i.id, date: date()}) MERGE (i)-[:HAS_DAY]->(d)
@@ -212,7 +212,7 @@ def world(client, tq, fake):
             assert r.status_code == 200, r.text
             return {f["statement"] for f in r.json()["facts"]}
 
-        def send(self, agent, sid, to, body="salut", perf="inform", **kw):
+        def send(self, agent, sid, to, body="hi", perf="inform", **kw):
             return self.post("/messages", agent, {"to": to, "performative": perf, "body": body, "sessionId": sid, **kw})
 
     yield W()
@@ -240,7 +240,7 @@ KGTEST = "kgtest"
 
 @pytest.fixture(scope="session")
 def gw_url(testdb, fake, tmp_path_factory):
-    """Vraie passerelle HTTP (le consommateur n'écrit que par elle)."""
+    """Real HTTP gateway (the consumer writes only through it)."""
     st = Settings(db=testdb, master_key=MASTER, data_dir=tmp_path_factory.mktemp("gw-live"), neo4j_uri=config.NEO4J_URI,
                   neo4j_password=config.GATEWAY_PASSWORD, env_llm_key="test-key-0000", kg_password=config.KGCURATOR_PASSWORD)
     app = create_app(st, llm_factory=lambda key: fake)
@@ -293,8 +293,8 @@ class CdcEnv:
         hub.on_wake(lambda a, i: self.wakes.append((a, i)))
 
     def drain(self, settle: float = 0.4, timeout: float = 15.0) -> int:
-        """Traite jusqu'à quiescence. Un événement n'est lisible dans le CDC qu'un instant après le commit :
-        on continue donc à sonder au moins `settle` secondes, puis jusqu'à deux sondages à vide."""
+        """Processes until quiescence. An event is only readable in the CDC a moment after the commit:
+        so keep polling for at least `settle` seconds, then until two empty polls."""
         total, quiet, start = 0, 0, time.monotonic()
         while time.monotonic() - start < timeout:
             n = self.consumer.poll_once()
@@ -318,7 +318,7 @@ def cdc(testdb, kgtest, gw_url, tmp_path):
     gw = GatewayClient(gw_url, st.sys_token)
     hub = Hub()
     consumer = Consumer(st, CdcSource(st.neo4j_uri, st.neo4j_user, st.neo4j_password), gw, CursorStore(tmp_path / "cursors.json"), hub)
-    time.sleep(0.4)       # les événements du test précédent ne sont lisibles qu'un instant après leur commit
+    time.sleep(0.4)       # events from the previous test are only readable a moment after their commit
     consumer.init_cursors()
     env = CdcEnv(st, consumer, Scheduler(st, gw, hub), hub, gw)
     yield env
@@ -328,13 +328,13 @@ def cdc(testdb, kgtest, gw_url, tmp_path):
 # ---------- phase 4 ----------
 @pytest.fixture
 def kg_world(world, tq, admin, kgtest):
-    """Le KG « produit » pointe sur la base de test ; une BOM minimale y est créée."""
+    """The "produit" KG points at the test database; a minimal BOM is created there."""
     tq("MATCH (k:KnowledgeGraph {id: 'produit'}) SET k.dbName = $kgdb", kgdb=KGTEST)
     with admin.session(database=KGTEST) as s:
         s.run("""CYPHER 25 MATCH (n) DETACH DELETE n""").consume()
         s.run("""CYPHER 25 CREATE (v:Entity:ProductVersion {id: 'VER-1.0', label: 'v1.0', current: true}),
                  (prod:Entity:Part {id: 'P0', name: 'Produit', level: 0}), (asm:Entity:Part {id: 'A1', name: 'Ensemble', level: 2}),
-                 (old:Entity:Part {id: 'X1', name: 'Pièce défaillante', level: 3, family: 'F'}), (new:Entity:Part {id: 'X2', name: 'Pièce neuve', level: 3, family: 'F'}),
+                 (old:Entity:Part {id: 'X1', name: 'Faulty part', level: 3, family: 'F'}), (new:Entity:Part {id: 'X2', name: 'New part', level: 3, family: 'F'}),
                  (prod)-[:CONTAINS {qty: 1}]->(asm), (asm)-[:CONTAINS {qty: 4}]->(old)""").consume()
     yield world
     tq("MATCH (k:KnowledgeGraph {id: 'produit'}) SET k.dbName = 'kgproduit'")

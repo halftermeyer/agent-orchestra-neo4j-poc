@@ -19,7 +19,7 @@ from tests.conftest import KGTEST, MASTER, tok
 UTC = timezone.utc
 
 
-# ---------- prédicats structurés ----------
+# ---------- structured predicates ----------
 def test_predicate_grammar():
     p = {"all": [{"field": "kind", "op": "eq", "value": "incident"}, {"field": "a.b", "op": "in", "value": [1, 2]},
                  {"not": {"field": "msg.from", "op": "eq", "value": "x"}}]}
@@ -46,7 +46,7 @@ def test_first_start_does_not_replay_history(cdc, world, tmp_path, gw_url):
     a, b = world.agent("t-a"), world.agent("t-b")
     world.send_to(a, "inbox:t-b")
     sid = world.session(a)
-    assert world.send(a, sid, ["inbox:t-b"]).status_code == 201     # avant le démarrage du second consommateur
+    assert world.send(a, sid, ["inbox:t-b"]).status_code == 201     # before the second consumer starts
     from orchestra.cdc.consumer import Consumer
     from orchestra.cdc.hub import Hub
     from orchestra.cdc.source import CdcSource
@@ -60,20 +60,20 @@ def test_first_start_does_not_replay_history(cdc, world, tmp_path, gw_url):
 
 
 def test_cursor_from_a_recreated_database_is_reset_not_stuck(cdc, world):
-    # un curseur plus récent que le journal (base recréée sous un consommateur resté en marche)
+    # a cursor more recent than the log (database recreated under a consumer left running)
     c = cdc.consumer
     db = cdc.settings.orchestra_db
     for _ in range(3):
         world.agent(f"t-x{_}")
-    real = c.source.current("orchestra")                                  # position de la vraie base, bien plus avancée
+    real = c.source.current("orchestra")                                  # position of the real database, much further ahead
     c.cursors.set(db, real)
-    assert c.poll_db(db) == 0                                              # pas de boucle d'erreurs : réinitialisé
+    assert c.poll_db(db) == 0                                              # no error loop: reset
     assert c.stats.cursor_resets == 1 and c.cursors.get(db) == c.source.current(db)
     a, b = world.agent("t-a"), world.agent("t-b")
     world.send_to(a, "inbox:t-b")
     mid = world.send(a, world.session(a), ["inbox:t-b"]).json()["id"]
     cdc.drain()
-    assert cdc.of("woken", messageId=mid)                                  # et le traitement reprend normalement
+    assert cdc.of("woken", messageId=mid)                                  # and processing resumes normally
 
 
 def test_restart_resumes_from_persisted_cursor_and_retries_when_gateway_is_down(cdc, world, gw_url):
@@ -83,7 +83,7 @@ def test_restart_resumes_from_persisted_cursor_and_retries_when_gateway_is_down(
     m1 = world.send(a, sid, ["inbox:t-b"]).json()["id"]
     cdc.drain()
     assert cdc.of("woken", messageId=m1)
-    # nouveau consommateur, même fichier de curseurs : ne rejoue pas m1
+    # new consumer, same cursor file: does not replay m1
     from orchestra.cdc.consumer import Consumer
     from orchestra.cdc.hub import Hub
     from orchestra.cdc.source import CdcSource
@@ -97,7 +97,7 @@ def test_restart_resumes_from_persisted_cursor_and_retries_when_gateway_is_down(
     before = c2.cursors.get(st.orchestra_db)
     with pytest.raises(GatewayError):
         c2.poll_db(st.orchestra_db)                                  # passerelle injoignable : transitoire
-    assert c2.cursors.get(st.orchestra_db) == before                 # le curseur n'avance pas
+    assert c2.cursors.get(st.orchestra_db) == before                 # the cursor does not advance
     c2.gw = cdc.gw
     while c2.poll_once():
         pass
@@ -105,7 +105,7 @@ def test_restart_resumes_from_persisted_cursor_and_retries_when_gateway_is_down(
     assert woken == {m2}
 
 
-# ---------- réveil ----------
+# ---------- wake-up ----------
 def test_received_wakes_the_recipient_and_streams_sent(cdc, world):
     a, b = world.agent("t-a"), world.agent("t-b")
     world.send_to(a, "inbox:t-b")
@@ -128,7 +128,7 @@ def test_no_wake_for_quarantined_agent_or_suspended_chain(cdc, world, tq):
     m1 = world.send(a, sid, ["inbox:t-b"]).json()["id"]
     cdc.drain()
     assert cdc.of("sent", messageId=m1) and not cdc.of("woken", messageId=m1)
-    # chaîne suspendue après le dépôt (budget épuisé ou auditeur) : pas de réveil non plus
+    # chain suspended after the drop (budget exhausted or auditor): no wake-up either
     m2 = world.send(a, sid, ["inbox:t-c"]).json()["id"]
     tq("MATCH (ch:Chain {id: 'c-susp'}) SET ch.status = 'suspended'")
     cdc.drain()
@@ -145,9 +145,9 @@ def test_humans_are_woken_in_the_stream_but_not_via_runtime(cdc, world):
     assert not [w for w in cdc.wakes if w[1]["messageId"] == mid]
 
 
-# ---------- routage des topics ----------
+# ---------- topic routing ----------
 def _publish_incident(world, payload, user="ing-qualite"):
-    r = world.c.post("/messages", json={"to": ["incidents"], "performative": "inform", "body": "Fuite constatée", "payload": payload},
+    r = world.c.post("/messages", json={"to": ["incidents"], "performative": "inform", "body": "Leak detected", "payload": payload},
                      headers=tok("user", user))
     assert r.status_code == 201, r.text
     return r.json()
@@ -163,12 +163,12 @@ def test_topic_routing_delivers_matching_events_only(cdc, world, tq):
     assert len(rows) == 1
     r = rows[0]
     assert r["f"] == "routine:rt-qualite-incidents" and r["chain"] == inc["chainId"] and r["about"] == inc["id"]
-    assert r["st"] == "submitted" and r["acting"] == "qualite" and r["body"] == "Fuite constatée"
+    assert r["st"] == "submitted" and r["acting"] == "qualite" and r["body"] == "Leak detected"
     assert r["id"] == f"evt:rt-qualite-incidents:{inc['id']}"
     assert cdc.of("woken", actor="qualite") and [w for w in cdc.wakes if w[0] == "qualite"]
     topic_sent = cdc.of("sent", messageId=inc["id"])
     assert topic_sent[0]["target"] == "incidents" and topic_sent[0]["payload"]["topic"] is True
-    # le payload est conservé pour les filtres suivants
+    # the payload is kept for the following filters
     got = tq("MATCH (m:Message {id: $id}) RETURN m.payloadJson AS p", id=r["id"])[0]["p"]
     assert json.loads(got)["componentId"] == "PRT-0045"
 
@@ -178,7 +178,7 @@ def test_routing_is_idempotent_on_replay(cdc, world, tq):
     cdc.drain()
     count = "MATCH (m:Message {from: 'routine:rt-qualite-incidents'}) RETURN count(m) AS n"
     assert tq(count)[0]["n"] == 1
-    # rejeu depuis le début du journal : mêmes ids de messages déterministes, aucun doublon
+    # replay from the start of the log: same deterministic message ids, no duplicates
     with GraphDatabase.driver(config.NEO4J_URI, auth=(config.CDC_USER, config.CDC_PASSWORD)) as d:
         with d.session(database=cdc.settings.orchestra_db) as s:
             earliest = s.run("CALL db.cdc.earliest() YIELD id RETURN id").single()["id"]
@@ -188,7 +188,7 @@ def test_routing_is_idempotent_on_replay(cdc, world, tq):
 
 
 def test_routing_respects_chain_budget_and_send_rights(cdc, world, tq):
-    # budget épuisé : la livraison est refusée par la passerelle, la chaîne est suspendue
+    # budget exhausted: delivery is refused by the gateway, the chain is suspended
     assert world.c.post("/chains", json={"id": "c-full", "budget": 1, "tokenBudget": 1000}, headers=tok("admin")).status_code == 201
     r = world.c.post("/messages", json={"to": ["incidents"], "performative": "inform", "body": "x", "chainId": "c-full",
                                         "payload": {"kind": "incident"}}, headers=tok("user", "ing-qualite"))
@@ -198,12 +198,12 @@ def test_routing_respects_chain_budget_and_send_rights(cdc, world, tq):
     assert tq("MATCH (c:Chain {id: 'c-full'}) RETURN c.status AS s")[0]["s"] == "suspended"
     err = cdc.of("error", actor="qualite")
     assert err and err[0]["payload"]["status"] == 429
-    # « un budget épuisé suspend la chaîne et l'envoie à l'auditeur » : message système dans son inbox
+    # "an exhausted budget suspends the chain and sends it to the auditor": system message in its inbox
     note = tq("""MATCH (:Inbox {id: 'inbox:auditeur'})-[:HAS_DAY]->(:InboxDay)-[:RECEIVED]->(m:Message {id: 'chain-suspended:c-full'})
                  RETURN m.from AS f, m.payloadJson AS p""")
     assert len(note) == 1 and note[0]["f"] == "gateway" and json.loads(note[0]["p"])["reason"] == "budget"
     assert [w for w in cdc.wakes if w[0] == "auditeur" and w[1]["messageId"] == "chain-suspended:c-full"]
-    # un agent en quarantaine ne reçoit plus d'événements routés
+    # a quarantined agent no longer receives routed events
     tq("MATCH (a:Agent {id: 'qualite'}) SET a.quarantined = true")
     _publish_incident(world, {"kind": "incident"})
     cdc.drain()
@@ -221,7 +221,7 @@ def test_agent_does_not_consume_its_own_publications(cdc, world, tq):
     assert world.send(a, sid, ["produit.bom-changes"], payload={"kind": "bom-change"}).status_code == 201
     cdc.drain()
     assert tq("MATCH (m:Message {from: 'routine:rt-t-self'}) RETURN count(m) AS n")[0]["n"] == 0
-    # essais et planification, abonnés au même topic, reçoivent bien l'événement
+    # testing and planning, subscribed to the same topic, do receive the event
     assert tq("MATCH (m:Message) WHERE m.from IN ['routine:rt-essais-bom', 'routine:rt-planif-bom'] RETURN count(m) AS n")[0]["n"] == 2
 
 
@@ -248,8 +248,8 @@ def test_kg_bridge_one_message_per_transaction(cdc, admin, tq):
     assert {c["entityId"] for c in p1["changes"] if c["kind"] == "node"} == {"B1", "B2"}
     assert [c for c in p1["changes"] if c["kind"] == "rel"][0]["type"] == "CONTAINS"
     assert p2["changeCount"] == 1 and p2["changes"][0]["op"] == "u" and p2["changes"][0]["entityId"] == "B1"
-    assert second["chain"] == "chain-modif"          # la chaîne causale est reprise du txMetadata
-    # rejeu : pas de doublon
+    assert second["chain"] == "chain-modif"          # the causal chain is taken from the txMetadata
+    # replay: no duplicate
     with GraphDatabase.driver(config.NEO4J_URI, auth=(config.CDC_USER, config.CDC_PASSWORD)) as d:
         with d.session(database=KGTEST) as s:
             earliest = s.run("CALL db.cdc.earliest() YIELD id RETURN id").single()["id"]
@@ -257,7 +257,7 @@ def test_kg_bridge_one_message_per_transaction(cdc, admin, tq):
     cdc.drain()
     assert tq("MATCH (m:Message {from: 'pont-kg'}) RETURN count(m) AS n")[0]["n"] >= 2
     assert tq("MATCH (m:Message) WHERE m.id STARTS WITH $p RETURN count(DISTINCT m.id) = count(m) AS ok", p=f"raw:{KGTEST}:")[0]["ok"]
-    # le filtre de la routine de l'interpréteur (kgDb = kgproduit) écarte cette base de test
+    # the interpreter routine's filter (kgDb = kgproduit) discards this test database
     assert tq("MATCH (m:Message {from: 'routine:rt-interp-raw'}) RETURN count(m) AS n")[0]["n"] == 0
 
 
@@ -278,16 +278,16 @@ def test_entityref_lifecycle_follows_the_kg(cdc, admin, tq):
           MERGE (r:Ref:EntityRef {db: $kgdb, key: 'E1'}) ON CREATE SET r.label = 'Ancien', r.labelAt = datetime() - duration('P1D'), r.test = true
           MERGE (r)-[:IN_KG]->(k)""", kgdb=KGTEST)
     _kg_write(admin, KGTEST, "CREATE (:Entity:Part {id: 'E1', name: 'Ancien'}), (:Entity:Part {id: 'E2', name: 'Cible'})")
-    _kg_write(admin, KGTEST, "MATCH (e:Entity {id: 'E1'}) SET e.name = 'Nouveau nom'")
+    _kg_write(admin, KGTEST, "MATCH (e:Entity {id: 'E1'}) SET e.name = 'New name'")
     cdc.drain()
     r = tq("MATCH (r:EntityRef {db: $kgdb, key: 'E1'}) RETURN r.label AS l, r.labelAt > datetime() - duration('PT1H') AS fresh", kgdb=KGTEST)[0]
-    assert r == {"l": "Nouveau nom", "fresh": True}
-    # fusion : E1 SAME_AS E2 -> redirection du proxy
+    assert r == {"l": "New name", "fresh": True}
+    # merge: E1 SAME_AS E2 -> proxy redirection
     _kg_write(admin, KGTEST, "MATCH (a:Entity {id: 'E1'}), (b:Entity {id: 'E2'}) CREATE (a)-[:SAME_AS]->(b)")
     cdc.drain()
     red = tq("""MATCH (old:EntityRef {db: $kgdb, key: 'E1'})-[:SAME_AS]->(new:EntityRef {key: 'E2'})-[:IN_KG]->(:KnowledgeGraph {id: 'produit'})
                 RETURN old.redirectedAt IS NOT NULL AS red, new.label AS l""", kgdb=KGTEST)
-    assert red == [{"red": True, "l": "Nouveau nom"}]
+    assert red == [{"red": True, "l": "New name"}]
     assert tq("MATCH (r:EntityRef {db: $kgdb, key: 'E1'}) OPTIONAL MATCH (r)-[:SAME_AS]->+(t) RETURN t.key AS k", kgdb=KGTEST)[0]["k"] == "E2"
     # suppression
     _kg_write(admin, KGTEST, "MATCH (e:Entity {id: 'E2'}) DETACH DELETE e")
@@ -296,26 +296,26 @@ def test_entityref_lifecycle_follows_the_kg(cdc, admin, tq):
     tq("MATCH (r:EntityRef {db: $kgdb}) DETACH DELETE r", kgdb=KGTEST)
 
 
-# ---------- flux normalisé ----------
+# ---------- normalized stream ----------
 def test_stream_covers_agent_activity(cdc, world):
     a = world.agent("t-a", tools=["query_kg", "remember"])
     sid = world.session(a)
-    world.post("/status", a, {"sessionId": sid, "text": "Je cherche le composant"})
+    world.post("/status", a, {"sessionId": sid, "text": "I am looking for the component"})
     world.post("/tools/calls", a, {"sessionId": sid, "tool": "query_kg", "idempotencyKey": "k1"})
     world.post("/tools/calls/k1/end", a, {"status": "completed"})
     world.post("/tools/calls", a, {"sessionId": sid, "tool": "query_kg", "idempotencyKey": "k2"})
-    world.post("/tools/calls/k2/end", a, {"status": "failed", "error": "KG indisponible"})
-    world.remember(a, sid, "Le relais est défaillant")
+    world.post("/tools/calls/k2/end", a, {"status": "failed", "error": "KG unavailable"})
+    world.remember(a, sid, "The relay is faulty")
     world.c.post(f"/sessions/{sid}/close", json={"status": "completed"}, headers=tok("svc", a))
     cdc.drain()
     mine = [e for e in cdc.events if e["actor"] == a and e["type"] != "woken"]
     types = [e["type"] for e in mine]
     assert types == ["status", "tool.start", "tool.end", "tool.start", "error", "learned", "idle"], types
     by = {e["type"]: e for e in mine}
-    assert by["status"]["payload"]["text"] == "Je cherche le composant"
+    assert by["status"]["payload"]["text"] == "I am looking for the component"
     assert [e["target"] for e in mine if e["type"] in ("tool.start", "tool.end")][0] == "query_kg"
-    assert by["error"]["payload"]["error"] == "KG indisponible"
-    assert by["learned"]["target"] == f"mem:{a}" and by["learned"]["payload"]["statement"].startswith("Le relais")
+    assert by["error"]["payload"]["error"] == "KG unavailable"
+    assert by["learned"]["target"] == f"mem:{a}" and by["learned"]["payload"]["statement"].startswith("The relay")
     assert all(e["t"] for e in mine) and mine == sorted(mine, key=lambda e: e["t"])
     assert set(by["idle"]) == {"t", "type", "actor", "target", "payload"}
 
@@ -331,7 +331,7 @@ def test_stream_covers_governance(cdc, world):
     world.c.post("/chains/c-gov/resume", json={}, headers=tok("admin"))
     world.c.post("/chains", json={"id": "c-loop", "budget": 1, "tokenBudget": 100}, headers=tok("admin"))
     s2 = world.session(boss, chain="c-loop")
-    world.send(boss, s2, ["inbox:t-comite"]); world.send(boss, s2, ["inbox:t-comite"])        # 2e envoi : budget épuisé
+    world.send(boss, s2, ["inbox:t-comite"]); world.send(boss, s2, ["inbox:t-comite"])        # 2nd send: budget exhausted
     cdc.drain()
     w = cdc.of("waiting", actor=boss)
     assert w and w[0]["target"] == "launch_modification"
@@ -345,7 +345,7 @@ def test_stream_covers_governance(cdc, world):
 # ---------- planificateur ----------
 @pytest.fixture
 def sched(cdc, tq):
-    tq("MATCH (r:Routine {id: 'rt-auditeur-scan'}) SET r.enabled = false")   # routine du seed : hors du test
+    tq("MATCH (r:Routine {id: 'rt-auditeur-scan'}) SET r.enabled = false")   # seed routine: out of the test
     return cdc.scheduler
 
 
@@ -363,28 +363,28 @@ def test_cron_fires_once_per_slot(cdc, world, sched, tq):
     a = world.agent("t-a")
     rid = _routine(world, a, trigger="cron", cron="*/5 * * * *", deliverTo="inbox:t-a", payload={"kind": "audit-scan", "body": "scan"})
     t0 = datetime(2026, 6, 1, 10, 2, 30, tzinfo=UTC)
-    assert sched.tick(t0) == 0                                              # première vue : planifie seulement
+    assert sched.tick(t0) == 0                                              # first sight: only schedules
     nxt = tq("MATCH (r:Routine {id: $r}) RETURN r.nextRunAt AS n", r=rid)[0]["n"].to_native()
     assert nxt == datetime(2026, 6, 1, 10, 5, tzinfo=UTC)
-    assert sched.tick(t0 + timedelta(minutes=1)) == 0                       # pas encore l'heure
+    assert sched.tick(t0 + timedelta(minutes=1)) == 0                       # not yet time
     assert sched.tick(datetime(2026, 6, 1, 10, 5, 3, tzinfo=UTC)) == 1
     assert [m["id"] for m in _msgs(tq, rid)] == [f"{rid}@2026-06-01T10:05:00Z"]
-    assert sched.tick(datetime(2026, 6, 1, 10, 5, 4, tzinfo=UTC)) == 0      # le créneau n'est plus dû
-    # deux planificateurs qui tombent sur le même créneau : un seul message (unicité sur Message.id)
+    assert sched.tick(datetime(2026, 6, 1, 10, 5, 4, tzinfo=UTC)) == 0      # the slot is no longer due
+    # two schedulers hitting the same slot: a single message (uniqueness on Message.id)
     tq("MATCH (r:Routine {id: $r}) SET r.nextRunAt = datetime('2026-06-01T10:05:00Z')", r=rid)
     sched.tick(datetime(2026, 6, 1, 10, 5, 5, tzinfo=UTC))
     assert len(_msgs(tq, rid)) == 1
     r = tq("MATCH (r:Routine {id: $r}) RETURN r.nextRunAt AS n, r.lastFiredAt IS NOT NULL AS f", r=rid)[0]
     assert r["n"].to_native() == datetime(2026, 6, 1, 10, 10, tzinfo=UTC) and r["f"]
     cdc.drain()
-    assert cdc.of("woken", actor=a)                                         # la routine réveille son propriétaire
+    assert cdc.of("woken", actor=a)                                         # the routine wakes its owner
 
 
 def test_cron_misfire_skip_ignores_missed_slots(cdc, world, sched, tq):
     a = world.agent("t-a")
     rid = _routine(world, a, trigger="cron", cron="*/5 * * * *", deliverTo="inbox:t-a")
     sched.tick(datetime(2026, 6, 1, 10, 2, tzinfo=UTC))
-    late = datetime(2026, 6, 1, 14, 3, tzinfo=UTC)                          # 4 h d'arrêt
+    late = datetime(2026, 6, 1, 14, 3, tzinfo=UTC)                          # 4 h of downtime
     assert sched.tick(late) == 0
     assert _msgs(tq, rid) == []
     r = tq("MATCH (r:Routine {id: $r}) RETURN r.nextRunAt AS n, r.lastSkippedAt IS NOT NULL AS s", r=rid)[0]
@@ -405,7 +405,7 @@ def test_once_fires_then_disables_and_late_once_still_fires(cdc, world, sched, t
     run_at = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
     rid = _routine(world, a, trigger="once", runAt=run_at.isoformat(), deliverTo="inbox:t-a", payload={"body": "relance"})
     assert sched.tick(run_at - timedelta(minutes=1)) == 0
-    assert sched.tick(run_at + timedelta(hours=3)) == 1                     # misfire = fire (défaut des minuteries)
+    assert sched.tick(run_at + timedelta(hours=3)) == 1                     # misfire = fire (timer default)
     assert [m["id"] for m in _msgs(tq, rid)] == [f"{rid}@2026-06-01T12:00:00Z"]
     assert tq("MATCH (r:Routine {id: $r}) RETURN r.enabled AS e, r.firedAt IS NOT NULL AS f", r=rid)[0] == {"e": False, "f": True}
     assert sched.tick(run_at + timedelta(hours=4)) == 0
@@ -416,11 +416,11 @@ def test_once_fires_then_disables_and_late_once_still_fires(cdc, world, sched, t
 def test_can_send_to_is_checked_at_creation_and_at_each_firing(cdc, world, sched, tq):
     a, b = world.agent("t-a"), world.agent("t-b")
     body = {"trigger": "once", "runAt": "2026-06-01T12:00:00+00:00", "deliverTo": "inbox:t-b"}
-    assert world.post("/routines", a, body).status_code == 403              # à la création
+    assert world.post("/routines", a, body).status_code == 403              # at creation
     world.send_to(a, "inbox:t-b")
     rid = _routine(world, a, **body)
-    tq("MATCH (:Agent {id: 't-a'})-[c:CAN_SEND_TO]->(:Inbox {id: 'inbox:t-b'}) DELETE c")   # droit retiré entre-temps
-    assert sched.tick(datetime(2026, 6, 1, 12, 0, 5, tzinfo=UTC)) == 0      # au déclenchement
+    tq("MATCH (:Agent {id: 't-a'})-[c:CAN_SEND_TO]->(:Inbox {id: 'inbox:t-b'}) DELETE c")   # right removed in the meantime
+    assert sched.tick(datetime(2026, 6, 1, 12, 0, 5, tzinfo=UTC)) == 0      # at trigger time
     assert _msgs(tq, rid) == []
     r = tq("MATCH (r:Routine {id: $r}) RETURN r.lastError AS e, r.enabled AS en", r=rid)[0]
     assert r["e"].startswith("403") and r["en"] is False
@@ -429,7 +429,7 @@ def test_can_send_to_is_checked_at_creation_and_at_each_firing(cdc, world, sched
 def test_routine_creation_validation(world):
     a = world.agent("t-a")
     base = {"deliverTo": "inbox:t-a"}
-    assert world.post("/routines", a, {**base, "trigger": "cron", "cron": "pas un cron"}).status_code == 403
+    assert world.post("/routines", a, {**base, "trigger": "cron", "cron": "not a cron"}).status_code == 403
     assert world.post("/routines", a, {**base, "trigger": "cron", "cron": "* * * * *", "tz": "Mars/Olympus"}).status_code == 403
     assert world.post("/routines", a, {**base, "trigger": "once"}).status_code == 403
     assert world.post("/routines", a, {**base, "trigger": "event", "listensTo": "incidents", "filter": {"field": "x", "op": "cypher"}}).status_code == 403
@@ -438,12 +438,12 @@ def test_routine_creation_validation(world):
     assert ok.status_code == 201
     rid = ok.json()["id"]
     b = world.agent("t-b")
-    assert world.post(f"/routines/{rid}/disable", b, {}).status_code == 404       # pas le propriétaire
+    assert world.post(f"/routines/{rid}/disable", b, {}).status_code == 404       # not the owner
     assert world.post(f"/routines/{rid}/disable", a, {}).status_code == 200
     assert world.post("/internal/deliver", a, {"id": "x"}).status_code == 403      # jeton sys requis
 
 
-# ---------- latence et charge ----------
+# ---------- latency and load ----------
 def test_end_to_end_wake_latency_with_100ms_polling(cdc, world):
     a, b = world.agent("t-a"), world.agent("t-b")
     world.send_to(a, "inbox:t-b")
@@ -462,14 +462,14 @@ def test_end_to_end_wake_latency_with_100ms_polling(cdc, world):
                 if mid in woken:
                     break
                 time.sleep(0.01)
-            assert mid in woken, "pas de réveil"
+            assert mid in woken, "no wake-up"
             lat.append((woken[mid] - t0) * 1000)
             time.sleep(0.03)
     finally:
         stop.set()
         th.join(timeout=3)
     lat.sort()
-    print(f"\nlatence envoi -> réveil (poll 100 ms, n=15) : p50={lat[7]:.0f} ms, p95={lat[13]:.0f} ms, max={lat[-1]:.0f} ms")
+    print(f"\nlatency send -> wake-up (poll 100 ms, n=15) : p50={lat[7]:.0f} ms, p95={lat[13]:.0f} ms, max={lat[-1]:.0f} ms")
     assert lat[7] < 500 and lat[-1] < 1500
     s = cdc.consumer.stats.snapshot()
     assert s["lagMs"]["p50"] is not None and s["woken"] >= 15
@@ -484,18 +484,18 @@ def test_websocket_streams_and_isolates_wakes(cdc, world, gw_url):
         with pytest.raises(Exception):
             with c.websocket_connect("/ws/events?token=mauvais"):
                 pass
-        with pytest.raises(Exception):                                          # l'endpoint de réveil n'accepte que des runtimes
+        with pytest.raises(Exception):                                          # the wake-up endpoint only accepts runtimes
             with c.websocket_connect(f"/ws/wake?token={tok('user', 'ing-qualite')['Authorization'][7:]}"):
                 pass
         cdc.hub.publish({"t": "2026-01-01T00:00:00Z", "type": "sent", "actor": "x", "target": "y", "payload": {"old": True}})
         with c.websocket_connect(f"/ws/events?token={tok('user', 'ing-qualite')['Authorization'][7:]}") as ev, \
              c.websocket_connect(f"/ws/wake?token={tok('svc', a)['Authorization'][7:]}") as wk:
-            assert ev.receive_json()["payload"] == {"old": True}              # historique récent rejoué
+            assert ev.receive_json()["payload"] == {"old": True}              # recent history replayed
             assert wk.receive_json() == {"type": "hello", "agent": a}
             new = {"t": "2026-01-01T00:00:01Z", "type": "woken", "actor": a, "target": None, "payload": {}}
             cdc.hub.publish(new)
             assert ev.receive_json() == new
-            cdc.hub.wake(b, {"messageId": "pour-b"})
-            cdc.hub.wake(a, {"messageId": "pour-a"})
-            assert wk.receive_json() == {"type": "wake", "messageId": "pour-a"}   # jamais le réveil d'un autre agent
+            cdc.hub.wake(b, {"messageId": "for-b"})
+            cdc.hub.wake(a, {"messageId": "for-a"})
+            assert wk.receive_json() == {"type": "wake", "messageId": "for-a"}   # never another agent's wake-up
         assert "p50" in c.get("/stats").json()["lagMs"]

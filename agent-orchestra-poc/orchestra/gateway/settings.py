@@ -13,12 +13,12 @@ class Settings:
     kg_password: str = "kgcurator-dev-pw"
     master_key: str = ""
     data_dir: Path = field(default_factory=lambda: Path("/data"))
-    env_llm_key: str | None = None          # valeur initiale tant qu'aucune clé n'est enregistrée dans l'UI
+    env_llm_key: str | None = None          # initial value until a key is saved in the UI
     llm_provider: str = "gemini"
-    default_budget: int = 50                # messages par chaîne
+    default_budget: int = 50                # messages per chain
     default_token_budget: int = 200_000
     share_ttl_days: int = 30
-    demo_login: bool = False                # sélection d'utilisateur sans mot de passe : démonstration uniquement
+    demo_login: bool = False                # user selection without a password: demo only
     recordings_dir: str = str(Path(__file__).resolve().parents[2] / "data" / "scenarios")
     incidents_file: str = str(Path(__file__).resolve().parents[2] / "data" / "incidents.json")
     max_live_days: int = 30

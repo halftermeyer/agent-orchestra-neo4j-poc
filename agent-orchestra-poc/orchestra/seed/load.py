@@ -1,4 +1,4 @@
-"""Chargement idempotent (MERGE) des seeds. Requêtes statiques et paramétrées."""
+"""Idempotent (MERGE) loading of the seeds. Static, parameterized queries."""
 import json
 from pathlib import Path
 
@@ -22,7 +22,7 @@ def load_orchestra(drv, db="orchestra"):
         _run(s, "UNWIND $rows AS r MERGE (a:Agent:Person {id: r.id}) SET a.name = r.name, a.title = r.title, a.oidcSub = r.oidcSub", rows=persons)
         _run(s, """UNWIND $rows AS r MERGE (a:Agent:SoftwareAgent {id: r.id})
                    SET a.name = r.name, a.role = r.role, a.workloadId = r.workloadId""", rows=agents)
-        # inbox / workspace / mémoire (3 racines distinctes)
+        # inbox / workspace / memory (3 distinct roots)
         ids = [a["id"] for a in O.AGENTS] + [p["id"] for p in O.PERSONS]
         _run(s, """UNWIND $rows AS r MATCH (a:Agent {id: r.id})
                    MERGE (i:Inbox {id: r.inbox}) MERGE (a)-[:HAS_INBOX]->(i)
@@ -30,7 +30,7 @@ def load_orchestra(drv, db="orchestra"):
                    MERGE (m:Memory {id: 'mem:' + r.id}) SET m.ownerId = r.id MERGE (a)-[:HAS_MEMORY]->(m)""",
              rows=[{"id": i, "inbox": O.INBOX_OF[i]} for i in ids])
         _run(s, "UNWIND $rows AS r MERGE (t:Inbox:Topic {id: r.id}) SET t.retention = r.retention", rows=O.TOPICS)
-        # mandats et versions (une version initiale ; on ne réécrit jamais une version existante)
+        # mandates and versions (one initial version; an existing version is never rewritten)
         agent_rows = [{k: a[k] for k in ("id", "kind", "prompt", "purpose", "scope", "success", "tools")} for a in O.AGENTS]
         _run(s, """UNWIND $rows AS r MATCH (a:Agent:SoftwareAgent {id: r.id})
                    MERGE (m:Mandate {id: 'mandate:' + r.id})
@@ -41,7 +41,7 @@ def load_orchestra(drv, db="orchestra"):
                    ON CREATE SET v.kind = r.kind, v.prompt = r.prompt, v.model = CASE r.kind WHEN 'llm' THEN $model END,
                                  v.toolset = r.tools, v.createdAt = datetime()
                    MERGE (a)-[:CURRENT]->(v)""", rows=agent_rows, model=O.MODEL)
-        # un prompt modifié dans le seed = une nouvelle AgentVersion (SUPERSEDES), jamais une réécriture
+        # a prompt changed in the seed = a new AgentVersion (SUPERSEDES), never a rewrite
         _run(s, """UNWIND $rows AS r MATCH (a:Agent:SoftwareAgent {id: r.id})-[c:CURRENT]->(old:AgentVersion)
                    WHERE old.prompt <> r.prompt
                    CALL (a) { MATCH (a)-[:CURRENT]->(:AgentVersion)-[:SUPERSEDES]->*(v) RETURN count(v) AS n }

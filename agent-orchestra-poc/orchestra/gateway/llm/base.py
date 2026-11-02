@@ -26,11 +26,11 @@ class GenResult:
 
 
 class LLMProvider(ABC):
-    """Interface unique : génération, appel d'outils, embeddings, comptage des tokens.
+    """Single interface: generation, tool calls, embeddings, token counting.
 
-    `contents` : liste de {"role": "user"|"model", "text"} | {"role": "model", "tool_calls": [{"name","args"}]}
+    `contents`: list of {"role": "user"|"model", "text"} | {"role": "model", "tool_calls": [{"name","args"}]}
                  | {"role": "tool", "name", "result": {...}}
-    `tools` : déclarations {"name", "description", "parameters": <JSON schema>}
+    `tools`: declarations {"name", "description", "parameters": <JSON schema>}
     """
 
     @abstractmethod

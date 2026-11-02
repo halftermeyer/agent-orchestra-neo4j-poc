@@ -1,4 +1,4 @@
-"""Endpoints du consommateur CDC (jeton `sys`). Toute écriture passe par ici : une seule porte d'entrée vers le graphe."""
+"""CDC consumer endpoints (`sys` token). Every write goes through here: a single entry point to the graph."""
 import json
 from datetime import datetime
 from typing import Literal
@@ -77,8 +77,8 @@ class Deliver(Strict):
 
 @router.post("/deliver")
 def deliver(b: Deliver, p: Principal = Depends(require_sys), ctx=Depends(get_ctx)):
-    """Dépose un message système (routine, topic, pont) dans une inbox, au nom d'un agent.
-    Contrôles : CAN_SEND_TO (ou inbox propre) vérifié à chaque déclenchement, quarantaine, budget de chaîne."""
+    """Drops a system message (routine, topic, bridge) into an inbox, on behalf of an agent.
+    Checks: CAN_SEND_TO (or own inbox) verified on every trigger, quarantine, chain budget."""
     st = ctx.settings
     auth = ctx.store.read(lambda r: r.one("deliver_authorize", actingAgent=b.actingAgent, inbox=b.inbox))
     if auth is None:
@@ -123,7 +123,7 @@ class SyncRef(Strict):
 
 @router.post("/entityrefs/sync")
 def sync_ref(b: SyncRef, p: Principal = Depends(require_sys), ctx=Depends(get_ctx)):
-    """Cycle de vie des proxys : libellé daté, suppression, redirection (SAME_AS) après fusion."""
+    """Proxy lifecycle: dated label, deletion, redirection (SAME_AS) after a merge."""
     meta = {"agentId": f"sys:{p.id}", "chainId": "none"}
     if b.op == "update":
         row = ctx.store.write(meta, lambda r: r.one("entityref_update", db=b.db, key=b.key, label=b.label))

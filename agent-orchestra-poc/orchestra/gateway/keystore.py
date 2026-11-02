@@ -1,4 +1,4 @@
-"""Clé du fournisseur LLM : chiffrée (Fernet), hors graphe, hors dépôt. Clé maître = ORCHESTRA_MASTER_KEY."""
+"""LLM provider key: encrypted (Fernet), kept out of the graph and out of the repo. Master key = ORCHESTRA_MASTER_KEY."""
 import base64
 import hashlib
 import json
@@ -33,7 +33,7 @@ class KeyStore:
         return json.loads(self.file.read_text()) if self.file.exists() else None
 
     def get(self) -> str | None:
-        """Clé effective : celle de l'UI est prioritaire sur la valeur initiale de l'environnement."""
+        """Effective key: the one saved in the UI takes precedence over the initial value from the environment."""
         s = self._stored()
         if s:
             return self._fernet.decrypt(s["ciphertext"].encode()).decode()

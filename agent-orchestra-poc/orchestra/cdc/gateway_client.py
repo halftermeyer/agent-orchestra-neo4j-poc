@@ -13,7 +13,7 @@ class GatewayError(Exception):
 
 
 class GatewayClient:
-    """Seule porte d'entrée du consommateur vers le graphe (écritures) : la passerelle."""
+    """The CDC consumer's only entry point to the graph (writes): the gateway."""
 
     def __init__(self, base_url: str, token: str, http: httpx.Client | None = None):
         self.http = http or httpx.Client(base_url=base_url, timeout=10)

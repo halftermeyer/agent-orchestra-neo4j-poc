@@ -4,7 +4,7 @@ import { fmtDateTime } from "./labels";
 import { useApp } from "./store";
 import type { ModelsStatus } from "./types";
 
-/** Paramètres → Modèles. La clé est en écriture seule : on n'affiche que les 4 derniers caractères et la date. */
+/** Settings → Models. The key is write-only: only the last 4 characters and the date are shown. */
 export function Settings() {
   const { session } = useApp();
   const [status, setStatus] = useState<ModelsStatus | null>(null);

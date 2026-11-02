@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // le navigateur ne parle qu'à ce serveur : passerelle (REST) et consommateur CDC (WebSocket)
+      // the browser only talks to this server: gateway (REST) and CDC consumer (WebSocket)
       "/api": { target: gateway, changeOrigin: true, rewrite: (p) => p.replace(/^\/api/, "") },
       "/stream": { target: cdc, changeOrigin: true, ws: true, rewrite: (p) => p.replace(/^\/stream/, "") },
     },

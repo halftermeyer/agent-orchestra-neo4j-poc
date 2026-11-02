@@ -1,4 +1,4 @@
-"""Déclarations d'outils exposées au LLM. Jamais d'`agentId` en argument : il vient du jeton (règle 3)."""
+"""Tool declarations exposed to the LLM. Never an `agentId` argument: it comes from the token (rule 3)."""
 S = lambda **props: {"type": "object", "properties": props, "required": list(props)}
 STR = {"type": "string"}
 

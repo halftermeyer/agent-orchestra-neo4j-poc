@@ -54,7 +54,7 @@ def generate_kg_produit(seed: int = SEED) -> dict:
         l3.append(pid(n))
         parent = l2[k % len(l2)] if k < 3 * len(l2) else rng.choice(l2)
         contains.append({"from": parent, "to": pid(n), "qty": rng.randint(1, 8)})
-    # pièces partagées : second parent différent
+    # shared parts: different second parent
     seen = {(c["from"], c["to"]) for c in contains}
     for part in rng.sample(l3, 40):
         parent = rng.choice(l2)
@@ -93,12 +93,12 @@ def generate_kg_projet(tests: list[dict], l1_ids: list[str], seed: int = SEED) -
     for t in tasks:
         if t["phase"] == "Testing":
             kinds = [k for k in TEST_KINDS if k.lower() in t["name"].lower()]
-            if kinds:  # lien métier par clé (pas de relation entre bases)
+            if kinds:  # business link by key (no relationship across databases)
                 t["testRefs"] = [x["id"] for x in tests if x["kind"] == kinds[0]]
     conception = [t for t in tasks if t["phase"] == "Conception"]
     for t, pid in zip(conception, l1_ids):
         t["partRef"] = pid
-    # passe avant pour dates planifiées
+    # forward pass for scheduled dates
     by_id = {t["id"]: t for t in tasks}
     preds = {t["id"]: [d["to"] for d in deps if d["from"] == t["id"]] for t in tasks}
     for t in tasks:
@@ -129,19 +129,19 @@ def _bom_index(produit: dict):
         return seen
 
     def tests_of(x):
-        """Comme la requête `part_tests` : essais qui couvrent la pièce ou un ensemble qui la contient."""
+        """Like the `part_tests` query: tests that cover the part or an assembly containing it."""
         return set(direct.get(x, ())) | {t for a in ancestors(x) for t in direct.get(a, ())}
 
     def candidates(x):
-        """Comme la requête `replacement_candidates` : même niveau et même famille, par criticité puis identifiant."""
+        """Like the `replacement_candidates` query: same level and same family, by criticality then identifier."""
         return sorted((y for y, q in parts.items() if q["level"] == parts[x]["level"] and q["family"] == parts[x]["family"] and y != x),
                       key=lambda y: (parts[y]["criticality"], y))
     return parts, parents, tests_of, candidates
 
 
 def loop_parts(produit: dict) -> list[str]:
-    """Pièces qui provoquent la boucle légitime Ingénierie ↔ Essais : la pièce est couverte et partagée, son premier
-    candidat de remplacement n'est couvert par aucun essai (Essais le refuse), le deuxième l'est (Essais l'accepte)."""
+    """Parts that trigger the legitimate Engineering ↔ Testing loop: the part is covered and shared, its first
+    replacement candidate is covered by no test (Testing refuses it), the second is (Testing accepts it)."""
     parts, parents, tests_of, candidates = _bom_index(produit)
     out = []
     for x in sorted(parts):
@@ -162,10 +162,10 @@ def generate_incidents(produit: dict, seed: int = SEED) -> list[dict]:
     covered = {c["to"] for c in produit["covers"]}
     shared = sorted(p for p, ps in parents.items() if len(ps) > 1 and by_id[p]["level"] == 3 and p in covered)
     loop = loop_parts(produit)
-    assert loop, "aucune pièce ne provoque la boucle Ingénierie ↔ Essais : revoir la génération des essais"
+    assert loop, "no part triggers the Engineering ↔ Testing loop: review test generation"
     shared = [p for p in shared if p != loop[0]]
     others = sorted(p["id"] for p in produit["parts"] if p["level"] == 3 and p["id"] not in shared and p != loop[0])
-    chosen = [loop[0]] + shared[:2] + rng.sample(others, 7)       # INC-001 : l'incident du scénario (avec boucle légitime)
+    chosen = [loop[0]] + shared[:2] + rng.sample(others, 7)       # INC-001 : the scenario incident (with legitimate loop)
     templates = [
         ("Leak found on {n} after {h} h of operation", "major"),
         ("Abnormal vibration measured on {n} at {h} h of service", "major"),

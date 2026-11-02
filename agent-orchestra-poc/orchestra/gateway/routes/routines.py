@@ -19,13 +19,13 @@ router = APIRouter()
 
 @router.get("/auth/check")
 def auth_check(p: Principal = Depends(principal)):
-    """Validation d'un jeton pour les services voisins (WebSocket du consommateur CDC)."""
+    """Token validation for neighboring services (CDC consumer WebSocket)."""
     return {"kind": p.kind, "id": p.id}
 
 
 @router.get("/inbox/pending")
 def inbox_pending(limit: int = 100, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
-    """Messages `submitted` de mon inbox : rattrapage d'un runtime qui s'est connecté après le réveil."""
+    """`submitted` messages in my inbox: catch-up for a runtime that connected after the wake-up."""
     return {"pending": to_json(ctx.store.read(lambda r: r.all("inbox_pending", agentId=p.id, limit=max(1, min(limit, 500)))))}
 
 
@@ -43,7 +43,7 @@ class NewRoutine(Strict):
 
 @router.post("/routines", status_code=201)
 def create_routine(b: NewRoutine, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
-    """CAN_SEND_TO (ou inbox propre) est vérifié ici, puis à chaque déclenchement."""
+    """CAN_SEND_TO (or own inbox) is checked here, then on every trigger."""
     try:
         if b.trigger == "cron":
             if not b.cron or not croniter.is_valid(b.cron):

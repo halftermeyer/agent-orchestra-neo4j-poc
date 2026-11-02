@@ -1,4 +1,4 @@
-"""Scénario d'ingénierie : acteurs, mandats, droits, outils, routines. Données statiques de seed."""
+"""Engineering scenario: actors, mandates, rights, tools, routines. Static seed data."""
 
 MODEL = "gemini-2.5-flash"
 
@@ -10,7 +10,7 @@ PERSONS = [
     {"id": "chef-projet", "name": "Project manager", "title": "Receives the schedule impact"},
 ]
 
-# kind: llm | rule ; ids techniques conservés (spec) ; noms, mandats et prompts en anglais
+# kind: llm | rule ; technical ids kept (spec); names, mandates and prompts in English
 AGENTS = [
     {"id": "coordinateur", "name": "Coordinator", "kind": "llm", "role": "coordinator",
      "prompt": """You are the Coordinator of an engineering office. You orchestrate the impact analysis of a product modification (modular pumping station SPM-7) starting from a qualified incident.
@@ -97,7 +97,7 @@ For a chain-suspended message (budget or tokens exhausted): warn the humans (`co
      "tools": ["send_message", "set_status", "recall", "suspend_chain", "quarantine_agent"]},
 ]
 
-# Un seul inbox partagé pour le comité
+# A single shared inbox for the committee
 INBOX_OF = {a["id"]: f"inbox:{a['id']}" for a in AGENTS}
 INBOX_OF.update({p["id"]: f"inbox:{p['id']}" for p in PERSONS})
 for c in ("comite-1", "comite-2", "comite-3"):
@@ -109,7 +109,7 @@ TOPICS = [
     {"id": "produit.bom-changes", "retention": "P30D"},
 ]
 
-# Supervision : jamais d'agent logiciel vers un humain (la spec l'interdit)
+# Supervision: never from a software agent to a human (the spec forbids it)
 SUPERVISES = [
     ("coordinateur", "ingenierie"), ("coordinateur", "essais"), ("coordinateur", "planification"),
     ("ingenierie", "interpreteur-bom"), ("interpreteur-bom", "pont-kg"),
@@ -140,7 +140,7 @@ TOOLS = [
     {"name": "suspend_chain", "effect": "write"}, {"name": "quarantine_agent", "effect": "write"},
     {"name": "launch_modification", "effect": "irreversible"},
 ]
-# approval : 'none' ou politique requise. Le droit d'usage ne s'hérite pas.
+# approval : 'none' or required policy. The right of use is not inherited.
 EXTRA_CAN_USE = [("coordinateur", "launch_modification", "2-of-3")]
 
 KGS = [{"id": "produit", "dbName": "kgproduit"}, {"id": "projet", "dbName": "kgprojet"}]

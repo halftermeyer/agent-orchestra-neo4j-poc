@@ -17,7 +17,7 @@ log = logging.getLogger("orchestra.cdc")
 class Stats:
     def __init__(self):
         self.events = self.tx = self.errors = self.routed = self.woken = self.cursor_resets = 0
-        self.lags = deque(maxlen=1000)       # ms entre commit et traitement
+        self.lags = deque(maxlen=1000)       # ms between commit and processing
 
     def snapshot(self) -> dict:
         l = sorted(self.lags)
@@ -27,7 +27,7 @@ class Stats:
 
 
 class Consumer:
-    """Un curseur par base ; traitement au-moins-une-fois, effets idempotents (ids de messages déterministes)."""
+    """One cursor per database; at-least-once processing, idempotent effects (deterministic message ids)."""
 
     def __init__(self, settings, source, gw, cursors, hub):
         self.s, self.source, self.gw, self.cursors, self.hub = settings, source, gw, cursors, hub
@@ -37,7 +37,7 @@ class Consumer:
 
     # ---------- curseurs ----------
     def init_cursors(self):
-        """Premier démarrage : on part de la position courante (pas de rejeu du seed)."""
+        """First start: begin from the current position (no seed replay)."""
         for db in self.s.dbs:
             if self.cursors.get(db) is None:
                 self.cursors.set(db, self.source.current(db))
@@ -53,7 +53,7 @@ class Consumer:
         except (TransientError, ClientError) as e:
             if not any(c in (e.code or "") for c in ("ChangeDataCapture.FutureIdentifier", "ChangeDataCapture.InvalidIdentifier")):
                 raise
-            # le curseur ne correspond pas à ce journal (base recréée : postérieur à sa fin ; ou autre base). Rien à rattraper.
+            # the cursor does not match this log (database recreated: beyond its end; or another database). Nothing to catch up.
             log.warning("cursor of %s does not belong to the log (database recreated?): reset to the current position", db)
             self.cursors.set(db, self.source.current(db))
             self.stats.cursor_resets += 1
@@ -66,7 +66,7 @@ class Consumer:
                 self._process(db, tx)
             except GatewayError as e:
                 if e.transient:
-                    raise                     # on ne fait pas avancer le curseur : on réessaie
+                    raise                     # do not advance the cursor: retry
                 self.stats.errors += 1
                 log.error("tx %s skipped (%s)", tx_id, e)
             self.stats.tx += 1
@@ -80,7 +80,7 @@ class Consumer:
         while not stop.is_set():
             try:
                 n = self.poll_once()
-            except Exception as e:  # base ou passerelle indisponible : on réessaie
+            except Exception as e:  # database or gateway unavailable: retry
                 self.stats.errors += 1
                 log.error("poll failed: %s", type(e).__name__)
                 n = 0
@@ -107,8 +107,8 @@ class Consumer:
             self._on_kg_tx(db, tx)
 
     def _system_notifications(self, tx: list[dict]):
-        """Décisions du graphe qui doivent réveiller quelqu'un : validation tranchée -> le demandeur ;
-        budget épuisé -> l'auditeur (« l'envoie à l'auditeur »)."""
+        """Graph decisions that must wake someone: approval decided -> the requester;
+        budget exhausted -> the auditor ("sends it to the auditor")."""
         for e in tx:
             ev = e["event"]
             if ev["eventType"] != "n" or ev["operation"] != "u":
@@ -159,14 +159,14 @@ class Consumer:
         base = {"messageId": messageId, "performative": msg["performative"], "chainId": msg["chainId"], "inbox": inbox}
         kind = (msg.get("payload") or {}).get("kind")
         if kind:
-            base["kind"] = kind                      # sert aux chapitres de la relecture
+            base["kind"] = kind                      # used for the replay chapters
         if own["topic"]:
             self.hub.publish({"t": t, "type": "sent", "actor": msg["from"], "target": inbox, "payload": {**base, "topic": True}})
             self._route(msg, inbox)
             return
         for o in own["owners"]:
             self.hub.publish({"t": t, "type": "sent", "actor": msg["from"], "target": o["id"], "payload": base})
-            # droits : pas de réveil pour un agent en quarantaine ou une chaîne suspendue
+            # rights: no wake-up for a quarantined agent or a suspended chain
             if o["person"]:
                 self.hub.publish({"t": t, "type": "woken", "actor": o["id"], "target": None, "payload": base})
             elif not o["quarantined"] and msg["chainStatus"] == "active":
@@ -175,10 +175,10 @@ class Consumer:
                 self.stats.woken += 1
 
     def _route(self, msg: dict, topic: str):
-        """Routage des topics : filtre structuré (jamais du Cypher), puis dépôt via la passerelle."""
+        """Topic routing: structured filter (never Cypher), then delivery via the gateway."""
         for r in self.gw.topic_routines(topic):
             if r["owner"] == msg["from"]:
-                continue                       # un agent ne consomme pas ses propres publications
+                continue                       # an agent does not consume its own publications
             try:
                 if r["filter"] and not predicate.evaluate(json.loads(r["filter"]), msg.get("payload"), msg):
                     continue

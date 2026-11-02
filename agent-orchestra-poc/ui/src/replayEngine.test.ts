@@ -36,18 +36,18 @@ describe("replay engine", () => {
 
   it("compresses idle gaps, but not short ones", () => {
     const r = scenario;
-    const inGap = T0 + 5000;                                         // entre l'événement à 3 s et celui à 60 s
-    expect(advance(r, inGap, 50, 1, false)).toBe(inGap + 50);        // sans compression : temps réel
+    const inGap = T0 + 5000;                                         // between the event at 3 s and the one at 60 s
+    expect(advance(r, inGap, 50, 1, false)).toBe(inGap + 50);        // no compression: real time
     const jumped = advance(r, inGap, 50, 1, true);
-    expect(jumped).toBe(T0 + 60_000 - IDLE_KEEP_MS + 50);            // on saute juste avant l'événement suivant
-    const shortGap = T0 + 1000;                                      // 1 s avant l'événement suivant : pas de saut
+    expect(jumped).toBe(T0 + 60_000 - IDLE_KEEP_MS + 50);            // jump to just before the next event
+    const shortGap = T0 + 1000;                                      // 1 s before the next event: no jump
     expect(advance(r, shortGap, 50, 1, true)).toBe(shortGap + 50);
     expect(IDLE_GAP_MS).toBeGreaterThan(IDLE_KEEP_MS);
   });
 
   it("events in (a, b]: open on the left, closed on the right", () => {
     const r = scenario;
-    expect(eventsBetween(r, T0, T0 + 2000).map((e) => e.type)).toEqual(["woken", "status"]);   // exclut t=0, inclut t=2 s
+    expect(eventsBetween(r, T0, T0 + 2000).map((e) => e.type)).toEqual(["woken", "status"]);   // excludes t=0, includes t=2 s
     expect(eventsBetween(r, T0 - 1, T0).map((e) => e.type)).toEqual(["sent"]);
     expect(eventsBetween(r, T0 + 3000, T0 + 59_000)).toEqual([]);
   });
@@ -59,7 +59,7 @@ describe("replay engine", () => {
 
   it("seek: temporary animations that already expired do not come back", () => {
     const s = stateAt(scenario, T0 + 2500, ctx);
-    expect(s["ing-qualite"].mode).toBe("idle");                       // 0 + 1400 ms < 2,5 s
+    expect(s["ing-qualite"].mode).toBe("idle");                       // 0 + 1400 ms < 2.5 s
     const early = stateAt(scenario, T0 + 300, ctx);
     expect(early.qualite.mode).toBe("woken");
     expect(early["ing-qualite"].mode).toBe("sending");
@@ -67,8 +67,8 @@ describe("replay engine", () => {
   });
 
   it("waiting persists until the agent resumes; before the start, nobody has a state", () => {
-    expect(stateAt(scenario, T0 + 65_000, ctx).coordinateur.mode).toBe("waiting");        // demande de validation à 60 s
-    expect(stateAt(scenario, T0 + 71_000, ctx).coordinateur.mode).toBe("tool");           // quorum atteint : reprise à 70 s
+    expect(stateAt(scenario, T0 + 65_000, ctx).coordinateur.mode).toBe("waiting");        // approval request at 60 s
+    expect(stateAt(scenario, T0 + 71_000, ctx).coordinateur.mode).toBe("tool");           // quorum reached: resumes at 70 s
     expect(stateAt(scenario, T0 - 1, ctx)).toEqual({});
   });
 

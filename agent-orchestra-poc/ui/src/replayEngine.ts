@@ -1,11 +1,11 @@
 import { reduce, settle, type Ctx, type States } from "./avatarState";
 import type { StreamEvent } from "./types";
 
-/** Moteur de relecture : pur, sans horloge ni DOM. `vt` est le temps virtuel (ms epoch) de l'enregistrement. */
+/** Replay engine: pure, no clock or DOM. `vt` is the recording's virtual time (epoch ms). */
 export interface Replay { events: StreamEvent[]; times: number[]; t0: number; t1: number }
 
-export const IDLE_GAP_MS = 4000;      // au-delà, un temps mort est compressé
-export const IDLE_KEEP_MS = 800;      // ce qu'on garde avant l'événement suivant
+export const IDLE_GAP_MS = 4000;      // beyond this, idle time is compressed
+export const IDLE_KEEP_MS = 800;      // what we keep before the next event
 export const SPEEDS = [1, 2, 5, 10, 20] as const;
 
 export function makeReplay(events: StreamEvent[]): Replay {
@@ -14,28 +14,28 @@ export function makeReplay(events: StreamEvent[]): Replay {
   return { events: sorted.map((x) => x.e), times, t0: times[0] ?? 0, t1: times[times.length - 1] ?? 0 };
 }
 
-const firstAfter = (times: number[], t: number): number => {          // plus petit indice d'événement strictement après t
+const firstAfter = (times: number[], t: number): number => {          // smallest event index strictly after t
   let lo = 0, hi = times.length;
   while (lo < hi) { const mid = (lo + hi) >> 1; if (times[mid] > t) hi = mid; else lo = mid + 1; }
   return lo;
 };
 
-/** Fait avancer le temps virtuel de `dtWallMs` (horloge murale) × `speed` ; saute les temps morts si `compress`. */
+/** Advances virtual time by `dtWallMs` (wall clock) × `speed`; skips idle time if `compress`. */
 export function advance(r: Replay, vt: number, dtWallMs: number, speed: number, compress: boolean): number {
   let cur = vt;
   if (compress) {
     const i = firstAfter(r.times, cur);
-    if (i < r.times.length && r.times[i] - cur > IDLE_GAP_MS) cur = r.times[i] - IDLE_KEEP_MS;   // temps mort : on saute
+    if (i < r.times.length && r.times[i] - cur > IDLE_GAP_MS) cur = r.times[i] - IDLE_KEEP_MS;   // idle time: skip ahead
   }
   return Math.min(cur + dtWallMs * speed, r.t1);
 }
 
-/** Événements dans l'intervalle (a, b]. */
+/** Events in the interval (a, b]. */
 export function eventsBetween(r: Replay, a: number, b: number): StreamEvent[] {
   return r.events.slice(firstAfter(r.times, a), firstAfter(r.times, b));
 }
 
-/** Positionnement : rejoue tout jusqu'à `vt` avec les vraies dates des événements, puis fait expirer ce qui doit l'être. */
+/** Seek: replays everything up to `vt` with the events' real dates, then expires what should be expired. */
 export function stateAt(r: Replay, vt: number, ctx: Ctx): States {
   let s: States = {};
   const end = firstAfter(r.times, vt);
@@ -43,7 +43,7 @@ export function stateAt(r: Replay, vt: number, ctx: Ctx): States {
   return settle(s, vt);
 }
 
-/** Passe un état calculé en temps virtuel dans l'horloge murale (les animations en cours finissent à leur heure). */
+/** Moves a state computed in virtual time onto the wall clock (running animations finish on time). */
 export function rebase(states: States, vt: number, wall: number): States {
   const shift = wall - vt;
   const out: States = {};
@@ -54,7 +54,7 @@ export function rebase(states: States, vt: number, wall: number): States {
 
 export interface Chapter { id: string; label: string; t: number }
 
-/** Chapitres du scénario, repérés dans le flux : incident, analyse, vote, lancement, gouvernance. */
+/** Scenario chapters, detected in the stream: incident, analyse, vote, lancement, gouvernance. */
 export function chaptersOf(r: Replay): Chapter[] {
   const rules: { id: string; label: string; test: (e: StreamEvent) => boolean }[] = [
     { id: "incident", label: "Incident", test: (e) => e.type === "sent" && e.payload.kind === "incident" },

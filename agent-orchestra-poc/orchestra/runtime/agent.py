@@ -17,7 +17,7 @@ COMMON_RULES = """Common rules:
 
 
 def _compact(x):
-    """Allège le payload montré au LLM : les identifiants techniques d'événements CDC ne l'aident pas."""
+    """Slim down the payload shown to the LLM: technical CDC event identifiers do not help it."""
     if isinstance(x, dict):
         return {k: _compact(v) for k, v in x.items() if k != "eventId"}
     if isinstance(x, list):
@@ -31,7 +31,7 @@ def _fmt_msg(m: dict, me: str) -> str:
 
 
 class AgentRunner:
-    """Boucle générique d'un agent LLM : réveil → session → (génération ↔ outils)* → fermeture."""
+    """Generic LLM agent loop: wake-up → session → (generation ↔ tools)* → close."""
 
     def __init__(self, agent_id: str, client, settings):
         self.agent, self.c, self.s = agent_id, client, settings
@@ -70,9 +70,9 @@ class AgentRunner:
             lines.append("Conversation thread (what you sent or received before):\n" + "\n".join(_fmt_msg(m, self.agent) for m in earlier))
         return "\n".join(lines)
 
-    # ----- cycle d'une session -----
+    # ----- session lifecycle -----
     def gate(self, msg: dict) -> str | None:
-        """Portes à règles, avant tout appel LLM : retourne une raison de ne pas réveiller le LLM."""
+        """Rule gates, before any LLM call: return a reason not to wake the LLM."""
         p = msg.get("payload") or {}
         if p.get("kind") == "commitment-due":
             try:
@@ -98,7 +98,7 @@ class AgentRunner:
                 log.info("%s: %s — no LLM call (%s)", self.agent, message_id[:12], reason)
             else:
                 status = self.work(sid, msg)
-        except ClientError as e:                       # budget épuisé, chaîne suspendue, LLM indisponible…
+        except ClientError as e:                       # budget exhausted, chain suspended, LLM unavailable...
             log.warning("%s: session %s failed (%s %s)", self.agent, sid, e.status, e.body[:120])
             status = "failed"
         except Exception:

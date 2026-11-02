@@ -1,4 +1,4 @@
-"""Jetons de service sans état : HMAC(clé maître, kind:id). L'agentId vient toujours d'ici (règle 3)."""
+"""Stateless service tokens: HMAC(master key, kind:id). The agentId always comes from here (rule 3)."""
 import base64
 import hashlib
 import hmac
@@ -93,7 +93,7 @@ def require_person(p: Principal = Depends(principal)) -> Principal:
 
 
 def require_sys(p: Principal = Depends(principal)) -> Principal:
-    """Acteurs système (consommateur CDC) : jamais un agent, jamais l'UI."""
+    """System actors (CDC consumer): never an agent, never the UI."""
     if p.kind != "sys":
         raise Forbidden("reserved to the CDC consumer")
     return p

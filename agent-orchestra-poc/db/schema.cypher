@@ -1,6 +1,6 @@
-// Schéma de la base d'orchestration. Idempotent (IF NOT EXISTS). Appliqué par db/init/init.sh.
-// Les entités que le consommateur CDC doit identifier à partir des seuls événements sont des NODE KEY :
-// le CDC ne publie `keys` que pour les clés de nœud (spike phase 3). Plus strict que l'unicité de la spec.
+// Orchestration database schema. Idempotent (IF NOT EXISTS). Applied by db/init/init.sh.
+// Entities the CDC consumer must identify from events alone are NODE KEYs:
+// the CDC only publishes `keys` for node keys (phase 3 spike). Stricter than the spec's uniqueness.
 CYPHER 25
 DROP CONSTRAINT agent_id IF EXISTS;
 DROP CONSTRAINT message_id IF EXISTS;
@@ -31,7 +31,7 @@ CREATE CONSTRAINT approval_key IF NOT EXISTS FOR (n:Approval) REQUIRE n.id IS NO
 CREATE CONSTRAINT kg_id IF NOT EXISTS FOR (n:KnowledgeGraph) REQUIRE n.id IS UNIQUE;
 CREATE CONSTRAINT entityref_key IF NOT EXISTS FOR (n:EntityRef) REQUIRE (n.db, n.key) IS NODE KEY;
 CREATE CONSTRAINT run_key IF NOT EXISTS FOR (n:Run) REQUIRE n.id IS NODE KEY;
-// Un vote par personne et par validation
+// One vote per person and per approval
 CREATE CONSTRAINT vote_once IF NOT EXISTS FOR ()-[r:VOTED]-() REQUIRE (r.approvalId, r.personId) IS UNIQUE;
 
 CREATE INDEX message_chain IF NOT EXISTS FOR (n:Message) ON (n.chainId);
@@ -40,7 +40,7 @@ CREATE INDEX message_created IF NOT EXISTS FOR (n:Message) ON (n.createdAt);
 CREATE INDEX fact_memory IF NOT EXISTS FOR (n:Fact) ON (n.memoryId);
 CREATE INDEX received_status IF NOT EXISTS FOR ()-[r:RECEIVED]-() ON (r.status);
 
-// Dimension 768 : gemini-embedding-001 avec outputDimensionality=768 (à confirmer en phase 2).
-// WITH [memoryId] : propriété de filtre pour SEARCH ... WHERE (spike 4).
+// Dimension 768: gemini-embedding-001 with outputDimensionality=768 (to confirm in phase 2).
+// WITH [memoryId] : filter property for SEARCH ... WHERE (spike 4).
 CREATE VECTOR INDEX fact_embedding IF NOT EXISTS FOR (f:Fact) ON (f.embedding) WITH [f.memoryId]
   OPTIONS {indexConfig: {`vector.dimensions`: 768, `vector.similarity_function`: 'cosine'}};

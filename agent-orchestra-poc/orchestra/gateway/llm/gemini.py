@@ -10,7 +10,7 @@ def _to_contents(contents: list[dict]) -> list[types.Content]:
         if c["role"] == "tool":
             part = types.Part.from_function_response(name=c["name"], response=c["result"])
             if out and out[-1].role == "user" and out[-1].parts and out[-1].parts[0].function_response is not None:
-                out[-1].parts.append(part)          # plusieurs appels d'un même tour : réponses groupées
+                out[-1].parts.append(part)          # several calls in the same turn: responses grouped
             else:
                 out.append(types.Content(role="user", parts=[part]))
         elif c.get("tool_calls"):

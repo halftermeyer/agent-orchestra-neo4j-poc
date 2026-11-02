@@ -17,8 +17,8 @@ class RuntimeSettings:
     electorates: dict = field(default_factory=lambda: {"launch_modification": "inbox:comite"})
 
     def token(self, agent_id: str) -> str:
-        """PoC : un seul processus héberge tous les runtimes et dérive le jeton de chacun. Chaque AgentRunner
-        n'utilise que le sien ; en production, chaque runtime recevrait seulement son jeton."""
+        """PoC: a single process hosts all runtimes and derives each one's token. Each AgentRunner
+        only uses its own; in production, each runtime would receive only its token."""
         return make_token(self.master_key, "svc", agent_id)
 
     @classmethod

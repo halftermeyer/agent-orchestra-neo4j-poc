@@ -5,7 +5,7 @@ from orchestra.seed import kg_data as K
 
 T = lambda i, d, *deps: {"id": i, "durationDays": d, "dependsOn": list(deps)}
 #   A(3) -> B(2) -> D(4)        chemin critique A-B-D = 9 jours
-#   A(3) -> C(1) -> D           C a 1 jour de marge
+#   A(3) -> C(1) -> D           C has 1 day of slack
 DIAMOND = [T("A", 3), T("B", 2, "A"), T("C", 1, "A"), T("D", 4, "B", "C")]
 
 
@@ -45,5 +45,5 @@ def test_synthetic_project_is_consistent_with_its_own_forward_pass():
         deps[d["from"]].append(d["to"])
     tasks = [{"id": t["id"], "durationDays": t["durationDays"], "dependsOn": deps[t["id"]]} for t in proj["tasks"]]
     r = critical_path(tasks)
-    assert all(r["tasks"][t["id"]]["es"] == t["plannedStartDay"] for t in proj["tasks"])   # le seed est cohérent avec la CPA
+    assert all(r["tasks"][t["id"]]["es"] == t["plannedStartDay"] for t in proj["tasks"])   # the seed is consistent with the CPA
     assert r["criticalPath"] and r["projectDays"] > 0

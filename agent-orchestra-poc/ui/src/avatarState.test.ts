@@ -30,7 +30,7 @@ describe("avatar states", () => {
 
   it("the “woken” state expires: an agent goes to thinking, a person to idle", () => {
     let s = run([[ev("woken", "qualite"), 0], [ev("woken", "chef-projet"), 0]]);
-    expect(settle(s, TTL.woken - 1)).toBe(s);                       // pas encore
+    expect(settle(s, TTL.woken - 1)).toBe(s);                       // not yet
     s = settle(s, TTL.woken);
     expect(s.qualite.mode).toBe("thinking");
     expect(s["chef-projet"].mode).toBe("idle");
@@ -79,13 +79,13 @@ describe("avatar states", () => {
     const later = settle(s, 1000 + STALE_BUSY_MS + 1);
     expect(later.qualite).toMatchObject({ mode: "idle", busy: false, bubble: undefined });
     const w = run([[ev("status", "coordinateur", { text: "a" }), 0], [ev("waiting", "coordinateur"), 10]]);
-    expect(settle(w, 10 + 10 * STALE_BUSY_MS).coordinateur.mode).toBe("waiting");     // une attente légitime ne s'efface pas
+    expect(settle(w, 10 + 10 * STALE_BUSY_MS).coordinateur.mode).toBe("waiting");     // a legitimate wait is not cleared
   });
 
   it("woken with no activity: falls back to idle faster than an agent that already spoke", () => {
     const T = 1000;
     let s = run([[ev("woken", "qualite"), T]]);
-    s = settle(s, T + TTL.woken);                                 // « réveillé » expiré -> en attente de travail
+    s = settle(s, T + TTL.woken);                                 // "woken" expired -> waiting for work
     expect(s.qualite.mode).toBe("thinking");
     expect(settle(s, T + STALE_WOKEN_MS).qualite.mode).toBe("thinking");
     expect(settle(s, T + STALE_WOKEN_MS + 1).qualite.mode).toBe("idle");
@@ -113,7 +113,7 @@ describe("event clock", () => {
   const at = (ms: number): StreamEvent => ({ ...ev("woken", "qualite"), t: new Date(ms).toISOString() });
   it("a recent event counts as now", () => {
     expect(eventClock(at(100_000 - 1200), 100_000)).toEqual({ now: 100_000, historical: false });
-    expect(eventClock(at(100_000 + 3000), 100_000).historical).toBe(false);          // léger décalage d'horloge
+    expect(eventClock(at(100_000 + 3000), 100_000).historical).toBe(false);          // slight clock skew
   });
   it("an old event keeps its date: its animation has already expired", () => {
     const old = at(100_000 - HISTORICAL_MS - 1);
@@ -122,9 +122,9 @@ describe("event clock", () => {
     let s = reduce({}, old, c.now, ctx);
     expect(s.qualite.mode).toBe("woken");
     s = settle(s, 100_000);
-    expect(s.qualite.mode).not.toBe("woken");                                        // expiré dès le premier tick
+    expect(s.qualite.mode).not.toBe("woken");                                        // expired from the first tick
   });
   it("unreadable date: treated as recent", () => {
-    expect(eventClock({ ...ev("woken", "x"), t: "pas une date" }, 5).historical).toBe(false);
+    expect(eventClock({ ...ev("woken", "x"), t: "not a date" }, 5).historical).toBe(false);
   });
 });

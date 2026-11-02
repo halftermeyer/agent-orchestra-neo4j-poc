@@ -3,7 +3,7 @@ import type { StreamEvent } from "./types";
 
 type Listener = (ev: StreamEvent) => void;
 
-/** Client WebSocket du flux normalisé, avec reconnexion. Le même flux alimente la scène, le graphe et la frise. */
+/** WebSocket client for the normalized stream, with reconnection. The same stream feeds the scene, the graph and the timeline. */
 export class EventStream {
   private ws: WebSocket | null = null;
   private listeners = new Set<Listener>();

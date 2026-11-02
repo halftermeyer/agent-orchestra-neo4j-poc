@@ -33,8 +33,8 @@ class Generate(Strict):
 
 @router.post("/llm/generate")
 def generate(b: Generate, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Appel LLM pour le compte d'un runtime : modèle imposé par l'AgentVersion, outils filtrés par CAN_USE,
-    budget de tokens vérifié avant l'appel, consommation réelle imputée à la chaîne après."""
+    """LLM call on behalf of a runtime: model imposed by the AgentVersion, tools filtered by CAN_USE,
+    token budget checked before the call, actual consumption charged to the chain afterwards."""
     s = load_session(ctx, p, b.sessionId)
     me = ctx.store.read(lambda r: r.one("me", agentId=p.id))
     model = (me["version"] or {}).get("model")

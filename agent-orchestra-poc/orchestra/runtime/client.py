@@ -8,7 +8,7 @@ class ClientError(Exception):
 
 
 class AgentClient:
-    """Le runtime n'a ni clé LLM ni accès à la base : tout passe par la passerelle, avec le jeton de cet agent."""
+    """The runtime has neither an LLM key nor database access: everything goes through the gateway, with this agent's token."""
 
     def __init__(self, base_url: str, token: str, http: httpx.Client | None = None):
         self.http = http or httpx.Client(base_url=base_url, timeout=90)

@@ -10,7 +10,7 @@ The specification is the source of truth: `docs/spec.md`. Read it entirely befor
 ## Mandatory stack
 - Neo4j Enterprise (official Docker image, `NEO4J_ACCEPT_LICENSE_AGREEMENT=yes`), APOC and GDS plugins. No Aura.
 - Python 3.12 backend: FastAPI, the official `neo4j` driver, the `google-genai` SDK. A single `orchestra/` package with separate services: `gateway`, `cdc`, `runtime`.
-- UI: React + Vite + TypeScript, `@neo4j-nvl/react` for the graph, Framer Motion for the scene. UI labels, demo content (names, mandates, prompts, synthetic data) and agent messages are in English (decision of 2026-11-02, for the demo video); technical identifiers stay as in the spec (`coordinateur`, `kgproduit`, `kg.produit.raw`…). Documentation (spec, notes, README) is in English since 2026-11-02; code comments are still mostly in French.
+- UI: React + Vite + TypeScript, `@neo4j-nvl/react` for the graph, Framer Motion for the scene. UI labels, demo content (names, mandates, prompts, synthetic data) and agent messages are in English (decision of 2026-11-02, for the demo video); technical identifiers stay as in the spec (`coordinateur`, `kgproduit`, `kg.produit.raw`…). Everything in the repository is in English since 2026-11-02: documentation (spec, notes, README), code comments and docstrings, tests; only the technical identifiers inherited from the spec stay in French.
 - `docker compose` to start everything; `make` for common commands.
 - The databases (`orchestra`, `kgproduit`, `kgprojet`, composite `fed`), the users (admin, gateway, cdc) and the CDC activation are created by a versioned, idempotent init script (`db/init/`), never by hand.
 - Exposed ports: 17474 (HTTP) and 17687 (Bolt), so as not to clash with a local Neo4j instance that is already running.

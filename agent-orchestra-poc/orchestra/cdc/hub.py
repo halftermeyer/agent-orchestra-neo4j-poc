@@ -1,4 +1,4 @@
-"""Diffusion synchrone des événements normalisés et des réveils ; les WebSocket s'y abonnent."""
+"""Synchronous broadcast of normalized events and wake-ups; WebSockets subscribe to it."""
 import threading
 from collections import deque
 

@@ -19,10 +19,10 @@ def test_demo_login_lists_persons_and_issues_working_tokens(client):
     assert {u["id"] for u in users} == {"ing-qualite", "comite-1", "comite-2", "comite-3", "chef-projet", "admin"}
     h = login(client, "chef-projet")
     assert client.get("/me", headers=h).json()["id"] == "chef-projet"
-    assert client.get("/settings/models", headers=h).status_code == 403                  # une personne n'est pas administrateur
+    assert client.get("/settings/models", headers=h).status_code == 403                  # a person is not an administrator
     assert client.get("/settings/models", headers=login(client, "admin")).status_code == 200
     assert client.post("/demo/login", json={"userId": "inconnu"}).status_code == 404
-    assert client.post("/demo/login", json={"userId": "coordinateur"}).status_code == 404   # pas d'agent logiciel : seulement des personnes
+    assert client.post("/demo/login", json={"userId": "coordinateur"}).status_code == 404   # no software agent: only people
     assert client.post("/demo/login", json={"userId": "admin", "role": "x"}).status_code == 422
 
 
@@ -53,18 +53,18 @@ def test_chat_shows_only_my_inbox_and_my_messages(client, world):
     world.send_to(a, "inbox:t-p1", "inbox:t-p2")
     world.send_to(p1, "inbox:t-a")
     sa = world.session(a, chain="c-chat")
-    m1 = world.send(a, sa, ["inbox:t-p1"], body="pour p1", attachMemory={}).json()["id"]
-    world.send(a, sa, ["inbox:t-p2"], body="pour p2")
-    out = client.post("/messages", json={"to": ["inbox:t-a"], "performative": "request", "body": "réponse de p1", "chainId": "c-chat"},
+    m1 = world.send(a, sa, ["inbox:t-p1"], body="for p1", attachMemory={}).json()["id"]
+    world.send(a, sa, ["inbox:t-p2"], body="for p2")
+    out = client.post("/messages", json={"to": ["inbox:t-a"], "performative": "request", "body": "reply from p1", "chainId": "c-chat"},
                       headers=tok("user", p1)).json()["id"]
     msgs = client.get("/chat/messages", headers=tok("user", p1)).json()["messages"]
     mine = [(m["id"], m["direction"]) for m in msgs if m["from"] in (a, p1)]
-    assert (m1, "in") in mine and (out, "out") in mine and len(mine) == 2             # le message pour p2 n'apparaît pas
+    assert (m1, "in") in mine and (out, "out") in mine and len(mine) == 2             # the message for p2 does not appear
     first = next(m for m in msgs if m["id"] == m1)
-    assert first["to"] == ["inbox:t-p1"] and first["hasSharedMemory"] is True and first["body"] == "pour p1"
+    assert first["to"] == ["inbox:t-p1"] and first["hasSharedMemory"] is True and first["body"] == "for p1"
     assert [m["createdAt"] for m in msgs] == sorted(m["createdAt"] for m in msgs)       # ordre chronologique
-    assert all(m["body"] != "pour p2" for m in client.get("/chat/messages", headers=tok("user", p1)).json()["messages"])
-    assert client.get("/chat/messages", headers=login(client, "admin")).status_code == 403   # l'administrateur n'a pas d'inbox
+    assert all(m["body"] != "for p2" for m in client.get("/chat/messages", headers=tok("user", p1)).json()["messages"])
+    assert client.get("/chat/messages", headers=login(client, "admin")).status_code == 403   # the administrator has no inbox
 
 
 def test_pending_approvals_are_listed_for_the_electorate_only(client, world):
@@ -80,7 +80,7 @@ def test_pending_approvals_are_listed_for_the_electorate_only(client, world):
     assert [a["id"] for a in got] == [ap] and got[0]["args"]["replacement_id"] == "X2" and got[0]["chainId"] == "c-ap" and got[0]["votes"] == 0
     assert lst(out) == []
     world.post(f"/approvals/{ap}/votes", ps[0], {"decision": "approve"}, kind="user")
-    assert lst("t-p1") == [] and len(lst("t-p2")) == 1 and lst("t-p2")[0]["votes"] == 1       # déjà voté : plus listée
+    assert lst("t-p1") == [] and len(lst("t-p2")) == 1 and lst("t-p2")[0]["votes"] == 1       # already voted: no longer listed
 
 
 def test_topology_state_and_agent_card(client, world, tq):
@@ -93,12 +93,12 @@ def test_topology_state_and_agent_card(client, world, tq):
     assert {"id": "inbox:comite", "topic": False} in t["inboxes"] and {"id": "incidents", "topic": True} in t["inboxes"]
     assert any(r["id"] == "rt-qualite-incidents" and r["listensTo"] == "incidents" and r["deliversTo"] == "inbox:qualite" for r in t["routines"])
     assert next(a for a in t["agents"] if a["id"] == "pont-kg")["kind"] == "rule"
-    # état de la scène : une session ouverte rend l'agent occupé, avec sa dernière phrase d'état
+    # stage state: an open session makes the agent busy, with its last status sentence
     a = world.agent("t-a", tools=["set_status"])
     sid = world.session(a)
-    world.post("/status", a, {"sessionId": sid, "text": "Je regarde la fuite"})
+    world.post("/status", a, {"sessionId": sid, "text": "I am looking at the leak"})
     st = {x["id"]: x for x in client.get("/graph/state", headers=h).json()["agents"]}
-    assert st["t-a"]["busy"] is True and st["t-a"]["lastStatus"]["text"] == "Je regarde la fuite"
+    assert st["t-a"]["busy"] is True and st["t-a"]["lastStatus"]["text"] == "I am looking at the leak"
     assert st["t-a"]["pending"] == 0 and st["qualite"]["busy"] is False
     world.trigger(a)
     assert {x["id"]: x for x in client.get("/graph/state", headers=h).json()["agents"]}["t-a"]["pending"] >= 1
@@ -110,15 +110,15 @@ def test_topology_state_and_agent_card(client, world, tq):
 
 
 def test_rights_paths_match_the_scope_exactly(client, world):
-    """La vue « droits » ne doit rien montrer que le calcul de périmètre n'accorde, ni rien omettre."""
+    """The "rights" view must show nothing the scope computation does not grant, nor omit anything."""
     boss, r, a, sub, p = (world.agent(x) for x in ("t-boss", "t-r", "t-a", "t-sub", "t-pp"))
     mgr, emp = world.agent("t-mgr", person=True), world.agent("t-emp", person=True)
     world.supervises(boss, r); world.supervises(r, sub); world.supervises(mgr, emp)
     world.send_to(a, "inbox:t-r", "inbox:t-pp")
     sa = world.session(a)
-    world.remember(a, sa, "fait de a")
-    world.send(a, sa, ["inbox:t-r"], attachMemory={"mode": "snapshot"})                   # remonte à boss
-    world.send(a, sa, ["inbox:t-pp"], attachMemory={"mode": "snapshot", "private": True})   # reste chez p
+    world.remember(a, sa, "fact of a")
+    world.send(a, sa, ["inbox:t-r"], attachMemory={"mode": "snapshot"})                   # goes up to boss
+    world.send(a, sa, ["inbox:t-pp"], attachMemory={"mode": "snapshot", "private": True})   # stays with p
     h = login(client, "admin")
     for who in (boss, r, a, sub, p, mgr, emp):
         kind = "user" if who in (mgr, emp) else "svc"
@@ -130,12 +130,12 @@ def test_rights_paths_match_the_scope_exactly(client, world):
     by = lambda who: {m["memoryId"]: m for m in client.get(f"/graph/rights/{who}", headers=h).json()["memories"]}
     assert by(boss)["mem:t-sub"]["nodes"] == ["t-boss", "t-r", "t-sub", "mem:t-sub"]
     assert by(boss)["mem:t-sub"]["rels"] == ["SUPERVISES", "SUPERVISES", "HAS_MEMORY"] and by(boss)["mem:t-sub"]["kind"] == "memory"
-    via = by(boss)["mem:t-a"]                                                            # par le message reçu par t-r, plus haut
+    via = by(boss)["mem:t-a"]                                                            # via the message received by t-r, higher up
     assert via["kind"] == "message" and via["nodes"][:4] == ["t-boss", "t-r", "inbox:t-r", via["nodes"][3]] and via["nodes"][4].startswith("")
     assert via["rels"] == ["SUPERVISES", "HAS_INBOX", "HAS_DAY", "RECEIVED", "CAN_READ"] and via["nodes"][-1] == "mem:t-a"
-    assert "mem:t-a" in by(p) and "mem:t-a" in by(r) and "mem:t-a" in by(boss)           # le partage privé ne remonte pas :
+    assert "mem:t-a" in by(p) and "mem:t-a" in by(r) and "mem:t-a" in by(boss)           # private sharing does not go up:
     assert by(p)["mem:t-a"]["nodes"][1] == "inbox:t-pp"
-    assert "mem:t-emp" not in by(mgr)                                                    # supervision d'une personne : aucun accès
+    assert "mem:t-emp" not in by(mgr)                                                    # supervision of a person: no access
 
 
 def test_kg_neighborhood_respects_kg_rights(client):
@@ -144,9 +144,9 @@ def test_kg_neighborhood_respects_kg_rights(client):
     assert r.status_code == 200
     d = r.json()
     names = {n["id"] for n in d["nodes"]}
-    assert "PRT-0045" in names and "PRT-0001" in names and any(n.startswith("TST-") for n in names)    # ancêtres jusqu'à la racine, essais
+    assert "PRT-0045" in names and "PRT-0001" in names and any(n.startswith("TST-") for n in names)    # ancestors up to the root, tests
     assert any(x["type"] == "COVERS" for x in d["rels"]) and any(x["type"] == "CONTAINS" for x in d["rels"])
-    assert client.get("/graph/kg/projet/neighborhood", params={"key": "TSK-05"}, headers=qe).status_code == 403      # pas de CAN_QUERY
+    assert client.get("/graph/kg/projet/neighborhood", params={"key": "TSK-05"}, headers=qe).status_code == 403      # no CAN_QUERY
     t = client.get("/graph/kg/projet/neighborhood", params={"key": "TSK-05"}, headers=pm).json()
     assert {n["id"] for n in t["nodes"]} >= {"TSK-05"} and all(x["type"] in ("DEPENDS_ON", "ASSIGNED_TO") for x in t["rels"])
     assert client.get("/graph/kg/projet/neighborhood", params={"key": "TSK-05"}, headers=ad).status_code == 200

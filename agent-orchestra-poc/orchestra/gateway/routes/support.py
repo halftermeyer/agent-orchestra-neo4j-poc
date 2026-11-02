@@ -1,5 +1,5 @@
-"""Support des runtimes : lecture de son message et de son fil, catalogue de modèles, engagements,
-effet des outils approuvés (launch_modification), signaux de l'auditeur."""
+"""Runtime support: reading its own message and thread, model catalog, commitments,
+effect of approved tools (launch_modification), auditor signals."""
 import json
 import math
 import re
@@ -34,7 +34,7 @@ def inbox_message(message_id: str, p: Principal = Depends(require_agent), ctx=De
 
 @router.get("/threads/{chain_id}")
 def thread(chain_id: str, limit: int = 20, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
-    """Ce que *je* sais de la chaîne : messages que j'ai envoyés ou reçus (jamais ceux des autres)."""
+    """What *I* know of the chain: messages I sent or received (never those of others)."""
     rows = ctx.store.read(lambda r: r.all("thread", agentId=p.id, chainId=chain_id, limit=max(1, min(limit, 50))))
     return {"messages": to_json([_msg(x) for x in reversed(rows)])}
 
@@ -45,7 +45,7 @@ def kg_templates(p: Principal = Depends(require_agent)):
             + [{"kg": "federated", "name": n, "params": {k: t[0].__name__ for k, t in spec.items()}} for n, (spec, _, _) in FEDERATED.items()]}
 
 
-# ---------- engagements ----------
+# ---------- commitments ----------
 class NewCommitment(Strict):
     sessionId: str
     to: str
@@ -56,7 +56,7 @@ class NewCommitment(Strict):
 
 @router.post("/commitments", status_code=201)
 def create_commitment(b: NewCommitment, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Un engagement est suivi par une minuterie (`once`) : relance du débiteur à l'échéance, par le créancier s'il le peut."""
+    """A commitment is tracked by a timer (`once`): the debtor is nudged at the deadline, by the creditor if able."""
     s = load_session(ctx, p, b.sessionId)
     now = datetime.now(timezone.utc)
     if b.dueAt:
@@ -108,7 +108,7 @@ def fulfill_commitment(cid: str, p: Principal = Depends(require_service), ctx=De
     return to_json(row)
 
 
-# ---------- launch_modification : effet d'un outil irréversible approuvé ----------
+# ---------- launch_modification: effect of an approved irreversible tool ----------
 class Launch(Strict):
     sessionId: str
     toolCallKey: str
@@ -116,7 +116,7 @@ class Launch(Strict):
 
 @router.post("/modifications/launch")
 def launch_modification(b: Launch, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Exécute exactement ce que le comité a approuvé (arguments figés dans l'appel d'outil), via le conservateur de KG."""
+    """Executes exactly what the committee approved (arguments frozen in the tool call), via the KG custodian."""
     s = load_session(ctx, p, b.sessionId)
     key = f"{p.id}:{b.toolCallKey}"
 
@@ -149,12 +149,12 @@ def launch_modification(b: Launch, p: Principal = Depends(require_service), ctx=
             raise Conflict("parts not found or already retired")
         return row
     out = ctx.store.write_kg(db, {"agentId": p.id, "chainId": s["chainId"]}, apply)
-    # l'appel d'outil est clos par l'agent (tools/calls/{key}/end), avec le message ou le fait produit
+    # the tool call is closed by the agent (tools/calls/{key}/end), with the message or fact produced
     ctx.log_access(p.id, "kg.write", True, [db], detail=f"{out['versionId']}", chain_id=s["chainId"])
     return to_json(out)
 
 
-# ---------- auditeur : signaux ----------
+# ---------- auditor: signals ----------
 def _auditor(p: Principal):
     if p.role != "auditor":
         raise Forbidden("reserved to the auditor")
@@ -175,9 +175,9 @@ class Scan(Strict):
 
 @router.post("/audit/scan")
 def audit_scan(b: Scan, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Signaux calculés dans le graphe : cycles récents (projection GDS + composantes fortement connexes),
-    messages répétés (similarité d'embedding), chaîne qui s'élargit ou dépense trop vite.
-    Le LLM n'est consulté par l'auditeur que sur les candidats retournés ici."""
+    """Signals computed in the graph: recent cycles (GDS projection + strongly connected components),
+    repeated messages (embedding similarity), a chain that widens or spends too fast.
+    The auditor consults the LLM only on the candidates returned here."""
     _auditor(p)
     name = f"audit-{uuid.uuid4().hex[:10]}"
     meta = {"agentId": p.id, "chainId": "audit"}
@@ -240,7 +240,7 @@ def audit_scan(b: Scan, p: Principal = Depends(require_service), ctx=Depends(get
 
 @router.get("/audit/chains/{chain_id}/episode")
 def audit_episode(chain_id: str, limit: int = 30, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Épisodique des agents audités (messages envoyés), jamais leurs mémoires."""
+    """Episodic record of audited agents (messages sent), never their memories."""
     _auditor(p)
     rows = ctx.store.read(lambda r: r.all("audit_chain_bodies", agentId=p.id, chainId=chain_id, limit=max(1, min(limit, 60))))
     ctx.log_access(p.id, "audit.episode", True, [chain_id], chain_id="audit")

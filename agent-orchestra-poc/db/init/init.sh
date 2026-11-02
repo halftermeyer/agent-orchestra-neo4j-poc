@@ -1,5 +1,5 @@
 #!/bin/bash
-# Init idempotent : bases, utilisateurs, CDC, schémas. Lancé par `make init` (service compose `init`).
+# Idempotent init: databases, users, CDC, schemas. Run by `make init` (compose service `init`).
 set -euo pipefail
 URI="${NEO4J_URI:-bolt://neo4j:7687}"
 SU=(cypher-shell -a "$URI" -u neo4j -p "${NEO4J_PASSWORD:-orchestra-dev-pw}")
@@ -13,7 +13,7 @@ until "${SU[@]}" -d system "SHOW DATABASES" >/dev/null 2>&1; do echo "attente de
   --param "kgPw => '${NEO4J_KGCURATOR_PASSWORD:-kgcurator-dev-pw}'" \
   -f /init/system.cypher
 
-# Le CDC redémarre la base après ALTER ... txLogEnrichment : attendre qu'elle réponde.
+# CDC restarts the database after ALTER ... txLogEnrichment: wait for it to respond.
 for db in orchestra kgproduit kgprojet; do
   until "${SU[@]}" -d "$db" "CALL db.cdc.current() YIELD id RETURN id" >/dev/null 2>&1; do sleep 2; done
 done

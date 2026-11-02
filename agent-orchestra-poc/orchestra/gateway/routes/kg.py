@@ -9,7 +9,7 @@ from orchestra.gateway.store import to_json
 
 router = APIRouter()
 
-# Requêtes modèles : kg -> {template: {param: (type, défaut)}}. Liste blanche ; aucun Cypher libre.
+# Query templates: kg -> {template: {param: (type, default)}}. Whitelist; no free-form Cypher.
 TEMPLATES = {
     "part_info": ("produit", {"partId": (str, None)}),
     "part_children": ("produit", {"partId": (str, None)}),
@@ -86,7 +86,7 @@ class Resolve(Strict):
 
 @router.post("/kg/resolve")
 def kg_resolve(b: Resolve, p: Principal = Depends(require_agent), ctx=Depends(get_ctx)):
-    """Pas de fuite par le proxy : le droit sur le KnowledgeGraph est vérifié avant toute lecture d'un EntityRef."""
+    """No leak through the proxy: the right on the KnowledgeGraph is checked before any EntityRef read."""
     auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=p.id, kgIds=[b.db]))
     auth = [a for a in auth if a["dbName"] == b.db]
     ctx.log_access(p.id, "kg.resolve", bool(auth), [b.db], detail=b.key)

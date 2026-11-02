@@ -1,4 +1,4 @@
-"""Exécution des outils appelés par le LLM. Chaque appel est tracé (ToolCall) ; `agentId` n'est jamais un argument."""
+"""Execution of the tools called by the LLM. Every call is traced (ToolCall); `agentId` is never an argument."""
 import json
 import logging
 
@@ -21,7 +21,7 @@ class ToolExecutor:
         self.awaiting_approval = False
         self.sent = 0
 
-    # ----- résolution des destinataires : l'agent parle par noms, la passerelle par inbox autorisées -----
+    # ----- recipient resolution: the agent speaks in names, the gateway in authorized inboxes -----
     def _inbox(self, name: str) -> str | None:
         for cand in (f"inbox:{name}", name):
             if cand in self.can_send_to:
@@ -32,7 +32,7 @@ class ToolExecutor:
         handler = getattr(self, f"_t_{name}", None)
         if handler is None:
             return {"error": f"unknown tool: {name}"}
-        if name == "launch_modification":              # clos l'appel créé par la validation, pas un nouvel appel
+        if name == "launch_modification":              # closes the call created by the approval, not a new call
             return self._guard(lambda: handler(args, key))
         try:
             self.c.post("/tools/calls", {"sessionId": self.sid, "tool": name, "idempotencyKey": key, "args": _short(args, 1500)})
@@ -42,7 +42,7 @@ class ToolExecutor:
         try:
             result, produced = handler(args, key)
             fact_id, msg_id = produced.get("factId"), produced.get("messageId")
-            if "error" in result:                      # refus métier (destinataire, outil sans effet…) : l'appel est en échec
+            if "error" in result:                      # business refusal (recipient, no-effect tool...): the call fails
                 self.c.post(f"/tools/calls/{key}/end", {"status": "failed", "error": str(result["error"])[:300]})
             else:
                 self.c.post(f"/tools/calls/{key}/end", {"status": "completed", "factId": fact_id, "messageId": msg_id})
@@ -50,7 +50,7 @@ class ToolExecutor:
         except ClientError as e:
             self.c.post(f"/tools/calls/{key}/end", {"status": "failed", "error": f"{e.status} {e.body[:300]}"})
             return {"error": f"{e.status} {e.body[:300]}"}
-        except Exception as e:                           # bug d'outil : l'agent le voit, l'appel est clos en échec
+        except Exception as e:                           # tool bug: the agent sees it, the call is closed as failed
             self.c.post(f"/tools/calls/{key}/end", {"status": "failed", "error": f"{type(e).__name__}: {e}"[:300]})
             return {"error": f"{type(e).__name__}: {e}"}
 
@@ -100,12 +100,12 @@ class ToolExecutor:
 
     def _t_query_kg(self, a, key):
         kg, tpl, params = a.get("kg", ""), a.get("template", ""), a.get("params") or {}
-        # tolérance : les LLM recopient parfois la signature du catalogue (« produit/part_info(partId) »)
+        # tolerance: LLMs sometimes copy the catalog signature (« produit/part_info(partId) »)
         if "/" in tpl:
             prefix, tpl = tpl.split("/", 1)
             kg = kg or prefix
         tpl = tpl.split("(")[0].strip()
-        if not kg:                                   # graphe omis : on le déduit du catalogue
+        if not kg:                                   # graph omitted: infer it from the catalog
             kg = next((t["kg"] for t in self.templates if t["name"] == tpl), "")
         if kg == "federated":
             r = self.c.post("/kg/federated", {"template": tpl, "params": params})

@@ -1,8 +1,8 @@
-# secrets : jamais versionnés (clé Gemini, clé maître)
+# secrets: never versioned (Gemini key, master key)
 .env
 **/.env
 .env.*
-# Python / Node / outils
+# Python / Node / tools
 __pycache__/
 *.pyc
 .venv/

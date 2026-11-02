@@ -1,28 +1,28 @@
 import type { StreamEvent } from "./types";
 
-/** États des avatars (spec) et leur source : un événement du flux normalisé -> une animation. */
+/** Avatar states (spec) and their source: one normalized stream event -> one animation. */
 export type Mode = "idle" | "woken" | "thinking" | "tool" | "sending" | "learning" | "waiting" | "error";
 
 export interface AvatarState {
   mode: Mode;
-  busy: boolean;                 // une session est ouverte
-  waiting: boolean;              // engagement ou validation en attente (persiste après la fin de session)
-  until: number | null;          // fin d'un état temporaire (ms)
-  bubble?: string;               // phrase courte (StatusUpdate)
-  note?: string;                 // note brève (ex. vote) : garde sa propre durée de vie, un autre événement ne l'efface pas
+  busy: boolean;                 // a session is open
+  waiting: boolean;              // commitment or approval pending (persists after the session ends)
+  until: number | null;          // end of a temporary state (ms)
+  bubble?: string;               // short sentence (StatusUpdate)
+  note?: string;                 // brief note (e.g. vote): keeps its own lifetime, another event does not erase it
   noteUntil?: number | null;
-  tool?: string;                 // outil en cours
-  target?: string | null;        // destinataire de l'enveloppe
-  pulse: number;                 // incrémenté à chaque nouvel événement visuel (re-déclenche les animations)
-  at: number;                    // date du dernier événement (ms) : sert à détecter un runtime arrêté
+  tool?: string;                 // tool in progress
+  target?: string | null;        // envelope recipient
+  pulse: number;                 // incremented on each new visual event (re-triggers animations)
+  at: number;                    // time of the last event (ms): used to detect a stopped runtime
 }
 export type States = Record<string, AvatarState>;
 export interface Ctx { persons: ReadonlySet<string> }
 
 export const TTL = { woken: 1600, sending: 1400, learning: 1500, error: 2800, note: 3500 } as const;
-/** Un agent « occupé » sans nouvel événement depuis ce délai est considéré au repos (runtime arrêté, session perdue). */
+/** A "busy" agent with no new event for this long is considered idle (runtime stopped, session lost). */
 export const STALE_BUSY_MS = 60_000;
-/** Réveillé mais sans aucun signe d'activité (ni statut ni outil) : délai plus court. */
+/** Woken but with no sign of activity (no status or tool): shorter delay. */
 export const STALE_WOKEN_MS = 20_000;
 
 export const blank = (): AvatarState => ({ mode: "idle", busy: false, waiting: false, until: null, pulse: 0, at: 0 });
@@ -30,7 +30,7 @@ export const blank = (): AvatarState => ({ mode: "idle", busy: false, waiting: f
 const rest = (s: AvatarState): AvatarState =>
   s.busy ? { ...s, mode: "thinking", until: null } : s.waiting ? { ...s, mode: "waiting", until: null } : { ...s, mode: "idle", until: null, bubble: undefined, tool: undefined };
 
-/** Applique un événement ; fonction pure (testée sans navigateur). */
+/** Applies an event; pure function (tested without a browser). */
 export function reduce(states: States, ev: StreamEvent, now: number, ctx: Ctx): States {
   const actor = ev.actor;
   if (!actor) return states;
@@ -77,7 +77,7 @@ export function reduce(states: States, ev: StreamEvent, now: number, ctx: Ctx): 
   return { ...states, [actor]: { ...next, at: now } };
 }
 
-/** Fait expirer les états temporaires (et les notes brèves, qui ont leur propre échéance). */
+/** Expires temporary states (and brief notes, which have their own deadline). */
 export function settle(states: States, now: number): States {
   let changed = false;
   const out: States = {};
@@ -104,8 +104,8 @@ export const MODE_LABEL: Record<Mode, string> = {
   sending: "Sending", learning: "Learning", waiting: "Waiting", error: "Error",
 };
 
-/** Horloge d'un événement : un événement récent compte comme « maintenant » (tolère un léger décalage d'horloge) ;
- *  un événement ancien (historique rejoué à la connexion) garde sa vraie date, donc ses animations sont déjà expirées. */
+/** Clock of an event: a recent event counts as "now" (tolerates slight clock skew);
+ *  an old event (history replayed on connection) keeps its real date, so its animations have already expired. */
 export const HISTORICAL_MS = 5000;
 export function eventClock(ev: StreamEvent, wall: number): { now: number; historical: boolean } {
   const t = Date.parse(ev.t);

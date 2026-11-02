@@ -1,4 +1,4 @@
-"""Seul module qui exécute du Cypher. Les requêtes sont figées dans queries/*.cypher et paramétrées."""
+"""The only module that executes Cypher. Queries are frozen in queries/*.cypher and parameterized."""
 from pathlib import Path
 
 from neo4j import GraphDatabase, unit_of_work
@@ -26,7 +26,7 @@ QUERIES = Queries()
 
 
 class Runner:
-    """Exécute des requêtes nommées dans une transaction."""
+    """Runs named queries in a transaction."""
 
     def __init__(self, tx):
         self._tx = tx
@@ -42,7 +42,7 @@ class Runner:
 class Store:
     def __init__(self, uri: str, user: str, password: str, db: str, kg_auth: tuple[str, str] | None = None):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
-        self.kg_driver = GraphDatabase.driver(uri, auth=kg_auth) if kg_auth else None   # conservateur de KG : écriture KG seule
+        self.kg_driver = GraphDatabase.driver(uri, auth=kg_auth) if kg_auth else None   # KG custodian: KG writes only
         self.db = db
 
     def close(self):
@@ -51,7 +51,7 @@ class Store:
             self.kg_driver.close()
 
     def write_kg(self, database: str, meta: dict, fn):
-        """Écriture dans un KG, réservée aux effets d'outils approuvés (jamais exposée aux agents)."""
+        """Write to a KG, reserved for approved tool effects (never exposed to agents)."""
         @unit_of_work(metadata={k: str(v) for k, v in meta.items()})
         def work(tx):
             return fn(Runner(tx))
@@ -63,7 +63,7 @@ class Store:
             return s.execute_read(lambda tx: fn(Runner(tx)))
 
     def write(self, meta: dict, fn):
-        """Écriture avec txMetadata (agentId, chainId) : règle 8."""
+        """Write with txMetadata (agentId, chainId): rule 8."""
         @unit_of_work(metadata={k: str(v) for k, v in meta.items()})
         def work(tx):
             return fn(Runner(tx))
@@ -71,7 +71,7 @@ class Store:
             return s.execute_write(work)
 
     def run_in(self, database: str, name: str, **params) -> list[dict]:
-        """Lecture d'un modèle sur une base de KG (nom de base issu du graphe, jamais du LLM)."""
+        """Read a template on a KG database (database name comes from the graph, never from the LLM)."""
         with self.driver.session(database=database, default_access_mode="READ") as s:
             return s.run(QUERIES[name], params).data()
 

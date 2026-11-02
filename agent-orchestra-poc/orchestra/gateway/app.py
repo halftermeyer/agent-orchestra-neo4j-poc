@@ -35,7 +35,7 @@ def create_app(settings: Settings | None = None, llm_factory=None) -> FastAPI:
 
     @app.exception_handler(Exception)
     async def unexpected(_: Request, e: Exception):
-        log.error("erreur interne : %s", type(e).__name__, exc_info=bool(__import__("os").environ.get("ORCHESTRA_DEBUG")))  # jamais de corps de requête ni de secret dans les journaux
+        log.error("internal error: %s", type(e).__name__, exc_info=bool(__import__("os").environ.get("ORCHESTRA_DEBUG")))  # never log request bodies or secrets
         return JSONResponse({"error": "internal", "detail": type(e).__name__}, status_code=500)
 
     @app.get("/health")

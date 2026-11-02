@@ -7,16 +7,16 @@ log = logging.getLogger("orchestra.runtime")
 
 
 class AuditorRunner(AgentRunner):
-    """Signaux d'abord (graphe), LLM seulement sur les candidats. Pouvoir limité à la suspension / quarantaine."""
+    """Signals first (graph), LLM only on candidates. Power limited to suspension / quarantine."""
 
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
-        self.judged: dict[str, int] = {}          # chaîne -> nombre de messages déjà jugés
+        self.judged: dict[str, int] = {}          # chain -> number of messages already judged
 
     def work(self, sid: str, msg: dict) -> str:
         kind = (msg.get("payload") or {}).get("kind")
         if kind != "audit-scan":
-            return super().work(sid, msg)          # ex. chain-suspended : le LLM prévient les humains
+            return super().work(sid, msg)          # e.g. chain-suspended: the LLM alerts the humans
         me = self.c.me()
         status = "completed"
         cands = self.c.audit_scan()["candidates"]

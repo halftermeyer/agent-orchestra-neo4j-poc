@@ -42,7 +42,7 @@ class OpenSession(Strict):
 
 @router.post("/sessions")
 def open_session(b: OpenSession, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
-    """Idempotent : MERGE sur le message déclencheur (clé `<messageId>@<agentId>`)."""
+    """Idempotent: MERGE on the triggering message (key `<messageId>@<agentId>`)."""
     m = ctx.store.read(lambda r: r.one("message_get", messageId=b.messageId))
     if m is None:
         raise NotFound("message not found")
@@ -175,7 +175,7 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
                     recipients=recipients, derivedFrom=b.derivedFrom)
         if attach:
             r.one("message_attach_memory", messageId=msg_id, agentId=p.id, **attach)
-        if p.kind == "user":                   # la session directe d'un humain n'a qu'un envoi : on la clôt (sinon il resterait « occupé »)
+        if p.kind == "user":                   # a human's direct session has a single send: close it (otherwise they would stay "busy")
             r.one("session_close", sessionId=session_id, agentId=p.id, status="completed")
         return {"createdAt": row["createdAt"]}
 
@@ -192,7 +192,7 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
                     "createdAt": out["createdAt"], "duplicate": out.get("duplicate", False)})
 
 
-# ---------- chaînes ----------
+# ---------- chains ----------
 class CreateChain(Strict):
     id: str
     budget: int = Field(gt=0, le=100000)
@@ -203,7 +203,7 @@ class CreateChain(Strict):
 
 @router.post("/chains", status_code=201)
 def create_chain(b: CreateChain, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Boucle voulue : déclarée (critère d'arrêt, tours maximum) et dotée d'un budget."""
+    """Intentional loop: declared (stop criterion, maximum turns) and given a budget."""
     return to_json(ctx.store.write({"agentId": p.id, "chainId": b.id}, lambda r: r.one(
         "chain_create", chainId=b.id, by=p.id, budget=b.budget, tokenBudget=b.tokenBudget,
         stopCriterion=b.stopCriterion, maxTurns=b.maxTurns)))
@@ -252,7 +252,7 @@ class CloseChain(Strict):
 
 @router.post("/chains/{chain_id}/close")
 def close_chain(chain_id: str, b: CloseChain, p: Principal = Depends(principal), ctx=Depends(get_ctx)):
-    """Décision humaine : clore définitivement une chaîne (active ou suspendue). Plus aucun envoi n'y est accepté."""
+    """Human decision: permanently close a chain (active or suspended). No further sends are accepted."""
     if not (p.is_admin or p.is_person):
         raise Forbidden("closing a chain is a human decision")
     row = ctx.store.write({"agentId": p.id, "chainId": chain_id}, lambda r: r.one("chain_close", chainId=chain_id, by=p.id, reason=b.reason))

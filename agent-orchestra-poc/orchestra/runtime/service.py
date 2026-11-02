@@ -1,4 +1,4 @@
-"""Service des runtimes : un fil par agent LLM ; réveil par WebSocket, rattrapage par /inbox/pending."""
+"""Runtimes service: one thread per LLM agent; wake-up via WebSocket, catch-up via /inbox/pending."""
 import json
 import logging
 import queue
@@ -34,7 +34,7 @@ class AgentWorker:
         while not self.stop.is_set():
             try:
                 with connect(url, open_timeout=5) as ws:
-                    for p in self.client.pending():          # rattrapage : réveils manqués pendant une déconnexion
+                    for p in self.client.pending():          # catch-up: wake-ups missed during a disconnect
                         self.enqueue(p["messageId"])
                     for raw in ws:
                         m = json.loads(raw)

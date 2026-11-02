@@ -1,9 +1,9 @@
-"""Méthode du chemin critique (CPA) : passe avant, passe arrière, marges, simulation d'un retard."""
+"""Critical path method (CPA): forward pass, backward pass, slack, delay simulation."""
 from collections import defaultdict, deque
 
 
 def critical_path(tasks: list[dict]) -> dict:
-    """tasks : [{id, name?, durationDays, dependsOn: [ids]}]. Retourne ES/EF/LS/LF/marge par tâche et le chemin critique."""
+    """tasks : [{id, name?, durationDays, dependsOn: [ids]}]. Return ES/EF/LS/LF/slack per task and the critical path."""
     by_id = {t["id"]: t for t in tasks}
     succ, indeg = defaultdict(list), {t["id"]: 0 for t in tasks}
     for t in tasks:
@@ -27,12 +27,12 @@ def critical_path(tasks: list[dict]) -> dict:
         ef[i] = es[i] + by_id[i]["durationDays"]
     end = max(ef.values(), default=0)
     ls, lf = {}, {}
-    for i in reversed(order):                                    # passe arrière
+    for i in reversed(order):                                    # backward pass
         lf[i] = min((ls[s] for s in succ[i]), default=end)
         ls[i] = lf[i] - by_id[i]["durationDays"]
     info = {i: {"es": es[i], "ef": ef[i], "ls": ls[i], "lf": lf[i], "slack": ls[i] - es[i]} for i in order}
     crit = [i for i in order if info[i]["slack"] == 0]
-    path, cur = [], next((i for i in crit if es[i] == 0), None)  # un chemin critique, de gauche à droite
+    path, cur = [], next((i for i in crit if es[i] == 0), None)  # a critical path, left to right
     while cur:
         path.append(cur)
         cur = next((s for s in sorted(succ[cur]) if info[s]["slack"] == 0 and es[s] == ef[cur]), None)

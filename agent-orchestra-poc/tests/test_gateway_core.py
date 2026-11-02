@@ -11,7 +11,7 @@ def test_auth_rules(client, world):
     assert client.get("/me").status_code == 401
     assert client.get("/me", headers={"Authorization": "Bearer nope.nope"}).status_code == 401
     assert client.get("/me", headers=tok("svc", "inconnu")).status_code == 401
-    # jeton « user » sur un agent logiciel, et inversement : refusés
+    # "user" token on a software agent, and vice versa: refused
     assert client.get("/me", headers=tok("user", a)).status_code == 401
     assert client.get("/me", headers=tok("svc", "chef-projet")).status_code == 401
     assert client.get("/me", headers=tok("admin")).status_code == 403
@@ -33,7 +33,7 @@ def test_send_message_structure(client, world, tq):
     a, b, c = world.agent("t-a"), world.agent("t-b"), world.agent("t-c")
     world.send_to(a, "inbox:t-b", "inbox:t-c")
     sid = world.session(a)
-    r = world.send(a, sid, ["inbox:t-b", "inbox:t-c"], body="bonjour")
+    r = world.send(a, sid, ["inbox:t-b", "inbox:t-c"], body="hello")
     assert r.status_code == 201, r.text
     mid = r.json()["id"]
     rows = tq("""MATCH (:Session {id: $s})-[:SENT]->(m:Message {id: $m})-[:IN_CHAIN]->(ch:Chain)
@@ -42,7 +42,7 @@ def test_send_message_structure(client, world, tq):
               s=sid, m=mid)
     assert rows[0]["f"] == a and rows[0]["spent"] == 2 and set(rows[0]["inboxes"]) == {"inbox:t-b", "inbox:t-c"}
     assert rows[0]["st"] == "submitted" and rows[0]["dated"]
-    # idempotent par id : pas de double envoi ni de double débit
+    # idempotent by id: no double send nor double debit
     r1 = world.send(a, sid, ["inbox:t-b"], id="fixed-id-1")
     r2 = world.send(a, sid, ["inbox:t-b"], id="fixed-id-1")
     assert r1.status_code == 201 and r2.json()["duplicate"] is True
@@ -76,11 +76,11 @@ def test_sessions_idempotent_and_owned(client, world, tq):
     assert tq("MATCH (:Session {id: $s})-[:RAN_AS]->(:AgentVersion) RETURN count(*) AS n", s=s1["id"])[0]["n"] == 1
     st = tq("MATCH (:Message {id: $m})<-[r:RECEIVED]-() RETURN r.status AS s, r.workingAt IS NOT NULL AS w", m=mid)[0]
     assert st == {"s": "working", "w": True}
-    # un message qui n'est pas dans l'inbox de l'agent ne peut pas le réveiller
+    # a message that is not in the agent's inbox cannot wake it
     assert client.post("/sessions", json={"messageId": mid}, headers=tok("svc", b)).status_code == 403
-    # la session d'un autre agent est invisible
+    # another agent's session is invisible
     assert client.post("/status", json={"sessionId": s1["id"], "text": "x"}, headers=tok("svc", b)).status_code == 404
-    # fermeture : dates conservées, statut A2A
+    # closing: dates kept, A2A status
     assert client.post(f"/sessions/{s1['id']}/close", json={"status": "completed"}, headers=tok("svc", a)).status_code == 200
     st = tq("MATCH (:Message {id: $m})<-[r:RECEIVED]-() RETURN r.status AS s, r.completedAt IS NOT NULL AS c, r.workingAt IS NOT NULL AS w", m=mid)[0]
     assert st == {"s": "completed", "c": True, "w": True}
@@ -118,7 +118,7 @@ def test_chain_budget_suspension_and_resume(client, world, tq):
     assert ch["status"] == "suspended" and ch["spent"] == 2 and ch["suspendReason"] == "budget"
     assert world.send(a, sid, ["inbox:t-b"]).status_code == 409
     assert tq("MATCH (m:Message {from: 't-a'})-[:IN_CHAIN]->(:Chain {id: 'c-budget'}) RETURN count(m) AS n")[0]["n"] == 2
-    # la reprise est une décision humaine
+    # resuming is a human decision
     assert world.post("/chains/c-budget/resume", a, {"extraBudget": 3}).status_code == 403
     assert client.post("/chains/c-budget/resume", json={"extraBudget": 3}, headers=tok("admin")).status_code == 200
     assert world.send(a, sid, ["inbox:t-b"]).status_code == 201
@@ -140,7 +140,7 @@ def test_human_message_opens_direct_session(client, world, tq):
     assert r.status_code == 201, r.text
     assert tq("MATCH (:Workspace {id: 'ws:t-p'})-[:HAS_DAY]->(:WorkDay)-[:OPENED]->(s:Session)-[:SENT]->(m:Message {id: $m}) RETURN count(m) AS n",
               m=r.json()["id"])[0]["n"] == 1
-    # la session directe est close : la personne n'apparaît pas « occupée » sur la scène
+    # the direct session is closed: the person does not appear "busy" on the stage
     assert tq("MATCH (s:Session)-[:SENT]->(:Message {id: $m}) RETURN s.closedAt IS NOT NULL AS closed", m=r.json()["id"]) == [{"closed": True}]
 
 
@@ -154,7 +154,7 @@ def test_tx_metadata_is_recorded_in_cdc(client, world):
             mid = world.send(a, sid, ["inbox:t-b"]).json()["id"]
             rows = s.run("CALL db.cdc.query($c, [{select: 'n', labels: ['Message']}]) YIELD metadata, event RETURN metadata, event", c=before).data()
     mine = [r for r in rows if r["event"]["state"]["after"]["properties"].get("id") == mid]
-    assert mine, "événement CDC introuvable"
+    assert mine, "CDC event not found"
     flat = json.dumps(mine[0]["metadata"], default=str)
     assert a in flat and "chain-meta" in flat, flat
 
@@ -173,7 +173,7 @@ def test_tool_calls_are_traced_and_idempotent(client, world, tq):
     assert e.status_code == 200 and e.json()["status"] == "completed"
     assert world.post("/tools/calls/k1/end", a, {"status": "failed"}).json()["replayed"] is True
     assert tq("MATCH (tc:ToolCall) WHERE tc.agentId = $a RETURN tc.status AS s, tc.tokens AS t, tc.endedAt IS NOT NULL AS e", a=a)[0] == {"s": "completed", "t": 12, "e": True}
-    # outil non autorisé : le droit n'est pas hérité de la supervision
+    # tool not allowed: the right is not inherited from supervision
     world.supervises(a, b)
     sb = world.session(b)
     assert world.post("/tools/calls", b, {"sessionId": sb, "tool": "query_kg", "idempotencyKey": "k2"}).status_code == 403
@@ -191,7 +191,7 @@ def test_irreversible_goes_through_approval_quorum(client, world, tq):
     ap = r.json()["id"]
     assert world.post("/approvals", boss, req).json()["replayed"] is True
     assert tq("MATCH (tc:ToolCall {idempotencyKey: 't-boss:launch1'}) RETURN tc.status AS s")[0]["s"] == "input-required"
-    # un agent logiciel ne vote pas ; un non-électeur non plus
+    # a software agent does not vote; neither does a non-voter
     assert world.post(f"/approvals/{ap}/votes", boss, {"decision": "approve"}).status_code == 403
     outsider = world.agent("t-out", person=True, inbox="inbox:t-out")
     assert world.post(f"/approvals/{ap}/votes", outsider, {"decision": "approve"}, kind="user").status_code == 403
@@ -216,8 +216,8 @@ def test_approval_rejection_and_delegation(client, world, tq):
     sub = world.agent("t-sub", person=True, inbox="inbox:t-sub")
     tq("MATCH (d:Agent {id: 't-sub'}), (m:Agent {id: 't-p3'}) CREATE (d)-[:ACTS_FOR {scope: 'all', until: datetime() + duration('P1D')}]->(m)")
     vote = lambda who, d: world.post(f"/approvals/{ap}/votes", who, {"decision": d}, kind="user")
-    assert vote(sub, "reject").status_code == 201          # délégué de p3
-    assert vote(p3, "reject").status_code == 409           # la voix de p3 est déjà exprimée
+    assert vote(sub, "reject").status_code == 201          # p3's delegate
+    assert vote(p3, "reject").status_code == 409           # p3's vote is already cast
     out = vote(p1, "reject")
     assert out.json()["status"] == "rejected" and out.json()["toolCallStatus"] == "canceled"
     assert tq("MATCH (:Agent)-[v:VOTED]->(:Approval {id: $a}) WHERE v.onBehalfOf = 't-p3' RETURN count(v) AS n", a=ap)[0]["n"] == 1
@@ -242,14 +242,14 @@ def test_auditor_powers_are_limited(client, world, tq):
     sx = world.session(x, chain="c-loop")
     world.send(x, sx, ["inbox:t-y"])
     assert world.post("/chains/c-loop/suspend", x, {"reason": "non"}).status_code == 403
-    r = world.post("/chains/c-loop/suspend", aud, {"reason": "aller-retour sans fin"})
+    r = world.post("/chains/c-loop/suspend", aud, {"reason": "endless back-and-forth"})
     assert r.status_code == 200 and r.json()["status"] == "suspended"
-    assert tq("MATCH (:Agent {id: 't-aud'})-[s:SUSPENDED]->(:Chain {id: 'c-loop'}) RETURN s.reason AS r, s.at IS NOT NULL AS d")[0] == {"r": "aller-retour sans fin", "d": True}
+    assert tq("MATCH (:Agent {id: 't-aud'})-[s:SUSPENDED]->(:Chain {id: 'c-loop'}) RETURN s.reason AS r, s.at IS NOT NULL AS d")[0] == {"r": "endless back-and-forth", "d": True}
     assert world.send(x, sx, ["inbox:t-y"]).status_code == 409
-    # quarantaine : l'agent est bloqué, seule une personne lève
+    # quarantine: the agent is blocked, only a person can lift it
     assert world.post("/agents/t-y/quarantine", x, {"reason": "x"}).status_code == 403
-    assert world.post("/agents/t-aud/quarantine", aud, {"reason": "soi-même"}).status_code == 403
-    assert world.post("/agents/t-y/quarantine", aud, {"reason": "boucle"}).status_code == 200
+    assert world.post("/agents/t-aud/quarantine", aud, {"reason": "self"}).status_code == 403
+    assert world.post("/agents/t-y/quarantine", aud, {"reason": "loop"}).status_code == 200
     assert client.get("/me", headers=tok("svc", "t-y")).status_code == 403
     assert world.post("/agents/t-y/release", aud, {}).status_code == 403
     assert client.post("/agents/t-y/release", headers=tok("admin")).status_code == 200
@@ -261,12 +261,12 @@ def test_supervises_admin_operation(client, world):
     h = tok("admin")
     s = lambda x, y, hh=h: client.post("/admin/supervises", json={"supervisor": x, "subordinate": y}, headers=hh)
     assert s(a, b).status_code == 201 and s(b, c).status_code == 201
-    assert s(c, a).status_code == 409                         # cycle refusé à l'écriture
+    assert s(c, a).status_code == 409                         # cycle refused at write time
     assert s(a, a).status_code == 409
     assert s(a, b).status_code == 201                         # idempotent
-    assert s(a, b, tok("svc", a)).status_code == 403          # opération privilégiée
+    assert s(a, b, tok("svc", a)).status_code == 403          # privileged operation
     h1 = world.agent("t-h", person=True)
-    assert s(a, h1).status_code == 403                        # un agent logiciel ne supervise pas un humain
+    assert s(a, h1).status_code == 403                        # a software agent does not supervise a human
 
 
 def test_agent_versions_are_new_nodes(client, world, tq):

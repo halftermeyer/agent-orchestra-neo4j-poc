@@ -32,7 +32,7 @@ class Ctx:
         return self.llm_factory(key)
 
     def log_access(self, agent_id: str, kind: str, granted: bool, targets: list[str], detail: str = "", chain_id: str = "none"):
-        """Journal des accès dans le graphe (append-only)."""
+        """Access log in the graph (append-only)."""
         self.store.write({"agentId": agent_id, "chainId": chain_id}, lambda r: r.one(
             "access_log", id=uuid.uuid4().hex, agentId=agent_id, kind=kind, granted=granted,
             targets=targets, count=len(targets), detail=detail[:200]))

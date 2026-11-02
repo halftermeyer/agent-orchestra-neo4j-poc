@@ -16,7 +16,7 @@ const shortName = (n: string) => n.replace("Committee member", "Committee").repl
 
 export interface GraphOptions { showSend: boolean; showAudits: boolean; showKgAccess: boolean; showRoutines: boolean }
 
-/** Topologie : un nœud par agent, par topic, par KG ; les inbox d'agent sont repliées sur leur propriétaire. */
+/** Topology: one node per agent, per topic, per KG; agent inboxes are folded onto their owner. */
 export function topologyGraph(t: Topology, o: GraphOptions): { nodes: Node[]; rels: Relationship[] } {
   const owner = new Map<string, string[]>();
   for (const a of t.agents) if (a.inbox) owner.set(a.inbox, [...(owner.get(a.inbox) ?? []), a.id]);
@@ -32,7 +32,7 @@ export function topologyGraph(t: Topology, o: GraphOptions): { nodes: Node[]; re
 
   const target = (inbox: string) => {
     const owners = owner.get(inbox) ?? [];
-    return owners.length === 1 ? owners[0] : inbox;     // inbox d'un seul agent -> l'agent ; partagée ou topic -> son propre nœud
+    return owners.length === 1 ? owners[0] : inbox;     // single-agent inbox -> the agent; shared or topic -> its own node
   };
   const rels: Relationship[] = [];
   for (const e of t.supervises) rels.push({ id: `sup:${e.from}>${e.to}`, from: e.from, to: e.to, caption: "SUPERVISES", color: COLORS.edge, width: 3 });
@@ -52,7 +52,7 @@ export function topologyGraph(t: Topology, o: GraphOptions): { nodes: Node[]; re
 
 const NODE_KIND: Record<string, string> = { HAS_INBOX: "inbox", HAS_DAY: "day", RECEIVED: "message", CAN_READ: "memory", HAS_MEMORY: "memory" };
 
-/** Droits : l'union des chemins vers les mémoires lisibles ; le chemin choisi est surligné. */
+/** Rights: the union of paths to readable memories; the chosen path is highlighted. */
 export function rightsGraph(agentId: string, paths: RightsPath[], selected: string | null, names: Map<string, string>): { nodes: Node[]; rels: Relationship[] } {
   const nodes = new Map<string, Node>();
   const rels = new Map<string, Relationship>();
@@ -62,7 +62,7 @@ export function rightsGraph(agentId: string, paths: RightsPath[], selected: stri
     p.nodes.forEach((id, i) => {
       if (!nodes.has(id)) {
         const isMemory = id.startsWith("mem:");
-        const inner = i > 0 && !isMemory && !names.has(id);          // inbox, jour, message : nœuds intermédiaires
+        const inner = i > 0 && !isMemory && !names.has(id);          // inbox, day, message: intermediate nodes
         nodes.set(id, {
           id, caption: isMemory ? `Memory · ${names.get(id.slice(4)) ?? id.slice(4)}` : names.get(id) ?? (id.length > 18 ? id.slice(0, 16) + "…" : id),
           color: isMemory ? COLORS.memory : inner ? COLORS.other : id === agentId ? COLORS.hot : COLORS.agent,
@@ -94,7 +94,7 @@ export function kgGraph(n: KgNeighborhood): { nodes: Node[]; rels: Relationship[
   };
 }
 
-/** Flux : arêtes récemment utilisées, du plus chaud au plus froid. */
+/** Flow: recently used edges, from hottest to coldest. */
 export function flowHeat(recent: { from: string; to: string; at: number }[], now: number, windowMs = 8000): Map<string, number> {
   const heat = new Map<string, number>();
   for (const r of recent) {

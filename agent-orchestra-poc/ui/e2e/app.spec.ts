@@ -8,7 +8,7 @@ const pick = async (page: Page, id: string) => { await page.goto("/"); await pag
 
 test.describe.configure({ mode: "serial" });
 
-// historique du flux vide au départ : sinon les réveils d'une exécution précédente se superposent aux attentes
+// empty stream history at the start: otherwise wake-ups from a previous run overlap with the waits
 const BASE = process.env.UI_URL ?? "http://localhost:15173";
 async function adminApi<T>(path: string, body?: unknown): Promise<T> {
   const login = await (await fetch(`${BASE}/api/demo/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ userId: "admin" }) })).json();
@@ -20,13 +20,13 @@ let runId = "";
 test.beforeAll(async () => {
   execSync("docker compose --profile app restart cdc", { cwd: "..", stdio: "ignore" });
   for (let i = 0; i < 40; i++) {
-    try { if ((await fetch("http://localhost:18001/health")).ok) return; } catch { /* démarrage */ }
+    try { if ((await fetch("http://localhost:18001/health")).ok) return; } catch { /* starting up */ }
     await new Promise((r) => setTimeout(r, 500));
   }
   throw new Error("the CDC consumer does not restart");
 });
 
-// la relecture lira tout ce que les tests précédents auront produit : on ouvre un enregistrement avant eux
+// the replay will read everything the previous tests produced: open a recording before them
 test.beforeAll(async () => { runId = (await adminApi<{ id: string }>("/replay/runs", { name: "e2e recording", note: "browser tests" })).id; });
 
 test("demo user selection, live stream connected", async ({ page }) => {
@@ -46,7 +46,7 @@ test("the quality engineer reports an incident: chat, animated scene, timeline",
   await expect(page.getByTestId("live")).toHaveText("Live stream connected");
   await page.getByTestId("tab-scene").click();
   await expect(page.getByTestId("scene")).toBeVisible();
-  // les 13 postes existent ; l'auditeur est exclu de l'attente « au repos » : sa routine cron le réveille chaque minute
+  // the 13 stations exist; the auditor is excluded from the "idle" wait: its cron routine wakes it every minute
   for (const id of ["coordinateur", "qualite", "ingenierie", "essais", "planification", "pont-kg", "interpreteur-bom", "ing-qualite", "comite-1", "comite-2", "comite-3", "chef-projet"])
     await expect(page.getByTestId(`avatar-${id}`)).toHaveAttribute("data-state", "idle");
   await expect(page.getByTestId("avatar-auditeur")).toBeVisible();
@@ -56,7 +56,7 @@ test("the quality engineer reports an incident: chat, animated scene, timeline",
   await expect(page.getByTestId("message").first()).toContainText("Premature failure");
   await expect(page.getByTestId("message").first()).toContainText("Incident");
   await page.getByTestId("tab-scene").click();
-  // l'agent Qualité est réveillé (sursaut), sa boîte clignote, une enveloppe vole
+  // the Qualité agent is woken (startle), its inbox blinks, an envelope flies
   await expect(page.getByTestId("avatar-qualite")).toHaveAttribute("data-state", "woken", { timeout: 8000 });
   await shot(page, "03-scene-reveil");
   await expect(page.getByTestId("mailbox-qualite")).toBeVisible();
@@ -72,7 +72,7 @@ test("NVL graph: topology, flow, rights (highlighted path), KG", async ({ page }
   await page.getByTestId("tab-graphe").click();
   const nvl = page.getByTestId("nvl");
   await expect(nvl).toBeVisible();
-  expect(Number(await nvl.getAttribute("data-nodes"))).toBeGreaterThanOrEqual(13 + 3 + 2);   // 13 agents/humains + topics + KG
+  expect(Number(await nvl.getAttribute("data-nodes"))).toBeGreaterThanOrEqual(13 + 3 + 2);   // 13 agents/humans + topics + KG
   await expect(nvl.locator("canvas").first()).toBeVisible();
   await page.waitForTimeout(2500);
   await shot(page, "05-graphe-topologie");
@@ -81,7 +81,7 @@ test("NVL graph: topology, flow, rights (highlighted path), KG", async ({ page }
   await shot(page, "06-graphe-flux");
   await page.getByTestId("mode-droits").click();
   await page.getByTestId("rights-agent").selectOption("coordinateur");
-  await expect.poll(() => page.getByTestId("memory-path").count()).toBeGreaterThanOrEqual(4);   // soi-même + subordonnés
+  await expect.poll(() => page.getByTestId("memory-path").count()).toBeGreaterThanOrEqual(4);   // self + subordinates
   await page.getByTestId("memory-path").nth(2).click();
   await page.waitForTimeout(2500);
   await shot(page, "07-graphe-droits");
@@ -110,7 +110,7 @@ test("the committee votes until quorum; the avatar shows the vote", async ({ pag
   await expect(page.getByTestId("approval")).toContainText("0/2 votes");
   await shot(page, "09-chat-validation");
   await page.getByTestId("approve").click();
-  await expect(page.getByTestId("approvals")).toHaveCount(0);                    // déjà voté : plus listée
+  await expect(page.getByTestId("approvals")).toHaveCount(0);                    // already voted: no longer listed
   await page.getByTestId("tab-scene").click();
   await expect(page.getByTestId("avatar-comite-1")).toHaveAttribute("data-state", "thinking", { timeout: 8000 });
   await expect(page.getByTestId("avatar-comite-1").getByTestId("bubble")).toContainText("I approve");
@@ -123,7 +123,7 @@ test("the committee votes until quorum; the avatar shows the vote", async ({ pag
   await page.getByTestId("logout").click();
   await page.getByTestId("user-comite-3").click();
   await page.waitForTimeout(800);
-  await expect(page.getByTestId("approvals")).toHaveCount(0);                    // quorum atteint : plus de demande en attente
+  await expect(page.getByTestId("approvals")).toHaveCount(0);                    // quorum reached: no request pending
 });
 
 test("replay: the same stream rebuilt from the graph, with chapters, speed, time bar and follow", async ({ page }) => {
@@ -134,52 +134,52 @@ test("replay: the same stream rebuilt from the graph, with chapters, speed, time
   await page.getByTestId("replay-load").click();
   await expect(page.getByTestId("replay-controls")).toBeVisible();
   await expect(page.getByTestId("replay-title")).toContainText("e2e recording");
-  // chapitres repérés dans le flux : l'incident publié et la demande de validation du comité
+  // chapters detected in the stream: the published incident and the committee's approval request
   await expect(page.getByTestId("chapter-incident")).toBeVisible();
   await expect(page.getByTestId("chapter-vote")).toBeVisible();
   await expect(page.getByTestId("replay-time")).toContainText("00:00 /");
   for (const id of ["qualite", "comite-1", "coordinateur"]) await expect(page.getByTestId(`avatar-${id}`)).toHaveAttribute("data-state", "idle");
-  // vitesses ×1 à ×20
+  // speeds ×1 to ×20
   for (const sp of [1, 2, 5, 10, 20]) { await page.getByTestId(`replay-speed-${sp}`).click(); await expect(page.getByTestId(`replay-speed-${sp}`)).toHaveClass(/on/); }
-  // lecture à ×2 (l'enregistrement ne dure que ~20 s) : Qualité est réveillée comme en direct
+  // playback at ×2 (the recording lasts only ~20 s): Qualité is woken as in live
   await page.getByTestId("replay-speed-2").click();
   await page.getByTestId("replay-play").click();
   await expect(page.getByTestId("avatar-qualite")).toHaveAttribute("data-state", "woken", { timeout: 15000 });
   await shot(page, "12-relecture-lecture");
-  // pause : le temps ne bouge plus
+  // pause: time no longer moves
   await page.getByTestId("replay-play").click();
   const t1 = await page.getByTestId("replay-time").innerText();
   await page.waitForTimeout(700);
   expect(await page.getByTestId("replay-time").innerText()).toBe(t1);
-  // barre de temps : retour au début = tout le monde au repos ; positionner plus loin recalcule l'état
+  // time bar: back to the start = everyone idle; seeking further recomputes the state
   const setSlider = (frac: number) => page.getByTestId("replay-slider").evaluate((el: HTMLInputElement, f: number) => {
     const v = Number(el.min) + (Number(el.max) - Number(el.min)) * f;
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(el, String(v));   // contourne le suivi de valeur de React
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(el, String(v));   // bypasses React's value tracking
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }, frac);
   await setSlider(0);
   await expect(page.getByTestId("replay-time")).toContainText("00:00 /");
   await expect(page.getByTestId("avatar-qualite")).toHaveAttribute("data-state", "idle");
-  // suivi d'un agent : anneau sur son poste, les autres s'estompent
+  // following an agent: ring on its station, the others fade
   await page.getByTestId("replay-follow").selectOption("qualite");
   await expect(page.getByTestId("scene")).toHaveAttribute("data-follow", "qualite");
   await expect(page.getByTestId("station-qualite")).toHaveAttribute("data-followed", "true");
   await expect(page.getByTestId("station-essais")).toHaveAttribute("data-followed", "false");
   await page.getByTestId("replay-follow").selectOption("");
-  // chapitre « Vote du comité » : on saute à la demande de validation puis le vote du premier membre s'affiche
+  // "Committee vote" chapter: jump to the approval request, then the first member's vote is shown
   await page.getByTestId("chapter-vote").click();
   await expect(page.getByTestId("avatar-comite-1").getByTestId("bubble")).toContainText("I approve", { timeout: 20000 });
   await expect(page.getByTestId("replay-time")).not.toContainText("00:00 /");
   await shot(page, "13-relecture-chapitre-vote");
-  // le journal garde la même description que le direct
+  // the log keeps the same description as live
   await page.getByTestId("replay-view-journal").click();
   await expect(page.getByTestId("replay-journal")).toContainText("Committee member 1 approves");
-  // le graphe lit les mêmes événements
+  // the graph reads the same events
   await page.getByTestId("replay-view-graphe").click();
   await expect(page.getByTestId("nvl")).toBeVisible();
 });
 
-/** Valeur réelle de la clé Gemini de l'environnement (jamais affichée : seuls des booléens sortent des assertions). */
+/** Real value of the environment's Gemini key (never displayed: only booleans come out of the assertions). */
 const realKey = (): string | null => {
   if (!existsSync("../.env")) return null;
   const m = readFileSync("../.env", "utf8").match(/^GEMINI_API_KEY=(.+)$/m);
@@ -198,18 +198,18 @@ test("Settings → Models: write-only key, never shown again", async ({ page }) 
   expect(last4).toHaveLength(4);
   await expect(page.getByTestId("key-input")).toHaveValue("");
   await expect(page.getByTestId("key-input")).toHaveAttribute("type", "password");
-  await page.getByTestId("key-test").click();                                    // teste la clé enregistrée (environnement)
+  await page.getByTestId("key-test").click();                                    // tests the saved key (environment)
   await expect(page.getByTestId("key-message")).toContainText("Valid key", { timeout: 20000 });
   expect(await page.getByTestId("model-select").locator("option").count()).toBeGreaterThan(10);
   await page.getByTestId("model-select").selectOption("gemini-2.5-flash");
   await shot(page, "11-parametres");
-  // une clé invalide est refusée par le fournisseur et n'est pas enregistrée
+  // an invalid key is rejected by the provider and not saved
   await page.getByTestId("key-input").fill("invalid-key-for-test-1234");
   await page.getByTestId("key-test").click();
   await expect(page.getByTestId("key-message")).toContainText("Key rejected", { timeout: 20000 });
   await expect(page.getByTestId("key-status")).toContainText(last4);
   await expect(page.getByTestId("key-status")).toContainText("environment");
-  // la clé réellement configurée n'est ni dans le DOM, ni dans les stockages du navigateur, ni dans les réponses de la passerelle
+  // the actually configured key is neither in the DOM, nor in browser storage, nor in gateway responses
   if (key) {
     expect((await page.content()).includes(key)).toBe(false);
     const stores = await page.evaluate(() => JSON.stringify([{ ...localStorage }, { ...sessionStorage }]));
@@ -217,7 +217,7 @@ test("Settings → Models: write-only key, never shown again", async ({ page }) 
     expect(seen.length).toBeGreaterThan(0);
     expect(seen.some((t) => t.includes(key))).toBe(false);
   }
-  // un non-administrateur n'a pas accès
+  // a non-admin has no access
   await page.getByTestId("logout").click();
   await page.getByTestId("user-chef-projet").click();
   await page.getByTestId("tab-parametres").click();

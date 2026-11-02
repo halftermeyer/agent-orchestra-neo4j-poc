@@ -26,7 +26,7 @@ describe("topology", () => {
     expect(ids).not.toContain("inbox:ingenierie");
     const rel = (id: string) => g.rels.find((r) => r.id === id);
     expect(rel("send:coordinateur>ingenierie")).toBeDefined();           // inbox:ingenierie -> ingenierie
-    expect(rel("send:coordinateur>inbox:comite")).toBeDefined();         // boîte partagée : son propre nœud
+    expect(rel("send:coordinateur>inbox:comite")).toBeDefined();         // shared inbox: its own node
     expect(rel("rt:rt-x")).toMatchObject({ from: "incidents", to: "ingenierie" });
     expect(rel("sup:coordinateur>ingenierie")?.caption).toBe("SUPERVISES");
   });

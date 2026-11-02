@@ -1,5 +1,5 @@
-"""Relecture : le flux d'événements est reconstruit depuis le graphe (chaque changement d'état garde sa date).
-L'interface reçoit le même format normalisé qu'en direct et ne voit pas la différence."""
+"""Replay: the event stream is rebuilt from the graph (each state change keeps its date).
+The UI receives the same normalized format as live and cannot tell the difference."""
 import json
 import re
 import uuid
@@ -29,7 +29,7 @@ def reconstruct(ctx, t_from: str | None = None, t_to: str | None = None, limit: 
         if pj:
             kind = (json.loads(pj) or {}).get("kind")
             if kind:
-                payload["kind"] = kind                     # même charge utile que le flux en direct (pour les chapitres)
+                payload["kind"] = kind                     # same payload as the live stream (for the chapters)
         events.append({"t": x["t"], "type": x["type"], "actor": x["actor"], "target": x["target"], "payload": payload})
     events.sort(key=lambda e: (e["t"], RANK.get(e["type"], 9)))
     return events
@@ -66,7 +66,7 @@ class NewRun(Strict):
 
 @router.post("/replay/runs", status_code=201)
 def start_run(b: NewRun, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Marque le début d'un enregistrement : la relecture lira les événements de la fenêtre [début, fin]."""
+    """Marks the start of a recording: replay will read the events in the [start, end] window."""
     row = ctx.store.write({"agentId": p.id, "chainId": b.chainId or "none"}, lambda r: r.one(
         "run_create", id=uuid.uuid4().hex[:12], runName=b.name, note=b.note, chainId=b.chainId, by=p.id))
     return to_json(row)
@@ -92,7 +92,7 @@ class Export(Strict):
 
 @router.post("/replay/runs/{run_id}/export")
 def export_run(run_id: str, b: Export, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Fige l'enregistrement dans un fichier portable (versionnable) : il survit à la remise à zéro de la base."""
+    """Freezes the recording into a portable (versionable) file: it survives a database reset."""
     if not SLUG.match(b.slug):
         raise NotFound("invalid recording name")
     run, a, z = _window(ctx, run_id, None, None)

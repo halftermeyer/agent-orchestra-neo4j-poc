@@ -4,7 +4,7 @@ from orchestra.gateway.store import to_json
 
 
 class CdcSource:
-    """Lecture du CDC avec l'utilisateur `cdc` (ACCESS + EXECUTE BOOSTED PROCEDURE db.cdc.* seulement)."""
+    """CDC reads with the `cdc` user (ACCESS + EXECUTE BOOSTED PROCEDURE db.cdc.* only)."""
 
     def __init__(self, uri: str, user: str, password: str):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
@@ -20,4 +20,4 @@ class CdcSource:
         with self.driver.session(database=db) as s:
             rows = s.run("CALL db.cdc.query($c) YIELD id, txId, seq, metadata, event RETURN id, txId, seq, metadata, event",
                          c=cursor).data()
-        return to_json(rows)          # dates Neo4j -> chaînes ISO : tout le reste du pipeline manipule du JSON
+        return to_json(rows)          # Neo4j dates -> ISO strings: the rest of the pipeline handles JSON

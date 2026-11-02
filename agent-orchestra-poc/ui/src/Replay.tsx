@@ -11,7 +11,7 @@ import type { RecordingInfo, RunInfo, StreamEvent } from "./types";
 const TICK_MS = 50;
 const VERB: Record<string, string> = { sent: "sends", woken: "is woken", status: "thinks", "tool.start": "uses", "tool.end": "finished with", learned: "learns", vote: "votes", waiting: "waits", idle: "is done", error: "error" };
 
-/** Acteurs sans fiche d'agent : routines, décisions du comité, passerelle. */
+/** Actors without an agent profile: routines, committee decisions, gateway. */
 export function systemName(id: string): string {
   if (id.startsWith("approval:")) return "Committee decision";
   if (id.startsWith("routine:")) return `Routine ${id.slice(8).replace(/^rt-/, "")}`;
@@ -35,7 +35,7 @@ export function describeEvent(e: StreamEvent, name: (id: string) => string): str
 
 const fmtElapsed = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
 
-/** Relecture : le même flux normalisé qu'en direct, reconstruit depuis le graphe ou lu dans un enregistrement. */
+/** Replay: the same normalized stream as live, rebuilt from the graph or read from a recording. */
 export function ReplayView() {
   const app = useApp();
   const { names, persons } = app;
@@ -87,7 +87,7 @@ export function ReplayView() {
     } catch (e) { setErr(String(e)); }
   };
 
-  // la lecture : le temps virtuel avance à vitesse × horloge murale ; chaque événement franchi alimente les mêmes réducteurs qu'en direct
+  // playback: virtual time advances at speed × wall clock; each event crossed feeds the same reducers as live
   useEffect(() => {
     if (!playing || !replay) return;
     let last = Date.now();
@@ -116,7 +116,7 @@ export function ReplayView() {
   const log = useMemo(() => shown.filter((e) => !follow || e.actor === follow || e.target === follow).slice(-14).reverse(), [shown, follow]);
   const actors = useMemo(() => [...new Set((replay?.events ?? []).map((e) => e.actor).filter((a): a is string => !!a && names.has(a)))], [replay, names]);
 
-  // compteurs de la scène à l'instant rejoué (et non l'état actuel du graphe) : faits appris et messages reçus non encore traités
+  // scene counters at the replayed instant (not the graph's current state): facts learned and received messages not yet processed
   const live = useMemo(() => {
     const out: Record<string, import("./types").AgentLive> = {};
     for (const a of app.topology?.agents ?? []) out[a.id] = { id: a.id, busy: false, lastStatus: null, pending: 0, commitments: 0, inputRequired: 0, facts: 0 };
@@ -124,7 +124,7 @@ export function ReplayView() {
     for (const e of shown) {
       if (e.type === "learned" && e.actor && out[e.actor]) out[e.actor].facts += 1;
       if (e.type === "sent" && e.target && out[e.target]) open.set(e.target, (open.get(e.target) ?? 0) + 1);
-      if (e.type === "idle" && e.actor) open.set(e.actor, 0);               // la session a traité sa boîte
+      if (e.type === "idle" && e.actor) open.set(e.actor, 0);               // the session has processed its inbox
     }
     for (const [id, n] of open) if (out[id]) out[id].pending = n;
     return out;
@@ -183,5 +183,5 @@ export function ReplayView() {
   );
 }
 
-// eventClock est ré-exporté pour que les tests de l'interface vérifient la cohérence direct / relecture
+// eventClock is re-exported so the UI tests can check live / replay consistency
 export { eventClock };

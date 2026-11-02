@@ -13,23 +13,23 @@ reset:
 	docker compose --profile app --profile tools down -v
 
 keygen:
-	@grep -q '^ORCHESTRA_MASTER_KEY=' .env || (printf '\nORCHESTRA_MASTER_KEY=%s\n' "$$(python3 -c 'import secrets;print(secrets.token_urlsafe(32))')" >> .env && echo "clé maître générée dans .env")
+	@grep -q '^ORCHESTRA_MASTER_KEY=' .env || (printf '\nORCHESTRA_MASTER_KEY=%s\n' "$$(python3 -c 'import secrets;print(secrets.token_urlsafe(32))')" >> .env && echo "master key generated in .env")
 gateway: init keygen
 	docker compose --profile app up -d --build gateway
 app: init keygen
 	docker compose --profile app up -d --build gateway cdc runtime ui
 
-# Interface seule (sans LLM) : http://localhost:15173
+# UI only (no LLM) : http://localhost:15173
 ui: init keygen
 	docker compose --profile app up -d --build gateway cdc ui
-# Tests de navigateur sur une base propre, sans runtimes (donc sans appel LLM)
+# Browser tests on a clean database, without runtimes (hence no LLM calls)
 e2e: keygen
 	docker compose --profile app --profile tools down -v
 	$(MAKE) seed
 	docker compose --profile app up -d --build gateway cdc ui
 	cd ui && npm ci && npx playwright install chromium && npx playwright test
 
-# Scénario complet avec les vrais agents (Gemini) : base remise à zéro, pile complète, enregistrement exporté dans data/scenarios/
+# Full scenario with the real agents (Gemini): database reset, full stack, recording exported to data/scenarios/
 scenario: keygen
 	docker compose --profile app --profile tools down -v
 	$(MAKE) seed

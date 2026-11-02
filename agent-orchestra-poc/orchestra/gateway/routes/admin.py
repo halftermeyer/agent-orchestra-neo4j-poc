@@ -16,7 +16,7 @@ class Supervise(Strict):
 
 @router.post("/admin/supervises", status_code=201)
 def create_supervises(b: Supervise, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Opération privilégiée : verrouillage des deux nœuds, puis contrôle de cycle, dans la même transaction."""
+    """Privileged operation: lock both nodes, then check for cycles, in the same transaction."""
     def tx(r):
         chk = r.one("supervises_lock", **{"from": b.supervisor, "to": b.subordinate})
         if chk is None:
@@ -38,7 +38,7 @@ class NewVersion(Strict):
 
 @router.post("/admin/agents/{agent_id}/versions", status_code=201)
 def new_version(agent_id: str, b: NewVersion, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Changer de modèle ou de prompt crée une nouvelle AgentVersion (SUPERSEDES)."""
+    """Changing the model or prompt creates a new AgentVersion (SUPERSEDES)."""
     row = ctx.store.write({"agentId": p.id, "chainId": "none"}, lambda r: r.one(
         "version_create", agentId=agent_id, by=p.id, model=b.model, prompt=b.prompt))
     if row is None:
@@ -46,7 +46,7 @@ def new_version(agent_id: str, b: NewVersion, p: Principal = Depends(require_adm
     return to_json(row)
 
 
-# ---------- Paramètres → Modèles ----------
+# ---------- Settings → Models ----------
 class SetKey(Strict):
     apiKey: str = Field(min_length=8, max_length=512)
 
@@ -61,7 +61,7 @@ class Select(Strict):
 
 @router.get("/settings/models")
 def models_status(p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Écriture seule : on ne réaffiche que les 4 derniers caractères et la date."""
+    """Write-only: only the last 4 characters and the date are shown back."""
     return {**ctx.keystore.status(), "provider": ctx.settings.llm_provider, "model": ctx.keystore.get_model()}
 
 
@@ -79,7 +79,7 @@ def delete_key(p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
 
 @router.post("/settings/models/test")
 def test_key(b: TestKey, p: Principal = Depends(require_admin), ctx=Depends(get_ctx)):
-    """Valide la clé (candidate ou enregistrée) en listant les modèles."""
+    """Validates the key (candidate or saved) by listing the models."""
     try:
         models = ctx.llm(b.apiKey).list_models()
     except Exception as e:

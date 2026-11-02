@@ -1,6 +1,6 @@
-"""Événements CDC de la base d'orchestration -> flux normalisé {t, type, actor, target, payload}.
+"""CDC events from the orchestration database -> normalized stream {t, type, actor, target, payload}.
 
-Aucune lecture dans la base : on n'utilise que les `keys` (clés de nœud), les propriétés et le `txMetadata`.
+No database reads: only the `keys` (node keys), the properties and the `txMetadata` are used.
 type ∈ woken | status | tool.start | tool.end | sent | learned | vote | waiting | idle | error
 """
 
@@ -22,7 +22,7 @@ def _props(ev: dict, side: str) -> dict:
 
 
 def agent_of_session(trigger_key: str | None) -> str | None:
-    """Clé de session `<messageId>@<agentId>` (écart documenté en phase 2)."""
+    """Session key `<messageId>@<agentId>` (deviation documented in phase 2)."""
     return trigger_key.rsplit("@", 1)[1] if trigger_key and "@" in trigger_key else None
 
 
@@ -31,8 +31,8 @@ def agent_of_toolcall(key: str | None) -> str | None:
 
 
 def normalize_tx(events: list[dict]) -> tuple[list[dict], list[dict]]:
-    """Retourne (événements du flux, créations de RECEIVED à traiter par le consommateur)."""
-    nodes = {}                      # elementId -> événement nœud (même transaction)
+    """Return (stream events, RECEIVED creations to be handled by the CDC consumer)."""
+    nodes = {}                      # elementId -> node event (same transaction)
     tool_of, status_agent = {}, {}
     for e in events:
         ev = e["event"]
@@ -61,7 +61,7 @@ def normalize_tx(events: list[dict]) -> tuple[list[dict], list[dict]]:
                 emit("status", status_agent.get(ev["elementId"]), None, text=after.get("text"))
             elif "ToolCall" in labels:
                 key, actor = after.get("idempotencyKey") or before.get("idempotencyKey"), after.get("agentId") or before.get("agentId")
-                tool = after.get("tool") or before.get("tool") or tool_of.get(key)   # `tool` est dénormalisé : la fin d'un appel est une autre transaction
+                tool = after.get("tool") or before.get("tool") or tool_of.get(key)   # `tool` is denormalized: the end of a call is a different transaction
                 if op == "c":
                     st = after.get("status")
                     emit("waiting" if st == "input-required" else "tool.start", actor, tool, key=key, status=st)
@@ -93,7 +93,7 @@ def normalize_tx(events: list[dict]) -> tuple[list[dict], list[dict]]:
 
 
 def kg_changes(events: list[dict]) -> list[dict]:
-    """Changements d'une transaction de KG, avec les identifiants d'entité (clé de nœud `Entity.id`)."""
+    """Changes of a KG transaction, with entity identifiers (node key `Entity.id`)."""
     out = []
     for e in events:
         ev = e["event"]

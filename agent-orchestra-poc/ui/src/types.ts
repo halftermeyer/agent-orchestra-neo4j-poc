@@ -1,7 +1,7 @@
 export type EventType =
   | "woken" | "status" | "tool.start" | "tool.end" | "sent" | "learned" | "vote" | "waiting" | "idle" | "error";
 
-/** Flux normalisé : identique en direct et (phase 6) en relecture depuis le graphe. */
+/** Normalized stream: identical live and (phase 6) in replay from the graph. */
 export interface StreamEvent {
   t: string;
   type: EventType;

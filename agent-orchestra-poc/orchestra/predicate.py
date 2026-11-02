@@ -1,7 +1,7 @@
-"""Prédicats structurés de routage (jamais de Cypher libre).
+"""Structured routing predicates (never free-form Cypher).
 
 Grammaire : {"field", "op", "value"} | {"all": [...]} | {"any": [...]} | {"not": p}
-`field` : chemin pointé dans le payload du message, ou `msg.from` / `msg.performative` / `msg.chainId`.
+`field`: dotted path into the message payload, or `msg.from` / `msg.performative` / `msg.chainId`.
 """
 from typing import Any
 
