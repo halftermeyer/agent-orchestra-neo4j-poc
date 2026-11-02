@@ -170,3 +170,28 @@ def test_approval_wakeup_then_launch_modification(world, tq, fake, gw_url, cdc, 
     cdc.drain()
     raw = tq("MATCH (m:Message {from: 'pont-kg'}) RETURN m.chainId AS c")
     assert "c-modif" in {x["c"] for x in raw}
+
+
+def test_query_kg_tolerates_a_template_copied_with_its_signature(world, tq, fake, gw_url):
+    """Cas réel : le LLM écrit « produit/part_info(partId) » au lieu de « part_info » ; l'agent doit quand même obtenir sa réponse."""
+    a = world.agent("t-a", tools=ALL, kgs=["produit"])
+    mid = world.trigger(a)
+    fake.script = [
+        {"tools": [("query_kg", {"kg": "produit", "template": "produit/part_info(partId)", "params": {"partId": "PRT-0001"}}),
+                   ("query_kg", {"template": "part_info(partId)", "params": {"partId": "PRT-0001"}}),
+                   ("query_kg", {"kg": "produit", "template": "inexistant", "params": {}})]},
+        {"text": "ok"},
+    ]
+    assert runner("t-a", gw_url).handle(mid) == "completed"
+    res = [c["result"] for c in fake.history[1][1] if c["role"] == "tool"]
+    assert res[0]["rowCount"] == 1 and res[1]["rowCount"] == 1                      # les deux écritures fautives sont comprises
+    assert "inexistant" in res[2]["error"] and "part_info" in res[2]["error"]     # l'erreur liste les modèles valides
+
+
+def test_the_catalog_in_the_prompt_is_unambiguous(world, fake, gw_url):
+    a = world.agent("t-a", tools=ALL, kgs=["produit"])
+    fake.script = [{"text": "ok"}]
+    runner("t-a", gw_url).handle(world.trigger(a))
+    system = fake.history[0][0]
+    assert 'kg="produit", template="part_info", params={"partId": <str>}' in system
+    assert "sans parenthèses ni préfixe" in system
