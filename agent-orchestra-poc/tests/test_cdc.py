@@ -59,6 +59,23 @@ def test_first_start_does_not_replay_history(cdc, world, tmp_path, gw_url):
     assert c2.poll_once() == 0 and not seen
 
 
+def test_cursor_from_a_recreated_database_is_reset_not_stuck(cdc, world):
+    # un curseur plus récent que le journal (base recréée sous un consommateur resté en marche)
+    c = cdc.consumer
+    db = cdc.settings.orchestra_db
+    for _ in range(3):
+        world.agent(f"t-x{_}")
+    real = c.source.current("orchestra")                                  # position de la vraie base, bien plus avancée
+    c.cursors.set(db, real)
+    assert c.poll_db(db) == 0                                              # pas de boucle d'erreurs : réinitialisé
+    assert c.stats.cursor_resets == 1 and c.cursors.get(db) == c.source.current(db)
+    a, b = world.agent("t-a"), world.agent("t-b")
+    world.send_to(a, "inbox:t-b")
+    mid = world.send(a, world.session(a), ["inbox:t-b"]).json()["id"]
+    cdc.drain()
+    assert cdc.of("woken", messageId=mid)                                  # et le traitement reprend normalement
+
+
 def test_restart_resumes_from_persisted_cursor_and_retries_when_gateway_is_down(cdc, world, gw_url):
     a, b = world.agent("t-a"), world.agent("t-b")
     world.send_to(a, "inbox:t-b")

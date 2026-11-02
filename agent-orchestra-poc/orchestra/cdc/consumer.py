@@ -5,6 +5,8 @@ from collections import OrderedDict, deque
 from datetime import datetime, timezone
 from itertools import groupby
 
+from neo4j.exceptions import ClientError, TransientError
+
 from orchestra import predicate
 from orchestra.cdc.gateway_client import GatewayError
 from orchestra.cdc.normalize import kg_changes, normalize_tx
@@ -14,14 +16,14 @@ log = logging.getLogger("orchestra.cdc")
 
 class Stats:
     def __init__(self):
-        self.events = self.tx = self.errors = self.routed = self.woken = 0
+        self.events = self.tx = self.errors = self.routed = self.woken = self.cursor_resets = 0
         self.lags = deque(maxlen=1000)       # ms entre commit et traitement
 
     def snapshot(self) -> dict:
         l = sorted(self.lags)
         pct = lambda p: round(l[min(len(l) - 1, int(len(l) * p))], 1) if l else None
         return {"events": self.events, "tx": self.tx, "errors": self.errors, "routed": self.routed,
-                "woken": self.woken, "lagMs": {"p50": pct(0.5), "p95": pct(0.95), "max": round(l[-1], 1) if l else None}}
+                "woken": self.woken, "cursorResets": self.cursor_resets, "lagMs": {"p50": pct(0.5), "p95": pct(0.95), "max": round(l[-1], 1) if l else None}}
 
 
 class Consumer:
@@ -46,7 +48,16 @@ class Consumer:
 
     def poll_db(self, db: str) -> int:
         cursor = self.cursors.get(db)
-        events = self.source.fetch(db, cursor)
+        try:
+            events = self.source.fetch(db, cursor)
+        except (TransientError, ClientError) as e:
+            if not any(c in (e.code or "") for c in ("ChangeDataCapture.FutureIdentifier", "ChangeDataCapture.InvalidIdentifier")):
+                raise
+            # le curseur ne correspond pas à ce journal (base recréée : postérieur à sa fin ; ou autre base). Rien à rattraper.
+            log.warning("curseur de %s sans rapport avec le journal (base recréée ?) : réinitialisé à la position courante", db)
+            self.cursors.set(db, self.source.current(db))
+            self.stats.cursor_resets += 1
+            return 0
         if not events:
             return 0
         for tx_id, grp in groupby(events, key=lambda e: e["txId"]):
