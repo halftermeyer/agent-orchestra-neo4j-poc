@@ -12,7 +12,7 @@ export function agentColor(a: Agent): string {
   return a.kind === "rule" ? COLORS.rule : COLORS.agent;
 }
 
-const shortName = (n: string) => n.replace("Membre du comité", "Comité").replace("Ingénieur qualité", "Ing. qualité").replace("Chef de projet", "Chef projet");
+const shortName = (n: string) => n.replace("Committee member", "Committee").replace("Quality engineer", "Quality eng.").replace("Project manager", "Project mgr");
 
 export interface GraphOptions { showSend: boolean; showAudits: boolean; showKgAccess: boolean; showRoutines: boolean }
 
@@ -26,7 +26,7 @@ export function topologyGraph(t: Topology, o: GraphOptions): { nodes: Node[]; re
   for (const i of t.inboxes) {
     const owners = owner.get(i.id) ?? [];
     if (i.topic) nodes.push({ id: i.id, caption: i.id, color: COLORS.topic, size: 30, captionAlign: "bottom", captionSize: 2 } as Node);
-    else if (owners.length > 1) nodes.push({ id: i.id, caption: "Boîte partagée", color: COLORS.other, size: 30, captionAlign: "bottom", captionSize: 2 } as Node);
+    else if (owners.length > 1) nodes.push({ id: i.id, caption: "Shared inbox", color: COLORS.other, size: 30, captionAlign: "bottom", captionSize: 2 } as Node);
   }
   if (o.showKgAccess || t.kgs.length) for (const k of t.kgs) nodes.push({ id: `kg:${k.id}`, caption: `KG ${k.id}`, color: COLORS.kg, size: 48, captionAlign: "bottom", captionSize: 2 } as Node);
 
@@ -50,7 +50,7 @@ export function topologyGraph(t: Topology, o: GraphOptions): { nodes: Node[]; re
   return { nodes, rels: rels.filter((r) => ids.has(r.from) && ids.has(r.to)) };
 }
 
-const NODE_KIND: Record<string, string> = { HAS_INBOX: "inbox", HAS_DAY: "jour", RECEIVED: "message", CAN_READ: "mémoire", HAS_MEMORY: "mémoire" };
+const NODE_KIND: Record<string, string> = { HAS_INBOX: "inbox", HAS_DAY: "day", RECEIVED: "message", CAN_READ: "memory", HAS_MEMORY: "memory" };
 
 /** Droits : l'union des chemins vers les mémoires lisibles ; le chemin choisi est surligné. */
 export function rightsGraph(agentId: string, paths: RightsPath[], selected: string | null, names: Map<string, string>): { nodes: Node[]; rels: Relationship[] } {
@@ -64,7 +64,7 @@ export function rightsGraph(agentId: string, paths: RightsPath[], selected: stri
         const isMemory = id.startsWith("mem:");
         const inner = i > 0 && !isMemory && !names.has(id);          // inbox, jour, message : nœuds intermédiaires
         nodes.set(id, {
-          id, caption: isMemory ? `Mémoire · ${names.get(id.slice(4)) ?? id.slice(4)}` : names.get(id) ?? (id.length > 18 ? id.slice(0, 16) + "…" : id),
+          id, caption: isMemory ? `Memory · ${names.get(id.slice(4)) ?? id.slice(4)}` : names.get(id) ?? (id.length > 18 ? id.slice(0, 16) + "…" : id),
           color: isMemory ? COLORS.memory : inner ? COLORS.other : id === agentId ? COLORS.hot : COLORS.agent,
           size: id === agentId ? 38 : isMemory ? 26 : inner ? 14 : 30, captionAlign: "bottom",
         } as Node);

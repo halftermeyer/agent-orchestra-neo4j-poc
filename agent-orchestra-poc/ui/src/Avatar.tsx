@@ -45,7 +45,7 @@ export function Avatar({ agent, state }: { agent: Agent; state: AvatarState }) {
       </motion.g>
       {state.mode === "tool" && <ToolBadge tool={state.tool} />}
       {waiting && <Hourglass />}
-      {state.mode === "thinking" && <Bubble text={state.bubble} />}
+      {state.note ? <Bubble text={state.note} /> : state.mode === "thinking" && <Bubble text={state.bubble} />}
       {state.mode === "learning" && <Spark key={state.pulse} />}
       {state.mode === "woken" && <text x="30" y="-34" fontSize="22" fontWeight="700" fill="#F0562A">!</text>}
     </g>

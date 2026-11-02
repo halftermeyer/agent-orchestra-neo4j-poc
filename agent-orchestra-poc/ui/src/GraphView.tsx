@@ -3,12 +3,12 @@ import type { Node, Relationship } from "@neo4j-nvl/base";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Api } from "./api";
 import { COLORS, flowHeat, kgGraph, rightsGraph, topologyGraph } from "./graphTransform";
-import { SHARE_FR, STATUS_FR, TOOL_FR, fmtDateTime } from "./labels";
+import { SHARE_LABEL, STATUS_LABEL, TOOL_LABEL, fmtDateTime } from "./labels";
 import { useApp } from "./store";
 import type { AgentCard, KgNeighborhood, RightsPath } from "./types";
 
 type Mode = "topologie" | "flux" | "droits" | "kg";
-const MODES: [Mode, string][] = [["topologie", "Topologie"], ["flux", "Flux"], ["droits", "Droits"], ["kg", "Graphes de connaissance"]];
+const MODES: [Mode, string][] = [["topologie", "Topology"], ["flux", "Flow"], ["droits", "Rights"], ["kg", "Knowledge graphs"]];
 
 function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; onNode?: (id: string) => void }) {
   const ref = useRef<{ fit?: (ids: string[]) => void } | null>(null);
@@ -19,7 +19,7 @@ function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; 
   useEffect(() => { const t = setTimeout(fit, 900); return () => clearTimeout(t); }, [key]);
   return (
     <div className="nvl" data-testid="nvl" data-nodes={nodes.length} data-rels={rels.length}>
-      <button className="ghost recenter" onClick={fit} data-testid="recenter">Recentrer</button>
+      <button className="ghost recenter" onClick={fit} data-testid="recenter">Recenter</button>
       <InteractiveNvlWrapper
         ref={ref as never}
         nodes={nodes} rels={rels}
@@ -61,11 +61,11 @@ export function GraphView() {
         {MODES.map(([m, label]) => <button key={m} className={`seg ${mode === m ? "on" : ""}`} onClick={() => setMode(m)} data-testid={`mode-${m}`}>{label}</button>)}
         {(mode === "topologie") && (
           <span className="toggles">
-            {([["showRoutines", "Abonnements"], ["showSend", "Envois autorisés"], ["showAudits", "Audit"], ["showKgAccess", "Accès aux KG"]] as const).map(([k, l]) => (
+            {([["showRoutines", "Subscriptions"], ["showSend", "Allowed sends"], ["showAudits", "Audit"], ["showKgAccess", "KG access"]] as const).map(([k, l]) => (
               <label key={k}><input type="checkbox" checked={opts[k]} onChange={(e) => setOpts({ ...opts, [k]: e.target.checked })} /> {l}</label>))}
           </span>
         )}
-        {mode === "flux" && <span className="muted">Les arêtes s'allument à chaque message envoyé (8 s).</span>}
+        {mode === "flux" && <span className="muted">Edges light up on every message sent (8 s).</span>}
       </div>
       <div className="graph-body">
         <div className="canvas-col">
@@ -84,19 +84,19 @@ function CardPanel({ card, onClose }: { card: AgentCard; onClose: () => void }) 
   const n = (id: string) => names.get(id) ?? id;
   return (
     <aside className="card side" data-testid="agent-card">
-      <button className="ghost close" onClick={onClose} aria-label="Fermer">×</button>
+      <button className="ghost close" onClick={onClose} aria-label="Close">×</button>
       <h3>{card.name}</h3>
-      <p className="muted">{card.person ? card.title ?? "Humain" : `Agent ${card.version?.kind === "rule" ? "à règles" : "LLM"}${card.version?.model ? ` · ${card.version.model}` : ""}`}{card.quarantined ? " · en quarantaine" : ""}</p>
-      {card.mandate && <><h4>Mandat</h4><p>{card.mandate.purpose}</p><p className="muted">Périmètre : {card.mandate.scope}</p><p className="muted">Réussite : {card.mandate.successCriteria}</p></>}
-      {card.supervisors.length > 0 && <p><b>Supervisé par</b> {card.supervisors.map(n).join(", ")}</p>}
-      {card.subordinates.length > 0 && <p><b>Supervise</b> {card.subordinates.map(n).join(", ")}</p>}
-      {card.audits.length > 0 && <p><b>Audite</b> {card.audits.map(n).join(", ")}</p>}
-      {card.tools.length > 0 && <><h4>Outils</h4><ul className="chips">{card.tools.map((t) => <li key={t.name} className={t.effect === "irreversible" ? "danger" : ""} title={t.effect}>{TOOL_FR[t.name] ?? t.name}{t.approval !== "none" ? ` (${t.approval})` : ""}</li>)}</ul></>}
+      <p className="muted">{card.person ? card.title ?? "Human" : `${card.version?.kind === "rule" ? "Rule-based" : "LLM"} agent${card.version?.model ? ` · ${card.version.model}` : ""}`}{card.quarantined ? " · quarantined" : ""}</p>
+      {card.mandate && <><h4>Mandate</h4><p>{card.mandate.purpose}</p><p className="muted">Scope: {card.mandate.scope}</p><p className="muted">Success: {card.mandate.successCriteria}</p></>}
+      {card.supervisors.length > 0 && <p><b>Supervised by</b> {card.supervisors.map(n).join(", ")}</p>}
+      {card.subordinates.length > 0 && <p><b>Supervises</b> {card.subordinates.map(n).join(", ")}</p>}
+      {card.audits.length > 0 && <p><b>Audits</b> {card.audits.map(n).join(", ")}</p>}
+      {card.tools.length > 0 && <><h4>Tools</h4><ul className="chips">{card.tools.map((t) => <li key={t.name} className={t.effect === "irreversible" ? "danger" : ""} title={t.effect}>{TOOL_LABEL[t.name] ?? t.name}{t.approval !== "none" ? ` (${t.approval})` : ""}</li>)}</ul></>}
       {card.routines.length > 0 && <><h4>Routines</h4><ul className="plain">{card.routines.map((r) => <li key={r.id}><code>{r.id}</code> · {r.trigger}{r.cron ? ` ${r.cron}` : ""}</li>)}</ul></>}
-      {card.commitments.length > 0 && <><h4>Engagements ouverts</h4><ul className="plain">{card.commitments.map((c) => <li key={c.id}>{c.description} → {n(c.to)} avant {fmtDateTime(c.dueAt)}</li>)}</ul></>}
-      <p><b>Mémoire</b> : {card.facts} fait{card.facts > 1 ? "s" : ""}</p>
-      {card.statuses.length > 0 && <><h4>Derniers statuts</h4><ul className="plain">{card.statuses.map((s, i) => <li key={i}>{s.text}</li>)}</ul></>}
-      {card.toolCalls.length > 0 && <><h4>Derniers appels d'outils</h4><ul className="plain">{card.toolCalls.map((t, i) => <li key={i}>{TOOL_FR[t.tool] ?? t.tool} · {STATUS_FR[t.status] ?? t.status}</li>)}</ul></>}
+      {card.commitments.length > 0 && <><h4>Open commitments</h4><ul className="plain">{card.commitments.map((c) => <li key={c.id}>{c.description} → {n(c.to)} before {fmtDateTime(c.dueAt)}</li>)}</ul></>}
+      <p><b>Memory</b>: {card.facts} fact{card.facts > 1 ? "s" : ""}</p>
+      {card.statuses.length > 0 && <><h4>Latest statuses</h4><ul className="plain">{card.statuses.map((s, i) => <li key={i}>{s.text}</li>)}</ul></>}
+      {card.toolCalls.length > 0 && <><h4>Latest tool calls</h4><ul className="plain">{card.toolCalls.map((t, i) => <li key={i}>{TOOL_LABEL[t.tool] ?? t.tool} · {STATUS_LABEL[t.status] ?? t.status}</li>)}</ul></>}
       {card.version && !card.person && <details><summary>Prompt ({card.version.id})</summary><pre>{card.version.prompt}</pre></details>}
     </aside>
   );
@@ -119,12 +119,12 @@ function Rights({ initial }: { initial: string }) {
       <div className="side-list">
         <label>Agent <select value={agent} onChange={(e) => setAgent(e.target.value)} data-testid="rights-agent">
           {(topology?.agents ?? []).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
-        <h4>Mémoires lisibles ({paths.length})</h4>
-        <p className="muted">Chemin : SUPERVISES* puis une seule relation terminale. Cliquez pour surligner.</p>
+        <h4>Readable memories ({paths.length})</h4>
+        <p className="muted">Path: SUPERVISES* then a single terminal relationship. Click to highlight.</p>
         <ul className="plain">
           {paths.map((p) => (
             <li key={p.memoryId}><button className={`link ${sel === p.memoryId ? "on" : ""}`} onClick={() => setSel(p.memoryId)} data-testid="memory-path">
-              {n(p.ownerId)} <small>{SHARE_FR[p.kind]}</small></button></li>))}
+              {n(p.ownerId)} <small>{SHARE_LABEL[p.kind]}</small></button></li>))}
         </ul>
       </div>
       <Canvas nodes={g.nodes} rels={g.rels} />
@@ -151,9 +151,9 @@ function KgExplorer() {
       <form className="row" onSubmit={(e) => { e.preventDefault(); go(); }}>
         <select value={kg} onChange={(e) => { setKg(e.target.value); setKey(e.target.value === "produit" ? "PRT-0045" : "TSK-05"); }} data-testid="kg-select">
           {(topology?.kgs ?? []).map((k) => <option key={k.id} value={k.id}>KG {k.id}</option>)}</select>
-        <input value={key} onChange={(e) => setKey(e.target.value)} aria-label="Clé de l'entité" data-testid="kg-key" />
-        <button type="submit">Explorer</button>
-        <span className="muted">Pièces retirées en gris ; essais en bleu.</span>
+        <input value={key} onChange={(e) => setKey(e.target.value)} aria-label="Entity key" data-testid="kg-key" />
+        <button type="submit">Explore</button>
+        <span className="muted">Retired parts in grey; tests in blue.</span>
       </form>
       {err && <p className="error">{err}</p>}
       {graph && <Canvas nodes={graph.nodes} rels={graph.rels} />}

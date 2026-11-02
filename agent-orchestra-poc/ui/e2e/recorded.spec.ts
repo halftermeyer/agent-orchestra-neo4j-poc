@@ -3,19 +3,19 @@ import { expect, test, type Page } from "@playwright/test";
 const SHOTS = "test-results/screens";
 const shot = (page: Page, name: string) => page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
 
-/** Relit le scénario réel enregistré (data/scenarios/scenario-complet.json, produit par `make scenario` avec les vrais agents). */
-test("relecture du scénario enregistré : cinq chapitres, de l'incident à la gouvernance", async ({ page }) => {
+/** Relit le scénario réel enregistré (data/scenarios/full-scenario.json, produit par `make scenario` avec les vrais agents). */
+test("replay of the recorded scenario: five chapters, from incident to governance", async ({ page }) => {
   await page.goto("/");
   await page.evaluate(() => sessionStorage.clear());
   await page.goto("/");
   await page.getByTestId("user-admin").click();
   await page.getByTestId("tab-relecture").click();
-  await page.getByTestId("replay-source").selectOption("rec:scenario-complet");
+  await page.getByTestId("replay-source").selectOption("rec:full-scenario");
   await page.getByTestId("replay-load").click();
   await expect(page.getByTestId("replay-controls")).toBeVisible();
   for (const c of ["incident", "analyse", "vote", "lancement", "gouvernance"]) await expect(page.getByTestId(`chapter-${c}`)).toBeVisible();
   // au début, les compteurs sont ceux de l'instant rejoué (rien appris, aucune boîte pleine), pas ceux du graphe actuel
-  await expect(page.getByTestId("station-qualite")).not.toContainText("fait");
+  await expect(page.getByTestId("station-qualite")).not.toContainText("fact");
   await expect(page.getByTestId("mailbox-comite-1")).not.toContainText(/\d/);
   await shot(page, "14-scenario-chapitres");
   // chapitres dans l'ordre du scénario (positions croissantes sur la barre)
@@ -23,15 +23,15 @@ test("relecture du scénario enregistré : cinq chapitres, de l'incident à la g
   expect(lefts).toEqual([...lefts].sort((a, b) => a - b));
   // boucle légitime : au moins une proposition refusée dans le journal
   await page.getByTestId("replay-view-journal").click();
-  await expect(page.getByTestId("replay-journal")).toContainText("Proposition refusée", { timeout: 1000 }).catch(() => undefined);
+  await expect(page.getByTestId("replay-journal")).toContainText("Proposal rejected", { timeout: 1000 }).catch(() => undefined);
   await page.getByTestId("replay-view-scene").click();
   // vitesse ×20, temps morts compressés : tout le scénario se rejoue en moins d'une minute
   await page.getByTestId("replay-speed-20").click();
   await page.getByTestId("replay-play").click();
-  await expect(page.getByTestId("avatar-comite-1").getByTestId("bubble")).toContainText("J'approuve", { timeout: 40000 });
+  await expect(page.getByTestId("avatar-comite-1").getByTestId("bubble")).toContainText("I approve", { timeout: 40000 });
   await shot(page, "15-scenario-vote");
-  await expect(page.getByTestId("station-qualite")).toContainText("fait");           // Qualité a appris des faits en cours de lecture
-  await expect(page.getByTestId("replay-play")).toContainText("Rejouer", { timeout: 60000 });         // fin de la relecture
+  await expect(page.getByTestId("station-qualite")).toContainText("fact");           // Qualité a appris des faits en cours de lecture
+  await expect(page.getByTestId("replay-play")).toContainText("Replay", { timeout: 60000 });         // fin de la relecture
   await shot(page, "16-scenario-fin");
   // saut direct au chapitre gouvernance : l'auditeur agit, le chef de projet décide
   await page.getByTestId("chapter-gouvernance").click();
@@ -41,5 +41,5 @@ test("relecture du scénario enregistré : cinq chapitres, de l'incident à la g
   await page.waitForTimeout(2500);
   await shot(page, "17-scenario-gouvernance");
   await page.getByTestId("replay-view-journal").click();
-  await expect(page.getByTestId("replay-journal")).toContainText("Auditeur");
+  await expect(page.getByTestId("replay-journal")).toContainText("Auditor");
 });

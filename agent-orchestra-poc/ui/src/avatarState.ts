@@ -9,6 +9,8 @@ export interface AvatarState {
   waiting: boolean;              // engagement ou validation en attente (persiste après la fin de session)
   until: number | null;          // fin d'un état temporaire (ms)
   bubble?: string;               // phrase courte (StatusUpdate)
+  note?: string;                 // note brève (ex. vote) : garde sa propre durée de vie, un autre événement ne l'efface pas
+  noteUntil?: number | null;
   tool?: string;                 // outil en cours
   target?: string | null;        // destinataire de l'enveloppe
   pulse: number;                 // incrémenté à chaque nouvel événement visuel (re-déclenche les animations)
@@ -56,7 +58,8 @@ export function reduce(states: States, ev: StreamEvent, now: number, ctx: Ctx): 
       break;
     case "vote": {
       const d = String(ev.payload.decision ?? "");
-      next = { ...cur, mode: "thinking", until: now + TTL.note, bubble: d === "approve" ? "J'approuve" : "Je refuse", pulse: p };
+      const text = d === "approve" ? "I approve" : "I reject";
+      next = { ...cur, mode: "thinking", until: now + TTL.note, bubble: text, note: text, noteUntil: now + TTL.note, pulse: p };
       break;
     }
     case "waiting":
@@ -74,25 +77,31 @@ export function reduce(states: States, ev: StreamEvent, now: number, ctx: Ctx): 
   return { ...states, [actor]: { ...next, at: now } };
 }
 
-/** Fait expirer les états temporaires. */
+/** Fait expirer les états temporaires (et les notes brèves, qui ont leur propre échéance). */
 export function settle(states: States, now: number): States {
   let changed = false;
   const out: States = {};
-  for (const [id, s] of Object.entries(states)) {
+  for (const [id, st] of Object.entries(states)) {
+    let s = st;
     if (s.until !== null && s.until <= now) {
-      out[id] = rest(s);
+      s = rest(s);
       changed = true;
     } else if (s.busy && s.until === null && s.at > 0 && now - s.at > (s.bubble === undefined && s.tool === undefined ? STALE_WOKEN_MS : STALE_BUSY_MS)) {
-      out[id] = rest({ ...s, busy: false });
+      s = rest({ ...s, busy: false });
       changed = true;
-    } else out[id] = s;
+    }
+    if (s.note !== undefined && s.noteUntil != null && s.noteUntil <= now) {
+      s = { ...s, note: undefined, noteUntil: undefined };
+      changed = true;
+    }
+    out[id] = s;
   }
   return changed ? out : states;
 }
 
 export const MODE_LABEL: Record<Mode, string> = {
-  idle: "Au repos", woken: "Réveillé", thinking: "Réfléchit", tool: "Utilise un outil",
-  sending: "Envoie", learning: "Apprend", waiting: "Attend", error: "Erreur",
+  idle: "Idle", woken: "Woken", thinking: "Thinking", tool: "Using a tool",
+  sending: "Sending", learning: "Learning", waiting: "Waiting", error: "Error",
 };
 
 /** Horloge d'un événement : un événement récent compte comme « maintenant » (tolère un léger décalage d'horloge) ;

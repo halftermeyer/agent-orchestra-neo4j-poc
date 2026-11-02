@@ -7,6 +7,6 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   outputDir: "test-results",
-  use: { baseURL: process.env.UI_URL ?? "http://localhost:15173", viewport: { width: 1360, height: 860 }, locale: "fr-FR", screenshot: "off" },
+  use: { baseURL: process.env.UI_URL ?? "http://localhost:15173", viewport: { width: 1360, height: 860 }, locale: "en-GB", screenshot: "off" },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
 });

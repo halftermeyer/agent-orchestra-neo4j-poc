@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Api } from "./api";
-import { STATUS_FR, TOOL_FR, fmtDateTime } from "./labels";
+import { STATUS_LABEL, TOOL_LABEL, fmtDateTime } from "./labels";
 import { useApp, useOnEvents } from "./store";
 import type { TimelineItem } from "./types";
 
 const KINDS: Record<string, { label: string; color: string }> = {
-  tool: { label: "Appel d'outil", color: "#4C8EDA" }, vote: { label: "Vote", color: "#2FA66A" }, routine: { label: "Routine déclenchée", color: "#8B6FD6" },
-  "routine-next": { label: "Routine à venir", color: "#B8A9E8" }, commitment: { label: "Engagement", color: "#E8A33D" },
+  tool: { label: "Tool call", color: "#4C8EDA" }, vote: { label: "Vote", color: "#2FA66A" }, routine: { label: "Routine fired", color: "#8B6FD6" },
+  "routine-next": { label: "Upcoming routine", color: "#B8A9E8" }, commitment: { label: "Commitment", color: "#E8A33D" },
 };
 const HOURS = [1, 6, 24];
 const W = 1100, LANE = 34, LEFT = 150;
@@ -39,11 +39,11 @@ export function Timeline() {
       <div className="toolbar">
         {HOURS.map((h) => <button key={h} className={`seg ${hours === h ? "on" : ""}`} onClick={() => setHours(h)}>{h} h</button>)}
         <ul className="legend inline">{Object.entries(KINDS).map(([k, v]) => <li key={k}><span className="dot" style={{ background: v.color }} />{v.label}</li>)}</ul>
-        <span className="muted" data-testid="timeline-count">{items.length} éléments</span>
+        <span className="muted" data-testid="timeline-count">{items.length} items</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="tl" role="img" aria-label="Frise des routines, appels d'outils, votes et engagements">
+      <svg viewBox={`0 0 ${W} ${H}`} className="tl" role="img" aria-label="Timeline of routines, tool calls, votes and commitments">
         {ticks.map((t) => <g key={t}><line x1={x(t)} x2={x(t)} y1="20" y2={H} stroke="#E7EBF1" /><text x={x(t)} y="14" fontSize="10" fill="#7B8798" textAnchor="middle">{new Date(t).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</text></g>)}
-        <line x1={x(Date.now())} x2={x(Date.now())} y1="20" y2={H} stroke="#F0562A" strokeDasharray="4 3" /><text x={x(Date.now())} y={H - 4} fontSize="10" fill="#F0562A" textAnchor="middle">maintenant</text>
+        <line x1={x(Date.now())} x2={x(Date.now())} y1="20" y2={H} stroke="#F0562A" strokeDasharray="4 3" /><text x={x(Date.now())} y={H - 4} fontSize="10" fill="#F0562A" textAnchor="middle">now</text>
         {lanes.map((a, i) => (
           <g key={a} transform={`translate(0 ${30 + i * LANE})`}>
             <rect x="0" y="-12" width={W} height={LANE - 2} fill={i % 2 ? "#FAFBFD" : "#fff"} />
@@ -58,7 +58,7 @@ export function Timeline() {
 
 function Mark({ it, x }: { it: TimelineItem; x: (v: string | number) => number }) {
   const c = KINDS[it.kind].color;
-  const title = `${KINDS[it.kind].label} · ${TOOL_FR[it.label] ?? it.label} · ${STATUS_FR[it.status] ?? it.status} · ${fmtDateTime(it.t)}`;
+  const title = `${KINDS[it.kind].label} · ${TOOL_LABEL[it.label] ?? it.label} · ${STATUS_LABEL[it.status] ?? it.status} · ${fmtDateTime(it.t)}`;
   const x0 = x(it.t);
   const failed = it.status === "failed" || it.status === "rejected";
   if ((it.kind === "tool" || it.kind === "commitment") && it.end) {

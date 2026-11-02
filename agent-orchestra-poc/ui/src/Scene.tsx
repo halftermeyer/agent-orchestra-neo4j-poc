@@ -18,7 +18,7 @@ const mailbox = (p: [number, number]): [number, number] => [p[0] - 62, p[1] + 30
 
 export function Scene() {
   const { topology, live, flights, names, follow } = useApp();
-  if (!topology) return <p className="muted">Chargement de la scène…</p>;
+  if (!topology) return <p className="muted">Loading the scene…</p>;
   const agents = topology.agents;
   const where = (id: string): [number, number] => {
     if (TOPICS[id]) return [TOPICS[id][0], TOPICS[id][1]];
@@ -27,14 +27,14 @@ export function Scene() {
   };
   return (
     <div className="scene-wrap">
-      <svg viewBox="0 0 1280 740" className="scene" role="img" aria-label="Plateau des agents et des humains" data-testid="scene" data-follow={follow ?? ""}>
+      <svg viewBox="0 0 1280 740" className="scene" role="img" aria-label="Board of agents and humans" data-testid="scene" data-follow={follow ?? ""}>
         <defs>
           <pattern id="floor" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#E7EBF1" strokeWidth="1" /></pattern>
         </defs>
         <rect width="1280" height="740" rx="18" fill="#F7F9FC" /><rect width="1280" height="740" rx="18" fill="url(#floor)" />
-        <Zone x={380} y={50} w={540} h={170} label="Salle du comité de modification" />
-        <Zone x={60} y={60} w={140} h={150} label="Qualité (humain)" tiny />
-        <Zone x={1080} y={60} w={140} h={150} label="Projet (humain)" tiny />
+        <Zone x={380} y={50} w={540} h={170} label="Change committee room" />
+        <Zone x={60} y={60} w={140} h={150} label="Quality (human)" tiny />
+        <Zone x={1080} y={60} w={140} h={150} label="Project (human)" tiny />
         {Object.entries(TOPICS).map(([id, [x, y, label]]) => (
           <g key={id} data-testid={`topic-${id}`} transform={`translate(${x} ${y})`}>
             <rect x="-62" y="-14" width="124" height="28" rx="8" fill="#EFEAFB" stroke="#B8A9E8" /><text textAnchor="middle" y="4" fontSize="11" fill="#5B4AA0">{label}</text>
@@ -53,7 +53,7 @@ export function Scene() {
           })}
         </AnimatePresence>
       </svg>
-      <ul className="legend" aria-label="Légende des états">
+      <ul className="legend" aria-label="State legend">
         {Object.entries(MODE_LABEL).map(([k, v]) => <li key={k}><span className={`dot dot-${k}`} />{v}</li>)}
       </ul>
     </div>
@@ -81,7 +81,7 @@ function Station({ agent, pos, name, pending, facts }: { agent: Agent; pos: [num
       <rect x="-60" y="22" width="120" height="10" rx="5" fill="#E4D6C4" />
       <Avatar agent={agent} state={s} />
       <text y="106" textAnchor="middle" fontSize="13" fontWeight="650" fill="#1F2A3C">{name}</text>
-      <text y="121" textAnchor="middle" fontSize="10.5" fill="#7B8798" data-testid={`mode-${agent.id}`}>{MODE_LABEL[s.mode]}{agent.quarantined ? " · quarantaine" : ""}</text>
+      <text y="121" textAnchor="middle" fontSize="10.5" fill="#7B8798" data-testid={`mode-${agent.id}`}>{MODE_LABEL[s.mode]}{agent.quarantined ? " · quarantined" : ""}</text>
       <Mailbox pulse={s.mode === "woken" ? s.pulse : 0} pending={pending} id={agent.id} />
       <Shelf pulse={s.mode === "learning" ? s.pulse : 0} facts={facts} />
     </g>
@@ -106,7 +106,7 @@ function Shelf({ pulse, facts }: { pulse: number; facts: number }) {
       <path d="M-14 -4 H14 M-14 7 H14" stroke="#C8A94D" />
       {[...Array(Math.min(facts, 5))].map((_, i) => <rect key={i} x={-11 + i * 5} y="-13" width="3.5" height="9" fill="#E8A33D" />)}
       <motion.circle key={pulse} cx="0" cy="0" r="12" fill="#F5B642" initial={{ opacity: 0 }} animate={pulse ? { opacity: [0, 0.7, 0] } : { opacity: 0 }} transition={{ duration: 1 }} />
-      {facts > 0 && <text y="26" fontSize="10" textAnchor="middle" fill="#8A6D1B">{facts} fait{facts > 1 ? "s" : ""}</text>}
+      {facts > 0 && <text y="26" fontSize="10" textAnchor="middle" fill="#8A6D1B">{facts} fact{facts > 1 ? "s" : ""}</text>}
     </g>
   );
 }

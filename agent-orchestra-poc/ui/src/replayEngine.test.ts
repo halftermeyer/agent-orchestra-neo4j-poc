@@ -11,7 +11,7 @@ const ctx: Ctx = { persons: new Set(["ing-qualite"]) };
 const scenario = makeReplay([
   at(0, "sent", "ing-qualite", "incidents", { kind: "incident" }),
   at(0.2, "woken", "qualite"),
-  at(2, "status", "qualite", null, { text: "Je qualifie" }),
+  at(2, "status", "qualite", null, { text: "I am qualifying" }),
   at(3, "sent", "coordinateur", "ingenierie", { kind: "analysis-request" }),
   at(60, "waiting", "coordinateur", "launch_modification"),
   at(65, "vote", "comite-1", "ap", { decision: "approve" }),
@@ -19,22 +19,22 @@ const scenario = makeReplay([
   at(300, "error", "auditeur", "chain-x", { chainId: "chain-x", reason: "audit" }),
 ]);
 
-describe("moteur de relecture", () => {
-  it("trie les événements par date (stable) et borne l'enregistrement", () => {
+describe("replay engine", () => {
+  it("sorts events by date (stable) and bounds the recording", () => {
     const r = makeReplay([at(5, "idle", "a"), at(1, "woken", "a"), at(1, "status", "a")]);
     expect(r.events.map((e) => e.type)).toEqual(["woken", "status", "idle"]);
     expect([r.t0, r.t1]).toEqual([T0 + 1000, T0 + 5000]);
     expect(makeReplay([]).t1).toBe(0);
   });
 
-  it("avance à vitesse × le temps mural, sans dépasser la fin", () => {
+  it("advances at speed × wall time, never past the end", () => {
     const r = scenario;
     expect(advance(r, T0, 100, 1, false)).toBe(T0 + 100);
     expect(advance(r, T0, 100, 20, false)).toBe(T0 + 2000);
     expect(advance(r, r.t1 - 10, 100, 20, false)).toBe(r.t1);
   });
 
-  it("compresse les temps morts, mais pas les écarts courts", () => {
+  it("compresses idle gaps, but not short ones", () => {
     const r = scenario;
     const inGap = T0 + 5000;                                         // entre l'événement à 3 s et celui à 60 s
     expect(advance(r, inGap, 50, 1, false)).toBe(inGap + 50);        // sans compression : temps réel
@@ -45,19 +45,19 @@ describe("moteur de relecture", () => {
     expect(IDLE_GAP_MS).toBeGreaterThan(IDLE_KEEP_MS);
   });
 
-  it("événements dans (a, b] : bornes ouverte à gauche, fermée à droite", () => {
+  it("events in (a, b]: open on the left, closed on the right", () => {
     const r = scenario;
     expect(eventsBetween(r, T0, T0 + 2000).map((e) => e.type)).toEqual(["woken", "status"]);   // exclut t=0, inclut t=2 s
     expect(eventsBetween(r, T0 - 1, T0).map((e) => e.type)).toEqual(["sent"]);
     expect(eventsBetween(r, T0 + 3000, T0 + 59_000)).toEqual([]);
   });
 
-  it("positionnement : l'état à un instant est le même qu'en lisant depuis le début", () => {
+  it("seek: the state at a given time matches playing from the start", () => {
     const s = stateAt(scenario, T0 + 2500, ctx);
-    expect(s.qualite).toMatchObject({ mode: "thinking", bubble: "Je qualifie", busy: true });
+    expect(s.qualite).toMatchObject({ mode: "thinking", bubble: "I am qualifying", busy: true });
   });
 
-  it("positionnement : les animations temporaires déjà expirées ne reviennent pas", () => {
+  it("seek: temporary animations that already expired do not come back", () => {
     const s = stateAt(scenario, T0 + 2500, ctx);
     expect(s["ing-qualite"].mode).toBe("idle");                       // 0 + 1400 ms < 2,5 s
     const early = stateAt(scenario, T0 + 300, ctx);
@@ -66,13 +66,13 @@ describe("moteur de relecture", () => {
     expect(early.qualite.until).toBe(T0 + 200 + TTL.woken);
   });
 
-  it("l'attente persiste jusqu'à la reprise de l'agent ; avant le début, personne n'a d'état", () => {
+  it("waiting persists until the agent resumes; before the start, nobody has a state", () => {
     expect(stateAt(scenario, T0 + 65_000, ctx).coordinateur.mode).toBe("waiting");        // demande de validation à 60 s
     expect(stateAt(scenario, T0 + 71_000, ctx).coordinateur.mode).toBe("tool");           // quorum atteint : reprise à 70 s
     expect(stateAt(scenario, T0 - 1, ctx)).toEqual({});
   });
 
-  it("rebase : passe les échéances de l'horloge virtuelle à l'horloge murale", () => {
+  it("rebase: moves deadlines from the virtual clock to the wall clock", () => {
     const s = stateAt(scenario, T0 + 300, ctx);
     const wall = 5_000_000;
     const r = rebase(s, T0 + 300, wall);
@@ -81,14 +81,14 @@ describe("moteur de relecture", () => {
     expect(rebase({ x: { ...s.qualite, until: null, at: 0 } }, 1, 2).x).toMatchObject({ until: null, at: 0 });
   });
 
-  it("chapitres : incident, analyse, vote, lancement, gouvernance, dans l'ordre du scénario", () => {
+  it("chapters: incident, analysis, vote, launch, governance, in scenario order", () => {
     const ch = chaptersOf(scenario);
     expect(ch.map((c) => c.id)).toEqual(["incident", "analyse", "vote", "lancement", "gouvernance"]);
     expect(ch.map((c) => (c.t - T0) / 1000)).toEqual([0, 3, 60, 70, 300]);
     expect(ch[0].label).toBe("Incident");
   });
 
-  it("chapitres : seuls ceux qui existent dans l'enregistrement sont proposés", () => {
+  it("chapters: only those present in the recording are offered", () => {
     expect(chaptersOf(makeReplay([at(0, "status", "a", null, { text: "x" })]))).toEqual([]);
     expect(chaptersOf(makeReplay([at(0, "sent", "x", "incidents", { kind: "incident" })])).map((c) => c.id)).toEqual(["incident"]);
   });

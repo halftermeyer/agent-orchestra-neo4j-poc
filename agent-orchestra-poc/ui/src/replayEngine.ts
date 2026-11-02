@@ -47,7 +47,8 @@ export function stateAt(r: Replay, vt: number, ctx: Ctx): States {
 export function rebase(states: States, vt: number, wall: number): States {
   const shift = wall - vt;
   const out: States = {};
-  for (const [id, s] of Object.entries(states)) out[id] = { ...s, until: s.until === null ? null : s.until + shift, at: s.at === 0 ? 0 : s.at + shift };
+  for (const [id, s] of Object.entries(states)) out[id] = { ...s, until: s.until === null ? null : s.until + shift, at: s.at === 0 ? 0 : s.at + shift,
+    noteUntil: s.noteUntil == null ? s.noteUntil : s.noteUntil + shift };
   return out;
 }
 
@@ -57,10 +58,10 @@ export interface Chapter { id: string; label: string; t: number }
 export function chaptersOf(r: Replay): Chapter[] {
   const rules: { id: string; label: string; test: (e: StreamEvent) => boolean }[] = [
     { id: "incident", label: "Incident", test: (e) => e.type === "sent" && e.payload.kind === "incident" },
-    { id: "analyse", label: "Analyse d'impact", test: (e) => e.type === "sent" && e.payload.kind === "analysis-request" },
-    { id: "vote", label: "Vote du comité", test: (e) => (e.type === "waiting" && e.target === "launch_modification") || e.type === "vote" },
-    { id: "lancement", label: "Lancement", test: (e) => (e.type === "tool.start" && e.target === "launch_modification" && e.payload.resumed === true) || (e.type === "tool.end" && e.target === "launch_modification") },
-    { id: "gouvernance", label: "Gouvernance", test: (e) => (e.type === "error" && typeof e.payload.chainId === "string") || (e.type === "sent" && e.payload.kind === "chain-suspended") },
+    { id: "analyse", label: "Impact analysis", test: (e) => e.type === "sent" && e.payload.kind === "analysis-request" },
+    { id: "vote", label: "Committee vote", test: (e) => (e.type === "waiting" && e.target === "launch_modification") || e.type === "vote" },
+    { id: "lancement", label: "Launch", test: (e) => (e.type === "tool.start" && e.target === "launch_modification" && e.payload.resumed === true) || (e.type === "tool.end" && e.target === "launch_modification") },
+    { id: "gouvernance", label: "Governance", test: (e) => (e.type === "error" && typeof e.payload.chainId === "string") || (e.type === "sent" && e.payload.kind === "chain-suspended") },
   ];
   const out: Chapter[] = [];
   for (const rule of rules) {
