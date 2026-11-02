@@ -175,6 +175,8 @@ def send_message(b: SendMessage, p: Principal = Depends(require_agent), ctx=Depe
                     recipients=recipients, derivedFrom=b.derivedFrom)
         if attach:
             r.one("message_attach_memory", messageId=msg_id, agentId=p.id, **attach)
+        if p.kind == "user":                   # la session directe d'un humain n'a qu'un envoi : on la clôt (sinon il resterait « occupé »)
+            r.one("session_close", sessionId=session_id, agentId=p.id, status="completed")
         return {"createdAt": row["createdAt"]}
 
     try:

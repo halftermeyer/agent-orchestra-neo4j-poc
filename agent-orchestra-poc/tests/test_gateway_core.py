@@ -140,6 +140,8 @@ def test_human_message_opens_direct_session(client, world, tq):
     assert r.status_code == 201, r.text
     assert tq("MATCH (:Workspace {id: 'ws:t-p'})-[:HAS_DAY]->(:WorkDay)-[:OPENED]->(s:Session)-[:SENT]->(m:Message {id: $m}) RETURN count(m) AS n",
               m=r.json()["id"])[0]["n"] == 1
+    # la session directe est close : la personne n'apparaît pas « occupée » sur la scène
+    assert tq("MATCH (s:Session)-[:SENT]->(:Message {id: $m}) RETURN s.closedAt IS NOT NULL AS closed", m=r.json()["id"]) == [{"closed": True}]
 
 
 def test_tx_metadata_is_recorded_in_cdc(client, world):
