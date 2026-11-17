@@ -23,7 +23,8 @@ def _to_contents(contents: list[dict]) -> list[types.Content]:
 
 class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str, embed_model: str = "gemini-embedding-001"):
-        self._client = genai.Client(api_key=api_key)
+        # function calling needs v1beta; recent google-genai releases (3.x) default to v1, which rejects it
+        self._client = genai.Client(api_key=api_key, http_options=types.HttpOptions(api_version="v1beta"))
         self._embed_model = embed_model
         self._key = api_key
 
