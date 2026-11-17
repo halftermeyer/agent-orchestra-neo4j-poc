@@ -5,8 +5,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends
 
+from orchestra.gateway import cbom
 from orchestra.gateway.auth import Principal, get_ctx, make_token, principal, require_person
-from orchestra.gateway.errors import Forbidden, NotFound
+from orchestra.gateway.errors import Conflict, Forbidden, NotFound
 from orchestra.gateway.routes.core import Strict
 from orchestra.gateway.routes.memory import compute_scope
 from orchestra.gateway.store import to_json
@@ -129,6 +130,19 @@ def kg_neighborhood(kg_id: str, key: str, p: Principal = Depends(require_ui), ct
                                               "retired": bool(x[f"{side}retired"])})
         rels.append({"id": f"{x['sid']}-{x['type']}-{x['tid']}", "from": x["sid"], "to": x["tid"], "type": x["type"]})
     return {"kg": kg_id, "key": key, "nodes": list(nodes.values()), "rels": list({r["id"]: r for r in rels}.values())}
+
+
+@router.get("/graph/cbom")
+def cbom_slice(part: str, replacement: str, p: Principal = Depends(require_ui), ctx=Depends(get_ctx)):
+    """Configurable BOM around a replacement (150% view + baseline / what-if variants). Same rights as the KG explorer;
+    the variants are computed in a KG transaction that commits nothing."""
+    auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=p.id, kgIds=["produit"]))
+    if not p.is_admin and not auth:
+        raise Forbidden("no right on this knowledge graph (CAN_QUERY)")
+    if ctx.store.kg_driver is None:
+        raise Conflict("KG curator not configured")
+    db = auth[0]["dbName"] if auth else next(k["dbName"] for k in ctx.store.read(lambda r: r.one("topology"))["kgs"] if k["id"] == "produit")
+    return to_json(cbom.graph_slice(ctx.store, db, {"agentId": p.id, "chainId": "none"}, part[:100], replacement[:100]))
 
 
 @router.get("/timeline")

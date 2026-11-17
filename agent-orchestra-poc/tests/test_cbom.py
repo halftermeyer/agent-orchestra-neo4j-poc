@@ -228,3 +228,29 @@ def test_evaluate_change_requires_the_tool_and_matches_the_approval_computation(
     cost_d, weight_d, _ = _expected_impact(admin, produit, cbom, part, repl)
     assert (r.json()["costDelta"], r.json()["weightDelta"]) == (cost_d, weight_d)
     assert w.post("/kg/impact", eng, {**body(w.session(eng)), "partId": cbom["product"]}).json()["available"] is False
+
+
+def test_cbom_graph_slice_shows_the_150_view_and_both_variants(client, poc_world, admin):
+    w, produit, cbom = poc_world
+    part = K.loop_parts(produit)[0]
+    repl = _replacement(produit, part)
+    outsider = w.agent("t-out", person=True)                                   # no CAN_QUERY on the Product KG
+    assert client.get("/graph/cbom", params={"part": part, "replacement": repl}, headers=tok("user", outsider)).status_code == 403
+    r = client.get("/graph/cbom", params={"part": part, "replacement": repl}, headers=tok("admin"))
+    assert r.status_code == 200, r.text
+    g = r.json()
+    roles = {n["id"]: n["role"] for n in g["nodes"]}
+    groups = {c["group"] for c in cbom["configurable"] if c["to"] == part}
+    assert roles[cbom["product"]] == "product" and roles[part] == "old" and roles[repl] == "new"
+    assert {n for n, ro in roles.items() if ro == "group"} == groups
+    variant = {(x["from"], x["to"]): x["variant"] for x in g["rels"]}
+    for grp in groups:
+        assert variant[(grp, part)] == "baseline" and variant[(grp, repl)] == "whatif"
+        assert sum(1 for (f, _), v in variant.items() if f == grp and v == "option") > 5     # the other options (150%)
+    assert all(v == "both" for (f, t), v in variant.items() if t in groups)
+    # positions: per-product quantities add up to the cost delta of the swap
+    imp = g["impact"]
+    parts = {p["id"]: p for p in produit["parts"]}
+    per_product = sum(p["perProduct"] for p in imp["positions"])
+    assert imp["costDelta"] == pytest.approx(per_product * (parts[repl]["cost"] - parts[part]["cost"]), abs=0.01)
+    assert imp["parts"]["old"]["cost"] == parts[part]["cost"] and imp["parts"]["new"]["id"] == repl
