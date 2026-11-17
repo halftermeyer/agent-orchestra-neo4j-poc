@@ -1,9 +1,9 @@
 import type { Node, Relationship } from "@neo4j-nvl/base";
-import type { Agent, KgNeighborhood, RightsPath, Topology } from "./types";
+import type { Agent, CbomSlice, KgNeighborhood, RightsPath, Topology } from "./types";
 
 export const COLORS = {
   agent: "#4C8EDA", rule: "#6EC4A7", auditor: "#E8A33D", person: "#E86F8D", topic: "#9B8AD6", kg: "#5BB5A2", memory: "#F2C14E",
-  other: "#B0B7C3", muted: "#D5DAE1", hot: "#F0562A", edge: "#8A94A6",
+  other: "#B0B7C3", muted: "#D5DAE1", hot: "#F0562A", edge: "#8A94A6", ok: "#30A46C", product: "#2E7D6B",
 };
 
 export function agentColor(a: Agent): string {
@@ -104,4 +104,31 @@ export function flowHeat(recent: { from: string; to: string; at: number }[], now
     heat.set(k, Math.max(heat.get(k) ?? 0, 1 - age / windowMs));
   }
   return heat;
+}
+
+const CBOM_STYLE = {
+  product: { color: COLORS.product, size: 52 }, assembly: { color: COLORS.kg, size: 34 }, group: { color: COLORS.topic, size: 38 },
+  option: { color: COLORS.muted, size: 18 }, old: { color: COLORS.hot, size: 36 }, new: { color: COLORS.ok, size: 36 },
+} as const;
+
+/** Configurable BOM around a replacement: 150% view (options of the touched ConfigGroups) and both variants.
+ *  Only `maxOptions` alternatives besides today's and the proposed part are drawn, so captions stay readable. */
+export function cbomGraph(c: CbomSlice, maxOptions = 8): { nodes: Node[]; rels: Relationship[]; options: number; shownOptions: number } {
+  const others = c.nodes.filter((n) => n.role === "option");
+  const shown = new Set(others.slice(0, maxOptions).map((n) => n.id));
+  const keep = (id: string) => !others.some((n) => n.id === id) || shown.has(id);
+  const caption = (n: CbomSlice["nodes"][number]) =>
+    n.role === "product" ? `${n.id} (product)` : n.role === "group" ? `${(n.name ?? "").split(" part options")[0]} choice` :
+      n.role === "old" || n.role === "new" ? `${n.id} · ${n.cost ?? "?"} €` : n.id;
+  const relStyle = (r: CbomSlice["rels"][number]) =>
+    r.variant === "baseline" ? { color: COLORS.hot, width: 4, caption: "today" } :
+      r.variant === "whatif" ? { color: COLORS.ok, width: 4, caption: "proposed" } :
+        r.variant === "both" ? { color: COLORS.edge, width: 2, caption: r.qty && r.qty > 1 ? `${r.type} ×${r.qty}` : r.type } :
+          { color: COLORS.muted, width: 1, caption: "" };
+  return {
+    nodes: c.nodes.filter((n) => keep(n.id))
+      .map((n) => ({ id: n.id, caption: caption(n), ...CBOM_STYLE[n.role], captionAlign: "bottom", selected: n.role === "old" || n.role === "new" } as Node)),
+    rels: c.rels.filter((r) => keep(r.to)).map((r) => ({ id: r.id, from: r.from, to: r.to, ...relStyle(r) })),
+    options: others.length, shownOptions: shown.size,
+  };
 }

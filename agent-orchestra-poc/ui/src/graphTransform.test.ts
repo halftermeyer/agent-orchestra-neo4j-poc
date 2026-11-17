@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLORS, flowHeat, kgGraph, rightsGraph, topologyGraph } from "./graphTransform";
+import { COLORS, cbomGraph, flowHeat, kgGraph, rightsGraph, topologyGraph } from "./graphTransform";
 import type { Topology } from "./types";
 
 const topo: Topology = {
@@ -82,5 +82,45 @@ describe("KG and flow", () => {
     expect(h.get("a>b")).toBeCloseTo(1 - 1000 / 8000);
     expect(h.has("c>d")).toBe(true);
     expect(flowHeat(recent, 20000).size).toBe(0);
+  });
+});
+
+describe("cbomGraph", () => {
+  it("colours today's part, the proposed one and the variants, and keeps the other options discreet", () => {
+    const g = cbomGraph({
+      impact: { available: true },
+      nodes: [
+        { id: "P0", name: "Station", labels: ["Part", "Product"], cost: null, weight: null, family: "Produit", role: "product" },
+        { id: "CG", name: "Electrical part options for A1", labels: ["ConfigGroup"], cost: null, weight: null, family: null, role: "group" },
+        { id: "X", name: "x", labels: ["Part"], cost: 10, weight: 1, family: "Electrical", role: "old" },
+        { id: "Y", name: "y", labels: ["Part"], cost: 8, weight: 1, family: "Electrical", role: "new" },
+        { id: "Z", name: "z", labels: ["Part"], cost: 9, weight: 1, family: "Electrical", role: "option" },
+      ],
+      rels: [
+        { id: "P0>CG", from: "P0", to: "CG", type: "REQUIRES", qty: 2, variant: "both" },
+        { id: "CG>X", from: "CG", to: "X", type: "HAS_OPTION", qty: null, variant: "baseline" },
+        { id: "CG>Y", from: "CG", to: "Y", type: "HAS_OPTION", qty: null, variant: "whatif" },
+        { id: "CG>Z", from: "CG", to: "Z", type: "HAS_OPTION", qty: null, variant: "option" },
+      ],
+    });
+    const n = (id: string) => g.nodes.find((x) => x.id === id)!;
+    const r = (id: string) => g.rels.find((x) => x.id === id)!;
+    expect(n("X").color).toBe(COLORS.hot);
+    expect(n("Y").color).toBe(COLORS.ok);
+    expect(n("Z").color).toBe(COLORS.muted);
+    expect(n("CG").caption).toBe("Electrical choice");
+    expect(r("P0>CG").caption).toBe("REQUIRES ×2");
+    expect([r("CG>X").caption, r("CG>Y").caption, r("CG>Z").caption]).toEqual(["today", "proposed", ""]);
+    expect([g.options, g.shownOptions]).toEqual([1, 1]);
+  });
+
+  it("caps the drawn alternatives but always keeps today's and the proposed part", () => {
+    const nodes = ["X", "Y", "A", "B", "C"].map((id) => ({ id, name: id, labels: ["Part"], cost: 1, weight: 1, family: "F",
+      role: (id === "X" ? "old" : id === "Y" ? "new" : "option") as "old" | "new" | "option" }));
+    const rels = nodes.map((n) => ({ id: `CG>${n.id}`, from: "CG", to: n.id, type: "HAS_OPTION", qty: null, variant: "option" as const }));
+    const g = cbomGraph({ impact: { available: true }, nodes, rels }, 1);
+    expect(g.nodes.map((n) => n.id)).toEqual(["X", "Y", "A"]);
+    expect(g.rels.map((r) => r.to)).toEqual(["X", "Y", "A"]);
+    expect([g.options, g.shownOptions]).toEqual([3, 1]);
   });
 });

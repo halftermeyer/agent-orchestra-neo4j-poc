@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Api } from "./api";
 import { KIND_LABEL, PERFORMATIVE_LABEL, SENDABLE, fmtDateTime } from "./labels";
 import { useApp, useOnEvents } from "./store";
-import type { ChangeImpact, ChatMessage, Incident, Me, PendingApproval } from "./types";
+import { Impact } from "./Impact";
+import type { ChatMessage, Incident, Me, PendingApproval } from "./types";
 
 const EVENT_TYPES = ["sent", "woken", "vote"] as ("sent" | "woken" | "vote")[];
 
-export function Chat() {
+export function Chat({ onOpenCbom }: { onOpenCbom?: (part: string, replacement: string) => void }) {
   const { session, names } = useApp();
   const [me, setMe] = useState<Me | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -46,7 +47,7 @@ export function Chat() {
       <section className="pane">
         {error && <p className="error">{error}</p>}
         {session.id === "ing-qualite" && <IncidentPanel incidents={incidents} onDone={(c) => { load(); setChain(c); }} />}
-        {approvals.length > 0 && <Approvals approvals={approvals} name={name} onDone={load} />}
+        {approvals.length > 0 && <Approvals approvals={approvals} name={name} onDone={load} onOpenCbom={onOpenCbom} />}
         <div className="messages" data-testid="messages">
           {current ? current.ms.map((m) => <Bubble key={m.id} m={m} name={name} />) : <p className="muted pad">Pick a conversation, or write a new message.</p>}
         </div>
@@ -126,26 +127,9 @@ function IncidentPanel({ incidents, onDone }: { incidents: Incident[]; onDone: (
   );
 }
 
-const signed = (x: number, digits: number) => (x > 0 ? "+" : "") + x.toFixed(digits);
-
-function Impact({ impact }: { impact: ChangeImpact }) {
-  if (!impact.available) return <div className="impact muted" data-testid="impact">BOM impact unavailable: {impact.reason}</div>;
-  const unsat = impact.unsatisfied ?? [];
-  return (
-    <div className="impact" data-testid="impact">
-      <span title="Computed by the gateway (CBOM resolution, baseline vs what-if)">BOM impact</span>{" "}
-      cost <b data-testid="impact-cost">{signed(impact.costDelta ?? 0, 2)}</b> ({impact.baseline?.cost.toFixed(2)} → {impact.whatIf?.cost.toFixed(2)}) ·
-      weight <b data-testid="impact-weight">{signed(impact.weightDelta ?? 0, 3)}</b>
-      {unsat.length > 0 && (
-        <div className="error" data-testid="impact-unsatisfied">
-          {unsat.length} unsatisfied requirement(s), BOM incomplete: {unsat.map((u) => `${u.source} → ${u.group}`).join(", ")}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Approvals({ approvals, name, onDone }: { approvals: PendingApproval[]; name: (id: string) => string; onDone: () => void }) {
+function Approvals({ approvals, name, onDone, onOpenCbom }: {
+  approvals: PendingApproval[]; name: (id: string) => string; onDone: () => void; onOpenCbom?: (part: string, replacement: string) => void;
+}) {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const vote = async (id: string, d: "approve" | "reject") => {
@@ -159,7 +143,8 @@ function Approvals({ approvals, name, onDone }: { approvals: PendingApproval[]; 
         <div key={a.id} className="approval" data-testid="approval">
           <div><b>Launch of the modification</b> requested by {name(a.requestedBy)} · policy {a.policy} · {a.votes}/{a.quorum} votes</div>
           <div className="muted">Replace <code>{a.args.part_id ?? "?"}</code> with <code>{a.args.replacement_id ?? "?"}</code> — {a.args.description}</div>
-          {a.args.impact && <Impact impact={a.args.impact} />}
+          {a.args.impact && <Impact impact={a.args.impact}
+            onOpen={onOpenCbom && a.args.part_id && a.args.replacement_id ? () => onOpenCbom(a.args.part_id!, a.args.replacement_id!) : undefined} />}
           <div className="row"><button className="ok" disabled={busy === a.id} onClick={() => vote(a.id, "approve")} data-testid="approve">Approve</button>
             <button className="danger" disabled={busy === a.id} onClick={() => vote(a.id, "reject")} data-testid="reject">Reject</button></div>
         </div>

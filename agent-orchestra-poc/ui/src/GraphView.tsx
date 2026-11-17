@@ -2,15 +2,19 @@ import { InteractiveNvlWrapper } from "@neo4j-nvl/react";
 import type { Node, Relationship } from "@neo4j-nvl/base";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Api } from "./api";
-import { COLORS, flowHeat, kgGraph, rightsGraph, topologyGraph } from "./graphTransform";
+import { COLORS, cbomGraph, flowHeat, kgGraph, rightsGraph, topologyGraph } from "./graphTransform";
+import { Impact } from "./Impact";
 import { SHARE_LABEL, STATUS_LABEL, TOOL_LABEL, fmtDateTime } from "./labels";
 import { useApp } from "./store";
-import type { AgentCard, KgNeighborhood, RightsPath } from "./types";
+import type { AgentCard, CbomSlice, KgNeighborhood, RightsPath } from "./types";
 
-type Mode = "topologie" | "flux" | "droits" | "kg";
-const MODES: [Mode, string][] = [["topologie", "Topology"], ["flux", "Flow"], ["droits", "Rights"], ["kg", "Knowledge graphs"]];
+type Mode = "topologie" | "flux" | "droits" | "kg" | "cbom";
+const MODES: [Mode, string][] = [["topologie", "Topology"], ["flux", "Flow"], ["droits", "Rights"], ["kg", "Knowledge graphs"], ["cbom", "Configurable BOM"]];
+type CbomFocus = { part: string; replacement: string } | null;
 
-function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; onNode?: (id: string) => void }) {
+function Canvas({ nodes, rels, onNode, layout = "forceDirected" }: {
+  nodes: Node[]; rels: Relationship[]; onNode?: (id: string) => void; layout?: "forceDirected" | "hierarchical";
+}) {
   const ref = useRef<{ fit?: (ids: string[]) => void } | null>(null);
   const ids = nodes.map((n) => n.id);
   const fit = () => ref.current?.fit?.(ids);
@@ -23,7 +27,7 @@ function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; 
       <InteractiveNvlWrapper
         ref={ref as never}
         nodes={nodes} rels={rels}
-        nvlOptions={{ renderer: "canvas", layout: "forceDirected", initialZoom: 0.9, minZoom: 0.2, maxZoom: 4, disableTelemetry: true } as never}
+        nvlOptions={{ renderer: "canvas", layout, layoutOptions: layout === "hierarchical" ? { direction: "down", packing: "stack" } : undefined, initialZoom: 0.9, minZoom: 0.2, maxZoom: 4, disableTelemetry: true } as never}
         nvlCallbacks={{ onLayoutDone: fit } as never}
         mouseEventCallbacks={{ onNodeClick: (n: Node) => onNode?.(n.id), onZoomAndPan: true, onPan: true, onDrag: true }}
       />
@@ -31,9 +35,9 @@ function Canvas({ nodes, rels, onNode }: { nodes: Node[]; rels: Relationship[]; 
   );
 }
 
-export function GraphView() {
+export function GraphView({ cbomFocus = null }: { cbomFocus?: CbomFocus }) {
   const { topology, names, recentSends, session } = useApp();
-  const [mode, setMode] = useState<Mode>("topologie");
+  const [mode, setMode] = useState<Mode>(cbomFocus ? "cbom" : "topologie");
   const [opts, setOpts] = useState({ showSend: false, showAudits: false, showKgAccess: true, showRoutines: true });
   const [card, setCard] = useState<AgentCard | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -72,6 +76,7 @@ export function GraphView() {
           {(mode === "topologie" || mode === "flux") && flux && <Canvas nodes={flux.nodes} rels={flux.rels} onNode={openCard} />}
           {mode === "droits" && <Rights initial={session.kind === "user" ? session.id : "coordinateur"} />}
           {mode === "kg" && <KgExplorer />}
+          {mode === "cbom" && <CbomExplorer focus={cbomFocus} />}
         </div>
         {card && (mode === "topologie" || mode === "flux") && <CardPanel card={card} onClose={() => setCard(null)} />}
       </div>
@@ -157,6 +162,53 @@ function KgExplorer() {
       </form>
       {err && <p className="error">{err}</p>}
       {graph && <Canvas nodes={graph.nodes} rels={graph.rels} />}
+    </div>
+  );
+}
+
+function CbomExplorer({ focus }: { focus: CbomFocus }) {
+  const [part, setPart] = useState(focus?.part ?? "PRT-0102");
+  const [repl, setRepl] = useState(focus?.replacement ?? "PRT-0117");
+  const [data, setData] = useState<CbomSlice | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const seq = useRef(0);
+  const go = (p = part, r = repl) => {
+    const mine = ++seq.current;
+    setErr(null); setBusy(true);
+    Api.cbom(p, r).then((d) => { if (mine === seq.current) setData(d); })
+      .catch((e) => { if (mine === seq.current) { setData(null); setErr(String(e)); } })
+      .finally(() => { if (mine === seq.current) setBusy(false); });
+  };
+  useEffect(() => { if (focus) { setPart(focus.part); setRepl(focus.replacement); } go(focus?.part ?? part, focus?.replacement ?? repl); }, [focus]);
+  const graph = useMemo(() => (data ? cbomGraph(data) : null), [data]);
+  return (
+    <div className="kg cbom" data-testid="cbom">
+      <form className="row" onSubmit={(e) => { e.preventDefault(); go(); }}>
+        <label>Replace <input value={part} onChange={(e) => setPart(e.target.value)} aria-label="Part" data-testid="cbom-part" /></label>
+        <label>with <input value={repl} onChange={(e) => setRepl(e.target.value)} aria-label="Replacement" data-testid="cbom-replacement" /></label>
+        <button type="submit" disabled={busy}>{busy ? "Resolving…" : "Resolve"}</button>
+      </form>
+      {err && <p className="error">{err}</p>}
+      {data && (
+        <div className="graph-body">
+          <div className="canvas-col">{graph && graph.nodes.length > 0 && <Canvas nodes={graph.nodes} rels={graph.rels} layout="hierarchical" />}</div>
+          <div className="side card" data-testid="cbom-side">
+            <h3>Configurable BOM (150%)</h3>
+            <p className="muted">Every position of the part is a choice among its alternatives. Neo4j resolves today's configuration and the
+              proposed one, then rolls up cost and weight over the whole product.</p>
+            <Impact impact={data.impact} />
+            {graph && graph.options > graph.shownOptions && (
+              <p className="muted" data-testid="cbom-options">{graph.shownOptions} of {graph.options} other alternatives shown.</p>)}
+            <ul className="legend">
+              <li><i style={{ background: COLORS.product }} /> Product · <i style={{ background: COLORS.kg }} /> assemblies</li>
+              <li><i style={{ background: COLORS.topic }} /> Choice (configuration group)</li>
+              <li><i style={{ background: COLORS.muted }} /> Alternatives offered by the choice</li>
+              <li><i style={{ background: COLORS.hot }} /> Mounted today · <i style={{ background: COLORS.ok }} /> Proposed replacement</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

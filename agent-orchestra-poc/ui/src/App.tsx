@@ -43,6 +43,8 @@ function Login({ onPick }: { onPick: (id: string) => Promise<void> }) {
 function Shell({ onLogout }: { onLogout: () => void }) {
   const { session, connected } = useApp();
   const [tab, setTab] = useState<Tab>(session.kind === "admin" ? "scene" : "chat");
+  const [cbomFocus, setCbomFocus] = useState<{ part: string; replacement: string } | null>(null);
+  const openCbom = (part: string, replacement: string) => { setCbomFocus({ part, replacement }); setTab("graphe"); };
   return (
     <div className="shell">
       <header>
@@ -53,9 +55,9 @@ function Shell({ onLogout }: { onLogout: () => void }) {
         <button className="ghost" onClick={onLogout} data-testid="logout">Switch user</button>
       </header>
       <main>
-        {tab === "chat" && (session.kind === "user" ? <Chat /> : <div className="card"><p>The administrator has no inbox: pick a person to use the chat.</p></div>)}
+        {tab === "chat" && (session.kind === "user" ? <Chat onOpenCbom={openCbom} /> : <div className="card"><p>The administrator has no inbox: pick a person to use the chat.</p></div>)}
         {tab === "scene" && <Scene />}
-        {tab === "graphe" && <GraphView />}
+        {tab === "graphe" && <GraphView cbomFocus={cbomFocus} />}
         {tab === "frise" && <Timeline />}
         {tab === "relecture" && <ReplayView />}
         {tab === "parametres" && <Settings />}

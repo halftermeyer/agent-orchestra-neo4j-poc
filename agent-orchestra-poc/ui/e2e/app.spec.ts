@@ -109,9 +109,17 @@ test("the committee votes until quorum; the avatar shows the vote", async ({ pag
   await expect(page.getByTestId("approval")).toContainText("PRT-0045");
   await expect(page.getByTestId("approval")).toContainText("0/2 votes");
   await expect(page.getByTestId("impact")).toContainText("BOM impact");             // computed by the gateway on the CBOM
-  await expect(page.getByTestId("impact-cost")).toHaveText(/^-\d+\.\d{2}$/);         // PRT-0102 is cheaper than PRT-0045
+  await expect(page.getByTestId("impact-cost")).toHaveText(/^−[\d,]+\.\d{2} €$/);    // PRT-0102 is cheaper than PRT-0045
   await expect(page.getByTestId("impact-unsatisfied")).toHaveCount(0);
   await shot(page, "09-chat-validation");
+  await page.getByTestId("open-cbom").click();                                       // the configurable BOM behind the figures
+  await expect(page.getByTestId("cbom-part")).toHaveValue("PRT-0045");
+  await expect(page.getByTestId("cbom").getByTestId("nvl")).toHaveAttribute("data-nodes", /^[1-9]\d*$/, { timeout: 15000 });
+  await expect(page.getByTestId("cbom-side").getByTestId("impact-cost")).toHaveText(/^−[\d,]+\.\d{2} €$/);
+  await page.waitForTimeout(2000);
+  await shot(page, "09b-configurable-bom");
+  await page.getByTestId("tab-chat").click();
+  await expect(page.getByTestId("approval")).toHaveCount(1);
   await page.getByTestId("approve").click();
   await expect(page.getByTestId("approvals")).toHaveCount(0);                    // already voted: no longer listed
   await page.getByTestId("tab-scene").click();

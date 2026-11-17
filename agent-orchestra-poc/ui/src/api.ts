@@ -1,5 +1,5 @@
 import type {
-  AgentCard, AgentLive, ChatMessage, DemoUser, Incident, KgNeighborhood, Me, ModelsStatus, PendingApproval, RecordingInfo, ReplayDoc, RightsPath,
+  AgentCard, AgentLive, CbomSlice, ChatMessage, DemoUser, Incident, KgNeighborhood, Me, ModelsStatus, PendingApproval, RecordingInfo, ReplayDoc, RightsPath,
   RunInfo, Session, StreamEvent, TimelineItem, Topology,
 } from "./types";
 
@@ -49,6 +49,8 @@ export const Api = {
   state: () => get<{ agents: AgentLive[] }>("/graph/state").then((r) => r.agents),
   card: (id: string) => get<AgentCard>(`/graph/agent/${encodeURIComponent(id)}`),
   rights: (id: string) => get<{ memories: RightsPath[] }>(`/graph/rights/${encodeURIComponent(id)}`).then((r) => r.memories),
+  cbom: (part: string, replacement: string) =>
+    get<CbomSlice>(`/graph/cbom?part=${encodeURIComponent(part)}&replacement=${encodeURIComponent(replacement)}`),
   kg: (kg: string, key: string) => get<KgNeighborhood>(`/graph/kg/${kg}/neighborhood?key=${encodeURIComponent(key)}`),
   timeline: (hours = 24) => get<{ items: TimelineItem[] }>(`/timeline?hours=${hours}`).then((r) => r.items),
   runs: () => get<{ runs: RunInfo[] }>("/replay/runs").then((r) => r.runs),

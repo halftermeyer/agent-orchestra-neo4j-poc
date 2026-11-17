@@ -52,10 +52,20 @@ export interface ChatMessage {
   createdAt: string; direction: "in" | "out"; to: string[]; hasSharedMemory: boolean;
 }
 /** Change impact computed by the gateway on the configurable BOM (never by an agent), frozen in the approval. */
+export interface ImpactPart { id: string; name: string | null; cost: number | null; weight: number | null }
 export interface ChangeImpact {
   available: boolean; reason?: string; complete?: boolean; costDelta?: number; weightDelta?: number;
+  partId?: string; replacementId?: string;
+  parts?: { old: ImpactPart; new: ImpactPart };
+  positions?: { group: string; parent: string; parentName: string | null; qty: number; perProduct: number }[];
   baseline?: { cost: number; weight: number }; whatIf?: { cost: number; weight: number };
   unsatisfied?: { source: string; group: string }[];
+}
+export type CbomRole = "product" | "assembly" | "group" | "option" | "old" | "new";
+export interface CbomSlice {
+  impact: ChangeImpact;
+  nodes: { id: string; name: string | null; labels: string[]; cost: number | null; weight: number | null; family: string | null; role: CbomRole }[];
+  rels: { id: string; from: string; to: string; type: string; qty: number | null; variant: "both" | "baseline" | "whatif" | "option" }[];
 }
 export interface PendingApproval {
   id: string; policy: string; quorum: number; size: number; requestedBy: string; requestedAt: string;
