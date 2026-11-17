@@ -12,5 +12,5 @@ CREATE (new)-[:IN_VERSION]->(v)
 WITH old, new, v
 MATCH (parent:Part)-[c:CONTAINS]->(old) WHERE c.removedIn IS NULL
 SET c.removedIn = v.id
-CREATE (parent)-[:CONTAINS {qty: c.qty, addedIn: v.id}]->(new)
+CREATE (parent)-[:CONTAINS {qty: c.qty, addedIn: v.id, configurable: c.configurable, group: c.group}]->(new)   // the CBOM position follows the part
 RETURN v.id AS versionId, count(parent) AS parents

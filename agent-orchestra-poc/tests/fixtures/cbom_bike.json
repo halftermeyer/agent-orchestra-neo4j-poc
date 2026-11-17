@@ -1,0 +1,1401 @@
+{
+ "source": "neo4j-documentation/field-industry-use-cases, configurable-bom page, sections 4.2 (demo data) and 4.1.2 (parameter sets)",
+ "nodes": [
+  {
+   "id": "MB1",
+   "labels": [
+    "Product"
+   ],
+   "properties": {
+    "desc": "Configurable Mountain Bike"
+   }
+  },
+  {
+   "id": "A_Drivetrain",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "desc": "Drivetrain Assembly"
+   }
+  },
+  {
+   "id": "A_Wheel",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "desc": "Wheel Assembly"
+   }
+  },
+  {
+   "id": "A_Wheel_26",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "wheel_size": 26.0,
+    "desc": "26'' Wheel Set"
+   }
+  },
+  {
+   "id": "A_Wheel_275",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "wheel_size": 27.5,
+    "desc": "27.5'' Wheel Set"
+   }
+  },
+  {
+   "id": "A_Wheel_29",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "wheel_size": 29.0,
+    "desc": "29'' Wheel Set"
+   }
+  },
+  {
+   "id": "A_Frame",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "desc": "Frame Assembly"
+   }
+  },
+  {
+   "id": "A_Brakes",
+   "labels": [
+    "Assembly"
+   ],
+   "properties": {
+    "desc": "Disc Brakes Assembly"
+   }
+  },
+  {
+   "id": "CG_Gear_Sys",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "gear_system",
+    "options_properties": [
+     "cost",
+     "weight",
+     "gear_system"
+    ],
+    "desc": "Gear System Options"
+   }
+  },
+  {
+   "id": "CG_Shifter",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "shifter",
+    "options_properties": [
+     "cost",
+     "weight",
+     "shifter"
+    ],
+    "desc": "Shifter Options"
+   }
+  },
+  {
+   "id": "CG_Derail",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "derailleur",
+    "options_properties": [
+     "cost",
+     "weight",
+     "derailleur"
+    ],
+    "desc": "Derailleur Options"
+   }
+  },
+  {
+   "id": "CG_Caliper",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "caliper",
+    "options_properties": [
+     "cost",
+     "weight",
+     "caliper"
+    ],
+    "desc": "Caliper Options"
+   }
+  },
+  {
+   "id": "CG_Wheel_Size",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "wheel_size",
+    "options_properties": [
+     "wheel_size"
+    ],
+    "desc": "Wheel Size Options"
+   }
+  },
+  {
+   "id": "CG_Rim_26",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "rim",
+    "options_properties": [
+     "cost",
+     "weight",
+     "material"
+    ],
+    "desc": "Rim Options for 26''"
+   }
+  },
+  {
+   "id": "CG_Tire_26",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "tire",
+    "options_properties": [
+     "cost",
+     "weight",
+     "pattern"
+    ],
+    "desc": "Tire Options for 26''"
+   }
+  },
+  {
+   "id": "CG_Rim_275",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "rim",
+    "options_properties": [
+     "cost",
+     "weight",
+     "material"
+    ],
+    "desc": "Rim Options for 27.5''"
+   }
+  },
+  {
+   "id": "CG_Tire_275",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "tire",
+    "options_properties": [
+     "cost",
+     "weight",
+     "pattern"
+    ],
+    "desc": "Tire Options for 27.5''"
+   }
+  },
+  {
+   "id": "CG_Rim_29",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "rim",
+    "options_properties": [
+     "cost",
+     "weight",
+     "material"
+    ],
+    "desc": "Rim Options for 29''"
+   }
+  },
+  {
+   "id": "CG_Tire_29",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "tire",
+    "options_properties": [
+     "cost",
+     "weight",
+     "pattern"
+    ],
+    "desc": "Tire Options for 29''"
+   }
+  },
+  {
+   "id": "CG_Frame_Mat",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "frame_material",
+    "options_properties": [
+     "cost",
+     "weight",
+     "material"
+    ],
+    "desc": "Frame Material Options"
+   }
+  },
+  {
+   "id": "CG_Color",
+   "labels": [
+    "ConfigGroup"
+   ],
+   "properties": {
+    "category": "color",
+    "options_properties": [
+     "cost",
+     "weight",
+     "color"
+    ],
+    "desc": "Color Options"
+   }
+  },
+  {
+   "id": "P_Gear_7",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "gear_system": "7-Speed",
+    "cost": 100.0,
+    "weight": 0.8,
+    "desc": "7-Speed Gear System"
+   }
+  },
+  {
+   "id": "P_Gear_11",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "gear_system": "11-Speed",
+    "cost": 200.0,
+    "weight": 0.75,
+    "desc": "11-Speed Gear System"
+   }
+  },
+  {
+   "id": "P_Gear_12",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "gear_system": "12-Speed",
+    "cost": 250.0,
+    "weight": 0.7,
+    "desc": "12-Speed Gear System"
+   }
+  },
+  {
+   "id": "P_Shifter_Twist",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 30.0,
+    "shifter": "Twist Grip",
+    "weight": 0.15,
+    "desc": "Twist Grip Shifter"
+   }
+  },
+  {
+   "id": "P_Shifter_Trigger",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 50.0,
+    "shifter": "Trigger",
+    "weight": 0.18,
+    "desc": "Trigger Shifter"
+   }
+  },
+  {
+   "id": "P_Derail_Basic",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 40.0,
+    "weight": 0.25,
+    "derailleur": "Basic",
+    "desc": "Basic Derailleur"
+   }
+  },
+  {
+   "id": "P_Derail_Adv",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 80.0,
+    "weight": 0.22,
+    "derailleur": "Advanced",
+    "desc": "Advanced Derailleur"
+   }
+  },
+  {
+   "id": "P_Spokes",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 20.0,
+    "weight": 0.3,
+    "desc": "Steel Spokes (36-pack)"
+   }
+  },
+  {
+   "id": "P_Saddle",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 30.0,
+    "weight": 0.25,
+    "desc": "Padded Saddle"
+   }
+  },
+  {
+   "id": "P_Pedals",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 50.0,
+    "weight": 0.4,
+    "desc": "Clipless Pedals"
+   }
+  },
+  {
+   "id": "P_Chain",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 25.0,
+    "weight": 0.28,
+    "desc": "Bike Chain"
+   }
+  },
+  {
+   "id": "P_Cal_Mech",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "caliper": "Mechanical",
+    "cost": 20.0,
+    "weight": 0.2,
+    "desc": "Mechanical Caliper"
+   }
+  },
+  {
+   "id": "P_Cal_Hyd",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "caliper": "Hydraulic",
+    "cost": 40.0,
+    "weight": 0.18,
+    "desc": "Hydraulic Caliper"
+   }
+  },
+  {
+   "id": "P_Rim_Alloy_26",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 45.0,
+    "material": "Alloy",
+    "weight": 0.45,
+    "desc": "Alloy Rim for 26''"
+   }
+  },
+  {
+   "id": "P_Rim_Carbon_26",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 140.0,
+    "material": "Carbon",
+    "weight": 0.35,
+    "desc": "Carbon Rim for 26''"
+   }
+  },
+  {
+   "id": "P_Tire_Knobby_26",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 35.0,
+    "pattern": "Knobby",
+    "weight": 0.7,
+    "desc": "Knobby Tire for 26''"
+   }
+  },
+  {
+   "id": "P_Tire_Slick_26",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 30.0,
+    "pattern": "Slick",
+    "weight": 0.6,
+    "desc": "Slick Tire for 26''"
+   }
+  },
+  {
+   "id": "P_Rim_Alloy_275",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 50.0,
+    "material": "Alloy",
+    "weight": 0.5,
+    "desc": "Alloy Rim for 27.5''"
+   }
+  },
+  {
+   "id": "P_Rim_Carbon_275",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 150.0,
+    "material": "Carbon",
+    "weight": 0.4,
+    "desc": "Carbon Rim for 27.5''"
+   }
+  },
+  {
+   "id": "P_Tire_Knobby_275",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 40.0,
+    "pattern": "Knobby",
+    "weight": 0.75,
+    "desc": "Knobby Tire for 27.5''"
+   }
+  },
+  {
+   "id": "P_Tire_Slick_275",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 35.0,
+    "pattern": "Slick",
+    "weight": 0.65,
+    "desc": "Slick Tire for 27.5''"
+   }
+  },
+  {
+   "id": "P_Rim_Alloy_29",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 55.0,
+    "material": "Alloy",
+    "weight": 0.55,
+    "desc": "Alloy Rim for 29''"
+   }
+  },
+  {
+   "id": "P_Rim_Carbon_29",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 160.0,
+    "material": "Carbon",
+    "weight": 0.45,
+    "desc": "Carbon Rim for 29''"
+   }
+  },
+  {
+   "id": "P_Tire_Knobby_29",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 45.0,
+    "pattern": "Knobby",
+    "weight": 0.8,
+    "desc": "Knobby Tire for 29''"
+   }
+  },
+  {
+   "id": "P_Tire_Slick_29",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 40.0,
+    "pattern": "Slick",
+    "weight": 0.7,
+    "desc": "Slick Tire for 29''"
+   }
+  },
+  {
+   "id": "P_Frame_Alum",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 200.0,
+    "material": "Aluminum",
+    "weight": 2.5,
+    "desc": "Aluminum Frame"
+   }
+  },
+  {
+   "id": "P_Frame_Carbon",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 500.0,
+    "material": "Carbon Fiber",
+    "weight": 1.5,
+    "desc": "Carbon Fiber Frame"
+   }
+  },
+  {
+   "id": "P_Frame_Steel",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 150.0,
+    "material": "Steel",
+    "weight": 3.0,
+    "desc": "Steel Frame"
+   }
+  },
+  {
+   "id": "P_Color_Black",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 0.0,
+    "color": "Black Paint",
+    "weight": 0.05,
+    "desc": "Black Paint"
+   }
+  },
+  {
+   "id": "P_Color_Blue",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 10.0,
+    "color": "Blue Paint",
+    "weight": 0.05,
+    "desc": "Blue Paint"
+   }
+  },
+  {
+   "id": "P_Color_Green",
+   "labels": [
+    "Part"
+   ],
+   "properties": {
+    "cost": 10.0,
+    "color": "Green Paint",
+    "weight": 0.05,
+    "desc": "Green Paint"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "start": "A_Drivetrain",
+   "type": "HAS_PART",
+   "end": "P_Chain",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel",
+   "type": "HAS_PART",
+   "end": "P_Spokes",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Drivetrain",
+   "type": "REQUIRES",
+   "end": "CG_Shifter",
+   "properties": {
+    "note": "Select one shifter type",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Drivetrain",
+   "type": "REQUIRES",
+   "end": "CG_Derail",
+   "properties": {
+    "note": "Select one derailleur",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel",
+   "type": "REQUIRES",
+   "end": "CG_Wheel_Size",
+   "properties": {
+    "note": "Select one wheel size",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_26",
+   "type": "REQUIRES",
+   "end": "CG_Rim_26",
+   "properties": {
+    "note": "Select rim for 26''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_26",
+   "type": "REQUIRES",
+   "end": "CG_Tire_26",
+   "properties": {
+    "note": "Select tire for 26''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_275",
+   "type": "REQUIRES",
+   "end": "CG_Rim_275",
+   "properties": {
+    "note": "Select rim for 27.5''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_275",
+   "type": "REQUIRES",
+   "end": "CG_Tire_275",
+   "properties": {
+    "note": "Select tire for 27.5''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_29",
+   "type": "REQUIRES",
+   "end": "CG_Rim_29",
+   "properties": {
+    "note": "Select rim for 29''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Wheel_29",
+   "type": "REQUIRES",
+   "end": "CG_Tire_29",
+   "properties": {
+    "note": "Select tire for 29''",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Frame",
+   "type": "REQUIRES",
+   "end": "CG_Frame_Mat",
+   "properties": {
+    "note": "Select one frame material",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Frame",
+   "type": "REQUIRES",
+   "end": "CG_Color",
+   "properties": {
+    "note": "Select one color",
+    "qty": 1
+   }
+  },
+  {
+   "start": "A_Brakes",
+   "type": "REQUIRES",
+   "end": "CG_Caliper",
+   "properties": {
+    "note": "Select calipers for front/rear",
+    "qty": 2
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "HAS_PART",
+   "end": "P_Saddle",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "HAS_PART",
+   "end": "P_Pedals",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "CG_Gear_Sys",
+   "type": "HAS_OPTION",
+   "end": "P_Gear_7",
+   "properties": {}
+  },
+  {
+   "start": "CG_Gear_Sys",
+   "type": "HAS_OPTION",
+   "end": "P_Gear_11",
+   "properties": {}
+  },
+  {
+   "start": "CG_Gear_Sys",
+   "type": "HAS_OPTION",
+   "end": "P_Gear_12",
+   "properties": {}
+  },
+  {
+   "start": "CG_Shifter",
+   "type": "HAS_OPTION",
+   "end": "P_Shifter_Twist",
+   "properties": {}
+  },
+  {
+   "start": "CG_Shifter",
+   "type": "HAS_OPTION",
+   "end": "P_Shifter_Trigger",
+   "properties": {}
+  },
+  {
+   "start": "CG_Derail",
+   "type": "HAS_OPTION",
+   "end": "P_Derail_Basic",
+   "properties": {}
+  },
+  {
+   "start": "CG_Derail",
+   "type": "HAS_OPTION",
+   "end": "P_Derail_Adv",
+   "properties": {}
+  },
+  {
+   "start": "CG_Caliper",
+   "type": "HAS_OPTION",
+   "end": "P_Cal_Mech",
+   "properties": {}
+  },
+  {
+   "start": "CG_Caliper",
+   "type": "HAS_OPTION",
+   "end": "P_Cal_Hyd",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_26",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Alloy_26",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_26",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Carbon_26",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_26",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Knobby_26",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_26",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Slick_26",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_275",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Alloy_275",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_275",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Carbon_275",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_275",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Knobby_275",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_275",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Slick_275",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_29",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Alloy_29",
+   "properties": {}
+  },
+  {
+   "start": "CG_Rim_29",
+   "type": "HAS_OPTION",
+   "end": "P_Rim_Carbon_29",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_29",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Knobby_29",
+   "properties": {}
+  },
+  {
+   "start": "CG_Tire_29",
+   "type": "HAS_OPTION",
+   "end": "P_Tire_Slick_29",
+   "properties": {}
+  },
+  {
+   "start": "CG_Frame_Mat",
+   "type": "HAS_OPTION",
+   "end": "P_Frame_Alum",
+   "properties": {}
+  },
+  {
+   "start": "CG_Frame_Mat",
+   "type": "HAS_OPTION",
+   "end": "P_Frame_Carbon",
+   "properties": {}
+  },
+  {
+   "start": "CG_Frame_Mat",
+   "type": "HAS_OPTION",
+   "end": "P_Frame_Steel",
+   "properties": {}
+  },
+  {
+   "start": "CG_Color",
+   "type": "HAS_OPTION",
+   "end": "P_Color_Black",
+   "properties": {}
+  },
+  {
+   "start": "CG_Color",
+   "type": "HAS_OPTION",
+   "end": "P_Color_Blue",
+   "properties": {}
+  },
+  {
+   "start": "CG_Color",
+   "type": "HAS_OPTION",
+   "end": "P_Color_Green",
+   "properties": {}
+  },
+  {
+   "start": "MB1",
+   "type": "REQUIRES",
+   "end": "A_Drivetrain",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "REQUIRES",
+   "end": "A_Wheel",
+   "properties": {
+    "qty": 2
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "REQUIRES",
+   "end": "A_Frame",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "REQUIRES",
+   "end": "A_Brakes",
+   "properties": {
+    "qty": 1
+   }
+  },
+  {
+   "start": "MB1",
+   "type": "REQUIRES",
+   "end": "CG_Gear_Sys",
+   "properties": {
+    "note": "Select one gear system",
+    "qty": 1
+   }
+  },
+  {
+   "start": "CG_Wheel_Size",
+   "type": "HAS_OPTION",
+   "end": "A_Wheel_26",
+   "properties": {}
+  },
+  {
+   "start": "CG_Wheel_Size",
+   "type": "HAS_OPTION",
+   "end": "A_Wheel_275",
+   "properties": {}
+  },
+  {
+   "start": "CG_Wheel_Size",
+   "type": "HAS_OPTION",
+   "end": "A_Wheel_29",
+   "properties": {}
+  }
+ ],
+ "params": {
+  "well-defined": {
+   "id_variant": "awesome_bike_well_constrained",
+   "scoring": [
+    {
+     "field": "cost",
+     "factor": -1000
+    },
+    {
+     "field": "weight",
+     "factor": -1
+    }
+   ],
+   "constraints": [
+    {
+     "category": "wheel_size",
+     "properties": [
+      {
+       "name": "wheel_size",
+       "type": "float",
+       "description": "Size of the wheel in inches",
+       "allow_list": [
+        26.0
+       ]
+      }
+     ]
+    },
+    {
+     "category": "rim",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "material of the rim",
+       "allow_list": [
+        "Carbon"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "tire",
+     "properties": [
+      {
+       "name": "pattern",
+       "type": "string",
+       "description": "Type of tire",
+       "allow_list": [
+        "Knobby"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "frame_material",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "frame material",
+       "deny_list": [
+        "Carbon Fiber",
+        "Steel"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "color",
+     "properties": [
+      {
+       "name": "color",
+       "type": "string",
+       "description": "color of the bike",
+       "allow_list": [
+        "Black Paint"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "caliper",
+     "properties": [
+      {
+       "name": "caliper",
+       "type": "string",
+       "description": "Type of caliper",
+       "allow_list": [
+        "Mechanical"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "shifter",
+     "properties": [
+      {
+       "name": "shifter",
+       "type": "string",
+       "description": "Type of Shifter",
+       "allow_list": [
+        "Trigger"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "derailleur",
+     "properties": [
+      {
+       "name": "derailleur",
+       "type": "string",
+       "description": "Type of Derailleur",
+       "allow_list": [
+        "Advanced"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "gear_system",
+     "properties": [
+      {
+       "name": "gear_system",
+       "type": "string",
+       "description": "gear system type",
+       "allow_list": [
+        "12-Speed"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "loosely-defined": {
+   "id_variant": "awesome_bike_loose_constraints",
+   "scoring": [
+    {
+     "field": "cost",
+     "factor": -1000
+    },
+    {
+     "field": "weight",
+     "factor": -1
+    }
+   ],
+   "constraints": [
+    {
+     "category": "wheel_size",
+     "properties": [
+      {
+       "name": "wheel_size",
+       "type": "float",
+       "description": "Size of the wheel in inches",
+       "deny_list": [
+        26.0
+       ]
+      }
+     ]
+    },
+    {
+     "category": "rim",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "material of the rim",
+       "allow_list": [
+        "Carbon"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "tire",
+     "properties": [
+      {
+       "name": "pattern",
+       "type": "string",
+       "description": "Type of tire",
+       "allow_list": [
+        "Knobby"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "frame_material",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "frame material",
+       "deny_list": [
+        "Carbon Fiber"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "color",
+     "properties": [
+      {
+       "name": "color",
+       "type": "string",
+       "description": "color of the bike",
+       "allow_list": [
+        "Black Paint"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "caliper",
+     "properties": [
+      {
+       "name": "caliper",
+       "type": "string",
+       "description": "Type of caliper",
+       "allow_list": [
+        "Mechanical"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "shifter",
+     "properties": [
+      {
+       "name": "shifter",
+       "type": "string",
+       "description": "Type of Shifter",
+       "allow_list": [
+        "Trigger"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "derailleur",
+     "properties": [
+      {
+       "name": "derailleur",
+       "type": "string",
+       "description": "Type of Derailleur",
+       "allow_list": [
+        "Advanced"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "gear_system",
+     "properties": [
+      {
+       "name": "gear_system",
+       "type": "string",
+       "description": "gear system type",
+       "deny_list": [
+        "7-Speed"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "over-constrained": {
+   "id_variant": "awesome_bike_no_color",
+   "scoring": [
+    {
+     "field": "cost",
+     "factor": -1000
+    },
+    {
+     "field": "weight",
+     "factor": -1
+    }
+   ],
+   "constraints": [
+    {
+     "category": "wheel_size",
+     "properties": [
+      {
+       "name": "wheel_size",
+       "type": "float",
+       "description": "Size of the wheel in inches",
+       "allow_list": [
+        26.0
+       ]
+      }
+     ]
+    },
+    {
+     "category": "rim",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "material of the rim",
+       "allow_list": [
+        "Carbon"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "tire",
+     "properties": [
+      {
+       "name": "pattern",
+       "type": "string",
+       "description": "Type of tire",
+       "allow_list": [
+        "Knobby"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "frame_material",
+     "properties": [
+      {
+       "name": "material",
+       "type": "string",
+       "description": "frame material",
+       "deny_list": [
+        "Carbon Fiber"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "color",
+     "properties": [
+      {
+       "name": "color",
+       "type": "string",
+       "description": "color of the bike",
+       "allow_list": []
+      }
+     ]
+    },
+    {
+     "category": "caliper",
+     "properties": [
+      {
+       "name": "caliper",
+       "type": "string",
+       "description": "Type of caliper",
+       "allow_list": [
+        "Mechanical"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "shifter",
+     "properties": [
+      {
+       "name": "shifter",
+       "type": "string",
+       "description": "Type of Shifter",
+       "allow_list": [
+        "Trigger"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "derailleur",
+     "properties": [
+      {
+       "name": "derailleur",
+       "type": "string",
+       "description": "Type of Derailleur",
+       "allow_list": [
+        "Advanced"
+       ]
+      }
+     ]
+    },
+    {
+     "category": "gear_system",
+     "properties": [
+      {
+       "name": "gear_system",
+       "type": "string",
+       "description": "gear system type",
+       "allow_list": [
+        "12-Speed"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
