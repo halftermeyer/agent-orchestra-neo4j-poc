@@ -36,7 +36,7 @@ main { padding: 16px 18px; flex: 1; }
 .bubble header { position: static; display: flex; gap: 8px; align-items: center; padding: 0; background: none; border: 0; font-size: 12px; flex-wrap: wrap; } .bubble header time { color: var(--muted); margin-left: auto; } .bubble p { margin: 6px 0 2px; white-space: pre-wrap; } .bubble footer { font-size: 11px; color: var(--muted); }
 .tag { background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 0 8px; font-size: 11px; } .tag.kind { background: #EFEAFB; border-color: #D4C9F3; } .tag.mem { background: #FBF1D4; border-color: #E8D79B; }
 .composer { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-top: 10px; }
-.approval { border-top: 1px solid #EEF1F6; padding: 8px 0; } .approvals { border-color: #F2D49A; background: #FFFBF2; }
+.approval { border-top: 1px solid #EEF1F6; padding: 8px 0; } .impact { margin: 4px 0; font-size: 13px; } .approvals { border-color: #F2D49A; background: #FFFBF2; }
 .graph .toolbar, .timeline .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
 .seg.on { background: #E8F0FE; color: var(--brand); border-color: #BBD3F8; } .toggles { display: flex; gap: 12px; margin-left: 14px; font-size: 13px; }
 .graph-body { display: flex; gap: 12px; align-items: stretch; } .canvas-col { flex: 1; min-width: 0; }

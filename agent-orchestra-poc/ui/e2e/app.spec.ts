@@ -108,6 +108,9 @@ test("the committee votes until quorum; the avatar shows the vote", async ({ pag
   await expect(page.getByTestId("approval")).toHaveCount(1);
   await expect(page.getByTestId("approval")).toContainText("PRT-0045");
   await expect(page.getByTestId("approval")).toContainText("0/2 votes");
+  await expect(page.getByTestId("impact")).toContainText("BOM impact");             // computed by the gateway on the CBOM
+  await expect(page.getByTestId("impact-cost")).toHaveText(/^-\d+\.\d{2}$/);         // PRT-0102 is cheaper than PRT-0045
+  await expect(page.getByTestId("impact-unsatisfied")).toHaveCount(0);
   await shot(page, "09-chat-validation");
   await page.getByTestId("approve").click();
   await expect(page.getByTestId("approvals")).toHaveCount(0);                    // already voted: no longer listed

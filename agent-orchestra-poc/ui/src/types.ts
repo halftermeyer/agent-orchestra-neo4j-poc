@@ -51,9 +51,15 @@ export interface ChatMessage {
   id: string; from: string; performative: string; body: string | null; payload: Record<string, unknown> | null; chainId: string;
   createdAt: string; direction: "in" | "out"; to: string[]; hasSharedMemory: boolean;
 }
+/** Change impact computed by the gateway on the configurable BOM (never by an agent), frozen in the approval. */
+export interface ChangeImpact {
+  available: boolean; reason?: string; complete?: boolean; costDelta?: number; weightDelta?: number;
+  baseline?: { cost: number; weight: number }; whatIf?: { cost: number; weight: number };
+  unsatisfied?: { source: string; group: string }[];
+}
 export interface PendingApproval {
   id: string; policy: string; quorum: number; size: number; requestedBy: string; requestedAt: string;
-  args: { part_id?: string; replacement_id?: string; description?: string }; votes: number; chainId: string | null;
+  args: { part_id?: string; replacement_id?: string; description?: string; impact?: ChangeImpact }; votes: number; chainId: string | null;
 }
 export interface Incident { id: string; kind: string; componentId: string; severity: string; description: string; observedAt: string }
 export interface TimelineItem {
