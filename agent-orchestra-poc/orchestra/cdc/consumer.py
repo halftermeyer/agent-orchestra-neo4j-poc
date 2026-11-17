@@ -202,7 +202,7 @@ class Consumer:
     def _on_kg_tx(self, db: str, tx: list[dict]):
         changes = kg_changes(tx)
         meta = tx[0]["metadata"]
-        if db in self.s.bridge_dbs:
+        if db in self.s.bridge_dbs and changes:        # nothing left once scratch writes are filtered: no raw message
             kg_id = self.s.kg_dbs[db]
             tx_id = tx[0]["txId"]
             chain = (meta.get("txMetadata") or {}).get("chainId")

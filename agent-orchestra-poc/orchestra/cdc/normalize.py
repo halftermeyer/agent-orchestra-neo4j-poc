@@ -92,11 +92,17 @@ def normalize_tx(events: list[dict]) -> tuple[list[dict], list[dict]]:
     return out, received
 
 
+# CBOM variant computations (RESOLVED_LINK) are gateway bookkeeping, not BOM changes: they must not wake the interpreter
+SCRATCH_RELS = {"RESOLVED_LINK"}
+
+
 def kg_changes(events: list[dict]) -> list[dict]:
-    """Changes of a KG transaction, with entity identifiers (node key `Entity.id`)."""
+    """Changes of a KG transaction, with entity identifiers (node key `Entity.id`). Scratch relationships are left out."""
     out = []
     for e in events:
         ev = e["event"]
+        if ev["eventType"] == "r" and ev["type"] in SCRATCH_RELS:
+            continue
         if ev["eventType"] == "n":
             ent = _key(ev, "Entity", "id")
             out.append({"eventId": e["id"], "kind": "node", "op": ev["operation"], "labels": ev["labels"], "entityId": ent})

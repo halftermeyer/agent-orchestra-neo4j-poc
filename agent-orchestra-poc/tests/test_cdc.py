@@ -261,6 +261,31 @@ def test_kg_bridge_one_message_per_transaction(cdc, admin, tq):
     assert tq("MATCH (m:Message {from: 'routine:rt-interp-raw'}) RETURN count(m) AS n")[0]["n"] == 0
 
 
+def test_cbom_variant_writes_produce_no_raw_message(cdc, admin, tq):
+    """RESOLVED_LINK writes (CBOM variants) are not BOM changes: the bridge must not wake the interpreter for them."""
+    from cbom_fixtures import BIKE, load_bike
+    from orchestra.gateway.cbom import resolve_variant
+    from orchestra.gateway.store import Runner
+    load_bike(admin, KGTEST)
+    cdc.drain()
+    raw = lambda: tq("MATCH (m:Message) WHERE m.id STARTS WITH $p RETURN count(m) AS n", p=f"raw:{KGTEST}:")[0]["n"]
+    before = raw()
+    params = BIKE["params"]["loosely-defined"]
+    with admin.session(database=KGTEST) as s:
+        # scratch variant (one transaction, created then deleted) and a persisted variant deleted in a later transaction
+        s.execute_write(lambda tx: resolve_variant(Runner(tx), "MB1", "scratch", params["constraints"], params["scoring"]))
+        s.execute_write(lambda tx: resolve_variant(Runner(tx), "MB1", "kept", params["constraints"], params["scoring"], keep=True))
+        assert s.run("CYPHER 25 MATCH ()-[r:RESOLVED_LINK {id_variant: 'kept'}]->() RETURN count(r) AS n").single()["n"] > 0
+        s.run("CYPHER 25 MATCH ()-[r:RESOLVED_LINK]->() DELETE r").consume()
+    cdc.drain()
+    assert raw() == before
+    _kg_write(admin, KGTEST, "MATCH (p:Part {id: 'P_Saddle'}) SET p.revision = 'B'")      # a real change still goes through
+    cdc.drain()
+    assert raw() == before + 1
+    with admin.session(database=KGTEST) as s:
+        s.run("CYPHER 25 MATCH (n) DETACH DELETE n").consume()
+
+
 def test_raw_topic_routes_to_the_bom_interpreter(cdc, world, tq):
     a = world.agent("t-a")
     world.send_to(a, "kg.produit.raw")
