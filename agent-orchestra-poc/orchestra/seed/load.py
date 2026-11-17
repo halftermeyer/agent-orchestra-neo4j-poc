@@ -77,8 +77,8 @@ def load_orchestra(drv, db="orchestra"):
                    MATCH (t:Inbox:Topic {id: r.listens}) MERGE (rt)-[:LISTENS_TO]->(t)""", rows=routines)
 
 
-def load_kg_produit(drv, d):
-    with drv.session(database="kgproduit") as s:
+def load_kg_produit(drv, d, db="kgproduit"):
+    with drv.session(database=db) as s:
         _run(s, "UNWIND $rows AS r MERGE (e:Entity:Part {id: r.id}) ON CREATE SET e += r", rows=d["parts"])
         _run(s, "UNWIND $rows AS r MERGE (e:Entity:Test {id: r.id}) ON CREATE SET e += r", rows=d["tests"])
         _run(s, "UNWIND $rows AS r MERGE (e:Entity:ProductVersion {id: r.id}) ON CREATE SET e += r", rows=d["versions"])
@@ -86,6 +86,27 @@ def load_kg_produit(drv, d):
                    MERGE (a)-[x:CONTAINS]->(b) ON CREATE SET x.qty = r.qty""", rows=d["contains"])
         _run(s, """UNWIND $rows AS r MATCH (a:Test {id: r.from}), (b:Part {id: r.to}) MERGE (a)-[:COVERS]->(b)""", rows=d["covers"])
         _run(s, """MATCH (v:ProductVersion {id: 'VER-1.0'}), (p:Part) WHERE NOT EXISTS { (p)-[:IN_VERSION]->(:ProductVersion) } MERGE (p)-[:IN_VERSION]->(v)""")
+        # cost/weight added after the first release of the seed: only fill missing values, never overwrite
+        _run(s, """UNWIND $rows AS r MATCH (e:Part {id: r.id})
+                   SET e.cost = coalesce(e.cost, r.cost), e.weight = coalesce(e.weight, r.weight)""",
+             rows=[{"id": p["id"], "cost": p["cost"], "weight": p["weight"]} for p in d["parts"] if "cost" in p])
+
+
+def load_cbom(drv, c, db="kgproduit"):
+    """CBOM overlay (see kg_data.generate_cbom). Idempotent; a CONTAINS edge copied by a modification keeps its group."""
+    with drv.session(database=db) as s:
+        _run(s, "MATCH (p:Part {id: $id}) SET p:Product", id=c["product"])
+        _run(s, "UNWIND $ids AS id MATCH (p:Part {id: id}) SET p:Assembly", ids=c["assemblies"])
+        _run(s, """UNWIND $rows AS r MERGE (g:Entity:ConfigGroup {id: r.id})
+                   ON CREATE SET g.category = r.category, g.options_properties = r.options_properties, g.desc = r.desc""",
+             rows=c["groups"])
+        _run(s, """UNWIND $rows AS r MATCH (a:Part {id: r.from}), (g:ConfigGroup {id: r.to})
+                   MERGE (a)-[x:REQUIRES]->(g) ON CREATE SET x.qty = r.qty, x.note = r.note""", rows=c["requires"])
+        _run(s, """UNWIND $rows AS r MATCH (g:ConfigGroup {id: r.from}), (o:Part {id: r.to})
+                   MERGE (g)-[:HAS_OPTION]->(o)""", rows=c["options"])
+        _run(s, """UNWIND $rows AS r MATCH (:Part {id: r.from})-[x:CONTAINS]->(:Part {id: r.to})
+                   WHERE x.group IS NULL AND x.removedIn IS NULL
+                   SET x.configurable = true, x.group = r.group""", rows=c["configurable"])
 
 
 def load_kg_projet(drv, d):
@@ -105,5 +126,6 @@ def run_all():
     with GraphDatabase.driver(config.NEO4J_URI, auth=(config.ADMIN_USER, config.ADMIN_PASSWORD)) as drv:
         load_orchestra(drv)
         load_kg_produit(drv, produit)
+        load_cbom(drv, K.generate_cbom(produit))
         load_kg_projet(drv, projet)
-    print(f"seed OK: {len(produit['parts'])} parts, {len(produit['tests'])} tests, {len(projet['tasks'])} tasks, {len(incidents)} incidents")
+    print(f"seed OK: {len(produit['parts'])} parts, {len(K.generate_cbom(produit)['groups'])} config groups, {len(produit['tests'])} tests, {len(projet['tasks'])} tasks, {len(incidents)} incidents")

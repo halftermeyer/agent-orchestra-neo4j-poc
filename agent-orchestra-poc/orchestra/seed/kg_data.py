@@ -73,7 +73,40 @@ def generate_kg_produit(seed: int = SEED) -> dict:
     covers = [dict(t) for t in {tuple(sorted(c.items())) for c in covers}]
     covers.sort(key=lambda c: (c["from"], c["to"]))
     version = {"id": "VER-1.0", "label": "v1.0", "releasedAt": "2025-11-03", "current": True}
+    # cost and weight of the leaf parts, from a separate RNG so that everything above stays identical
+    rng_cw = random.Random(seed + 3)
+    for p in parts:
+        if p["level"] == 3:
+            p["cost"] = round(rng_cw.uniform(5, 400), 2)
+            p["weight"] = round(rng_cw.uniform(0.05, 25), 3)
     return {"parts": parts, "contains": contains, "tests": tests, "covers": covers, "versions": [version]}
+
+
+def generate_cbom(produit: dict) -> dict:
+    """CBOM (150% BOM) overlay on the released BOM, following the configurable-bom page of field-industry-use-cases:
+    the root is the `Product`, levels 1-2 are `Assembly`, and every level-3 position (parent CONTAINS part) becomes a
+    `ConfigGroup` (parent REQUIRES group, group HAS_OPTION every level-3 part of the same family). The CONTAINS edge of
+    a configurable position is flagged (`configurable`, `group`) and left out of the plain roll-up (no double counting)."""
+    parts = {p["id"]: p for p in produit["parts"]}
+    by_family: dict[str, list[str]] = {}
+    for p in produit["parts"]:
+        if p["level"] == 3:
+            by_family.setdefault(p["family"], []).append(p["id"])
+    groups, options, requires, configurable = [], [], [], []
+    for c in produit["contains"]:
+        child = parts[c["to"]]
+        if child["level"] != 3:
+            continue
+        gid = f"CG-{c['from']}-{c['to']}"
+        groups.append({"id": gid, "category": gid, "options_properties": ["cost", "weight", "id"],
+                       "desc": f"{child['family']} part options for {c['from']}"})
+        requires.append({"from": c["from"], "to": gid, "qty": c["qty"], "note": f"Select one {child['family'].lower()} part"})
+        options += [{"from": gid, "to": o} for o in by_family[child["family"]]]
+        configurable.append({"from": c["from"], "to": c["to"], "group": gid})
+    root = next(p["id"] for p in produit["parts"] if p["level"] == 0)
+    assemblies = [p["id"] for p in produit["parts"] if p["level"] in (1, 2)]
+    return {"product": root, "assemblies": assemblies, "groups": groups, "options": options, "requires": requires,
+            "configurable": configurable}
 
 
 def generate_kg_projet(tests: list[dict], l1_ids: list[str], seed: int = SEED) -> dict:
