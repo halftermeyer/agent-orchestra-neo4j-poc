@@ -1,13 +1,18 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends
+from neo4j.exceptions import Neo4jError
+from pydantic import Field
 
-from orchestra.gateway.auth import Principal, get_ctx, require_agent
+from orchestra.gateway import cbom
+from orchestra.gateway.auth import Principal, get_ctx, require_agent, require_service
 from orchestra.gateway.errors import Forbidden, NotFound
-from orchestra.gateway.routes.core import Strict
+from orchestra.gateway.routes.core import Strict, load_session
 from orchestra.gateway.store import to_json
 
 router = APIRouter()
+log = logging.getLogger("orchestra.gateway")
 
 # Query templates: kg -> {template: {param: (type, default)}}. Whitelist; no free-form Cypher.
 TEMPLATES = {
@@ -95,3 +100,34 @@ def kg_resolve(b: Resolve, p: Principal = Depends(require_agent), ctx=Depends(ge
     rows = ctx.store.run_in(b.db, "kg/entity_exists", key=b.key)
     ref = ctx.store.read(lambda r: r.one("entityref_redirect", db=b.db, key=b.key))
     return to_json({**rows[0], "deletedAt": ref["deletedAt"], "redirectTo": ref["redirectTo"]})
+
+
+# ---------- CBOM change impact (computed here, never by the LLM) ----------
+def change_impact(ctx, agent_id: str, chain_id: str, part_id: str, replacement_id: str) -> dict:
+    """Baseline vs what-if on the Product KG's CBOM. Never raises: an unavailable impact is reported as such."""
+    auth = ctx.store.read(lambda r: r.all("kg_authorize", agentId=agent_id, kgIds=["produit"]))
+    ctx.log_access(agent_id, "kg.impact", bool(auth), ["produit"], detail=f"{part_id}->{replacement_id}", chain_id=chain_id)
+    if not auth:
+        return {"available": False, "reason": "no right on the Product KG (CAN_QUERY)"}
+    if ctx.store.kg_driver is None:
+        return {"available": False, "reason": "KG curator not configured"}
+    try:
+        return cbom.impact(ctx.store, auth[0]["dbName"], {"agentId": agent_id, "chainId": chain_id}, part_id, replacement_id)
+    except Neo4jError as e:
+        log.warning("CBOM impact failed (%s -> %s): %s", part_id, replacement_id, e.code)
+        return {"available": False, "reason": f"impact computation failed ({e.code})"}
+
+
+class Impact(Strict):
+    sessionId: str
+    partId: str = Field(min_length=1, max_length=100)
+    replacementId: str = Field(min_length=1, max_length=100)
+
+
+@router.post("/kg/impact")
+def kg_impact(b: Impact, p: Principal = Depends(require_service), ctx=Depends(get_ctx)):
+    """`evaluate_change` tool: same server-side computation as the one frozen in a launch_modification approval."""
+    s = load_session(ctx, p, b.sessionId)
+    if ctx.store.read(lambda r: r.one("tool_authorize", agentId=p.id, tool="evaluate_change")) is None:
+        raise Forbidden("tool not allowed (CAN_USE evaluate_change)")
+    return to_json(change_impact(ctx, p.id, s["chainId"], b.partId, b.replacementId))

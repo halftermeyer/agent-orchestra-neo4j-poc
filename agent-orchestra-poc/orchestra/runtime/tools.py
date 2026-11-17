@@ -114,6 +114,10 @@ class ToolExecutor:
         rows = r["rows"]
         return {"rows": rows[:40], "rowCount": len(rows)}, {}
 
+    def _t_evaluate_change(self, a, key):
+        r = self.c.post("/kg/impact", {"sessionId": self.sid, "partId": str(a.get("part_id", "")), "replacementId": str(a.get("replacement_id", ""))})
+        return r, {}
+
     def _t_commit(self, a, key):
         if a.get("fulfills"):
             r = self.c.post(f"/commitments/{a['fulfills']}/fulfill")
@@ -131,7 +135,7 @@ class ToolExecutor:
                                        "args": {"part_id": a.get("part_id"), "replacement_id": a.get("replacement_id"),
                                                 "description": a.get("description")}})
         self.awaiting_approval = True
-        return {"approvalId": r["id"], "status": r.get("status", "pending"),
+        return {"approvalId": r["id"], "status": r.get("status", "pending"), "impact": r.get("impact"),
                 "note": "Waiting for the committee vote; you will be woken when it decides. End your turn."}, {}
 
     def _t_launch_modification(self, a, key):

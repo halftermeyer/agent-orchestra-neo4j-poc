@@ -22,7 +22,7 @@ Protocol (messages carry structured data in `payload`):
    - planification: simulate the impact on the schedule.
    Make a follow-up commitment with `commit` (to qualite: synthesis delivered; short demo deadline: due_in_minutes = 3).
 2. The specialists answer with `inform` (payload.kind = "engineering-report", "tests-report", "planning-impact"). While one of the three reports is missing, do nothing more (do not chase them).
-3. When all three reports are in (re-read the conversation thread) AND you have not already requested the approval (one request per modification, NEVER repeat it): store the synthesis with `remember`; send the figures to `chef-projet` (`inform`, with the schedule delay); then ask the committee to approve with `request_approval` (tool = "launch_modification", part_id = the incident part, replacement_id = the replacement part retained by Engineering, description = a summary of the decision). Then end your turn.
+3. When all three reports are in (re-read the conversation thread) AND you have not already requested the approval (one request per modification, NEVER repeat it): store the synthesis with `remember`; send the figures to `chef-projet` (`inform`, with the schedule delay); then ask the committee to approve with `request_approval` (tool = "launch_modification", part_id = the incident part, replacement_id = the replacement part retained by Engineering, description = a summary of the decision that quotes the cost/weight impact of Engineering's report). The gateway attaches its own computed impact to the approval; never invent figures. Then end your turn.
 4. When woken by an approval decision (payload.kind = "approval-decided"): if `approved`, call `launch_modification` with the approval_id, then inform `ing-qualite`, `chef-projet` and `comite` that the modification was launched (payload {kind: "modification-launched"}); if `rejected`, inform them of the refusal. Nothing else.
 If two human instructions contradict each other, do not decide: ask both people a question (`query`).""",
      "purpose": "Orchestrate the impact analysis of a product modification",
@@ -46,12 +46,12 @@ Handle each incident only once. If the message is not an incident, do nothing.""
 
 1. On a request from the coordinator (payload.kind = "analysis-request": partId): `part_where_used` and `part_info` on the part, then `replacement_candidates`. Pick one candidate (the first in the list that has not already been proposed in the thread) and send it to `essais` as a `propose` with payload {kind: "replacement-proposal", partId, replacementId, round: n}.
 2. If Testing answers `reject-proposal`: propose another candidate not yet proposed (round + 1). At most 5 rounds; then tell the coordinator you failed.
-3. If Testing answers `accept-proposal`: answer `agree` to `essais` if useful, make a commitment with `commit` to the coordinator (delivery of the replacement file; short demo deadline: due_in_minutes = 2), then send the coordinator an `inform` with payload {kind: "engineering-report", partId, replacementId, whereUsed: [ids of the assemblies containing the part]}.
+3. If Testing answers `accept-proposal`: answer `agree` to `essais` if useful, make a commitment with `commit` to the coordinator (delivery of the replacement file; short demo deadline: due_in_minutes = 2), call `evaluate_change` (part_id, replacement_id) and send the coordinator an `inform` with payload {kind: "engineering-report", partId, replacementId, whereUsed: [ids of the assemblies containing the part], impact: {costDelta, weightDelta, unsatisfied} copied from evaluate_change}.
 Store what you learn with `remember` (retained part, rejection reasons).""",
      "purpose": "Analyse the usage of a part and propose replacements",
      "scope": "Read access to the Product KG; exchanges with Testing and the Coordinator",
      "success": "A replacement part accepted by Testing",
-     "tools": ["send_message", "set_status", "remember", "recall", "query_kg", "commit"]},
+     "tools": ["send_message", "set_status", "remember", "recall", "query_kg", "commit", "evaluate_change"]},
     {"id": "essais", "name": "Testing", "kind": "llm", "role": "specialist",
      "prompt": """You are the Testing agent. You list the tests to redo and you assess the proposed replacement parts.
 
@@ -135,7 +135,7 @@ CAN_SEND_TO = {
 TOOLS = [
     {"name": "send_message", "effect": "write"}, {"name": "set_status", "effect": "write"},
     {"name": "remember", "effect": "write"}, {"name": "recall", "effect": "read"},
-    {"name": "query_kg", "effect": "read"}, {"name": "commit", "effect": "write"},
+    {"name": "query_kg", "effect": "read"}, {"name": "evaluate_change", "effect": "read"}, {"name": "commit", "effect": "write"},
     {"name": "request_approval", "effect": "write"}, {"name": "cpa_simulate", "effect": "read"},
     {"name": "suspend_chain", "effect": "write"}, {"name": "quarantine_agent", "effect": "write"},
     {"name": "launch_modification", "effect": "irreversible"},

@@ -20,6 +20,9 @@ TOOL_SPECS = {
                               "or settle an existing commitment with `fulfills`.",
                "parameters": {"type": "object", "properties": {
                    "to": STR, "description": STR, "due_in_minutes": {"type": "integer"}, "fulfills": STR}}},
+    "evaluate_change": {"description": "Compute (server-side, on the configurable BOM) the cost and weight impact of replacing "
+                                       "a part, and the requirements it would leave unsatisfied. Read-only.",
+                        "parameters": S(part_id=STR, replacement_id=STR)},
     "request_approval": {"description": "Ask the committee to approve an irreversible action (e.g. launch_modification). "
                                          "The arguments frozen here are the ones that will be executed if approval is obtained.",
                          "parameters": {"type": "object", "required": ["tool", "description"], "properties": {

@@ -10,6 +10,7 @@ from pydantic import Field
 from orchestra.gateway.auth import Principal, get_ctx, require_agent, require_person, require_service
 from orchestra.gateway.errors import Conflict, Forbidden, NotFound
 from orchestra.gateway.routes.core import Strict, load_session
+from orchestra.gateway.routes.kg import change_impact
 from orchestra.gateway.store import to_json
 
 router = APIRouter()
@@ -92,10 +93,16 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
     same = ctx.store.read(lambda r: r.one("approval_pending_same", agentId=p.id, tool=b.tool, chainId=s["chainId"]))
     if same:
         return to_json({**same, "replayed": True, "duplicateOf": same["id"]})
+    args = dict(b.args or {})
+    args.pop("impact", None)                         # the impact is computed here, never supplied by the agent
+    if isinstance(args.get("description"), str):
+        args["description"] = args["description"][:1500]
+    if b.tool == "launch_modification" and isinstance(args.get("part_id"), str) and isinstance(args.get("replacement_id"), str):
+        args["impact"] = change_impact(ctx, p.id, s["chainId"], args["part_id"][:100], args["replacement_id"][:100])
 
     def tx(r):
         row = r.one("approval_create", agentId=p.id, tool=b.tool, sessionId=b.sessionId, key=key, electorate=b.electorate,
-                    approvalId=aid, quorum=quorum, size=size, args=json.dumps(b.args)[:4000] if b.args else None)
+                    approvalId=aid, quorum=quorum, size=size, args=json.dumps(args)[:4000] if args else None)
         if row is None:
             raise Forbidden("electorate not allowed (CAN_SEND_TO) or session closed")
         if row["electors"] < size:
@@ -106,7 +113,10 @@ def request_approval(b: RequestApproval, p: Principal = Depends(require_service)
     except ConstraintError:
         row = ctx.store.read(lambda r: r.one("approval_by_key", key=key, agentId=p.id))
         return to_json({**row, "replayed": True})
-    return to_json({"id": row["id"], "status": row["status"], "quorum": quorum, "size": size})
+    out = {"id": row["id"], "status": row["status"], "quorum": quorum, "size": size}
+    if "impact" in args:
+        out["impact"] = args["impact"]
+    return to_json(out)
 
 
 def _can_see(ctx, p, ap) -> bool:
