@@ -34,3 +34,9 @@ make e2e    # Playwright on a clean database, no LLM; UI unit tests: cd ui && np
 ```
 
 Neo4j Enterprise license: the image is used with `NEO4J_ACCEPT_LICENSE_AGREEMENT=yes` (check this for your use). The compose default passwords are local development values.
+
+## Demo video
+
+<!-- demo-video:start -->
+[![Demo video (YouTube, unlisted)](docs/demo-thumb.png)](https://youtu.be/o7TAhpJAQhw)
+<!-- demo-video:end -->

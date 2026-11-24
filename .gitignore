@@ -14,3 +14,7 @@ playwright-report/
 test-results/
 .DS_Store
 *.log
+
+# YouTube OAuth secrets and token (demo-video)
+video/.yt/
+**/.yt/
